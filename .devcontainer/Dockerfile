@@ -19,7 +19,8 @@ RUN pnpm config set global-bin-dir /usr/local/bin && \
     wrangler \
     @biomejs/biome \
     vite \
-    vitest
+    vitest \
+    @anthropic-ai/claude-code
 
 # Set working directory
 WORKDIR /workspace

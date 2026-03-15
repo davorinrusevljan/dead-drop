@@ -3,6 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "mounts": ["source=/home/davorin/.claude,target=/root/.claude,type=bind,consistency=cached"],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -26,7 +27,7 @@
       }
     }
   },
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "test -f package.json && pnpm install || echo 'No package.json yet - project not initialized'",
   "forwardPorts": [3000, 8787, 8788],
   "remoteEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096"
