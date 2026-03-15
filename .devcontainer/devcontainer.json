@@ -1,0 +1,37 @@
+{
+  "name": "dead-drop",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.js-debug",
+        "usernamehw.errorlens",
+        "streetsidesoftware.code-spell-checker",
+        "yzhang.markdown-all-in-one",
+        "biomejs.biome"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "postCreateCommand": "pnpm install",
+  "forwardPorts": [3000, 8787, 8788],
+  "remoteEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  }
+}
