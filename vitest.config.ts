@@ -28,6 +28,8 @@ export default defineConfig({
         '**/.next/**',
         // Node modules
         '**/node_modules/**',
+        // Database schema (tested via integration tests)
+        '**/db/schema.ts',
       ],
     },
   },

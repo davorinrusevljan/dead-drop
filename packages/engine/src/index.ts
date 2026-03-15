@@ -1,3 +1,11 @@
-// Placeholder - will be implemented in Step 2
-export { sanitizeDropPhrase, validateDropPhrase, dropPhraseSchema } from './validation.js';
+// Engine package exports
+export {
+  sanitizeDropPhrase,
+  validateDropPhrase,
+  dropPhraseSchema,
+  dropPhraseSchemaWithMin,
+  FORBIDDEN_SLUGS,
+} from './validation.js';
 export * from './types.js';
+export * from './crypto.js';
+export * from './db/index.js';
