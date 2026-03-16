@@ -12,11 +12,14 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "clean": "turbo clean && rm -rf node_modules",
     "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
+    "@playwright/test": "^1.49.0",
     "@types/node": "^22.13.0",
     "@vitest/coverage-v8": "^3.0.0",
     "eslint": "^9.18.0",
