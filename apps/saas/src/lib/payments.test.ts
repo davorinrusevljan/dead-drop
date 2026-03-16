@@ -160,20 +160,20 @@ describe('Payments Service', () => {
     it('should extract drop ID from metadata', () => {
       const session = {
         metadata: { dropId: 'drop-456' },
-      } as Stripe.Checkout.Session;
+      } as unknown as Stripe.Checkout.Session;
 
       expect(getDropIdFromSession(session)).toBe('drop-456');
     });
 
     it('should return null if metadata is missing', () => {
-      const session = {} as Stripe.Checkout.Session;
+      const session = {} as unknown as Stripe.Checkout.Session;
       expect(getDropIdFromSession(session)).toBeNull();
     });
 
     it('should return null if dropId is not in metadata', () => {
       const session = {
         metadata: { otherField: 'value' },
-      } as Stripe.Checkout.Session;
+      } as unknown as Stripe.Checkout.Session;
 
       expect(getDropIdFromSession(session)).toBeNull();
     });
@@ -185,7 +185,7 @@ describe('Payments Service', () => {
         metadata: { dropId: 'drop-789' },
         payment_intent: 'pi_123',
         payment_status: 'paid',
-      } as Stripe.Checkout.Session;
+      } as unknown as Stripe.Checkout.Session;
 
       const result = processCheckoutComplete(session);
 
@@ -201,7 +201,7 @@ describe('Payments Service', () => {
         metadata: { dropId: 'drop-789' },
         payment_intent: 'pi_123',
         payment_status: 'unpaid',
-      } as Stripe.Checkout.Session;
+      } as unknown as Stripe.Checkout.Session;
 
       const result = processCheckoutComplete(session);
 
@@ -217,7 +217,7 @@ describe('Payments Service', () => {
         metadata: {},
         payment_intent: 'pi_123',
         payment_status: 'paid',
-      } as Stripe.Checkout.Session;
+      } as unknown as Stripe.Checkout.Session;
 
       expect(processCheckoutComplete(session)).toBeNull();
     });
@@ -226,7 +226,7 @@ describe('Payments Service', () => {
       const session = {
         payment_intent: 'pi_123',
         payment_status: 'paid',
-      } as Stripe.Checkout.Session;
+      } as unknown as Stripe.Checkout.Session;
 
       expect(processCheckoutComplete(session)).toBeNull();
     });
