@@ -7,8 +7,7 @@ export default function HomePage() {
   const [phrase, setPhrase] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'not-found'>('idle');
 
-  const handlePhraseSubmit = useCallback(async (inputPhrase: string) => {
-    setPhrase(inputPhrase);
+  const handlePhraseSubmit = useCallback(async () => {
     setStatus('loading');
 
     // In a real implementation, this would hash the phrase and check the API
