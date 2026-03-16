@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createApiApp } from './index.js';
 import type { AppEnv } from './types.js';
 import type { Hono } from 'hono';
@@ -121,6 +121,38 @@ describe('API App', () => {
         },
       });
       expect(res.status).toBe(204);
+    });
+  });
+
+  describe('Error handling', () => {
+    it('should handle internal errors gracefully', async () => {
+      // Create an app with a route that throws an error
+      const errorApp = createApiApp();
+      errorApp.get('/api/test-error', () => {
+        throw new Error('Test error');
+      });
+
+      const res = await errorApp.request('/api/test-error');
+      expect(res.status).toBe(500);
+
+      const data = (await res.json()) as { error: { code: string; message: string } };
+      expect(data.error).toHaveProperty('code', 'INTERNAL_ERROR');
+      expect(data.error).toHaveProperty('message', 'An unexpected error occurred');
+    });
+
+    it('should log errors to console', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const errorApp = createApiApp();
+      errorApp.get('/api/test-error', () => {
+        throw new Error('Test error');
+      });
+
+      await errorApp.request('/api/test-error');
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('API Error:', expect.any(Error));
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });
