@@ -19,6 +19,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
+    "types": ["@cloudflare/workers-types"],
     "plugins": [
       {
         "name": "next"
