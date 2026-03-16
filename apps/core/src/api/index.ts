@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import type { Context } from 'hono';
 import type { AppEnv } from './types.js';
 import { healthRoute, healthHandler } from './routes/health.js';
 import { docsRoute, docsHandler, openapiRoute } from './routes/docs.js';
@@ -43,11 +44,10 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
   app.openapi(healthRoute, healthHandler);
 
   // Documentation endpoints (OpenAPI documented)
-  app.openapi(openapiRoute, ((c) => {
+  app.openapi(openapiRoute, ((c: Context) => {
     // Return OpenAPI spec from the app
     return c.json(app.getOpenAPIDocument(openApiConfig));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as any);
+  }) as unknown as unknown);
   app.openapi(docsRoute, docsHandler);
 
   // Drop routes (Hono routes for CRUD operations)
