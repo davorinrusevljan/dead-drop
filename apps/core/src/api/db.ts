@@ -187,10 +187,9 @@ export async function getDropHistoryVersion(
   const result = await orm
     .select()
     .from(dropHistory)
-    .where(eq(dropHistory.dropId, id))
-    .where(eq(dropHistory.version, version))
+    .where(and(eq(dropHistory.dropId, id), eq(dropHistory.version, version)))
     .limit(1);
-  return (result[0] as DropRecord | undefined) ?? null;
+  return (result[0] as DropHistoryRecord | undefined) ?? null;
 }
 
 /**
@@ -209,10 +208,7 @@ export async function countDropVersions(db: D1Database, id: string): Promise<num
 /**
  * Upgrade a drop to Deep tier
  */
-export async function upgradeDrop(
-  db: D1Database,
-  id: string
-): Promise<DropRecord | null> {
+export async function upgradeDrop(db: D1Database, id: string): Promise<DropRecord | null> {
   const orm = drizzle(db);
   const existing = await getDropById(db, id);
   if (!existing) return null;

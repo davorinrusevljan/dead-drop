@@ -43,12 +43,11 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
   app.openapi(healthRoute, healthHandler);
 
   // Documentation endpoints (OpenAPI documented)
-  app.openapi(openapiRoute, () => {
+  app.openapi(openapiRoute, ((c) => {
     // Return OpenAPI spec from the app
-    return new Response(JSON.stringify(app.getOpenAPIDocument(openApiConfig)), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  });
+    return c.json(app.getOpenAPIDocument(openApiConfig));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any);
   app.openapi(docsRoute, docsHandler);
 
   // Drop routes (Hono routes for CRUD operations)
