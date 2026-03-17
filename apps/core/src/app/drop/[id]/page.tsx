@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { API_URL } from '../../../lib/config';
 
 interface DropData {
   id: string;
@@ -17,31 +18,38 @@ type PageState = 'loading' | 'not-found' | 'unlock' | 'view' | 'create' | 'edit'
 
 export default function DropPage() {
   const params = useParams();
-  const phrase = params?.phrase as string;
+  const dropId = params?.id as string;
 
   const [state, setState] = useState<PageState>('loading');
-  const [dropData] = useState<DropData | null>(null);
+  const [dropData, setDropData] = useState<DropData | null>(null);
   const [password, setPassword] = useState('');
   const [content, setContent] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // Fetch drop data on mount
   useEffect(() => {
-    if (!phrase) return;
+    if (!dropId) return;
 
     const fetchDrop = async () => {
       try {
-        // In real implementation, this would hash the phrase and call the API
-        // For now, simulate not found
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setState('create');
+        const response = await fetch(`${API_URL}/api/drops/${dropId}`);
+
+        if (response.status === 404) {
+          setState('create');
+        } else if (response.ok) {
+          const data = (await response.json()) as DropData;
+          setDropData(data);
+          setState(data.visibility === 'protected' ? 'unlock' : 'view');
+        } else {
+          setState('not-found');
+        }
       } catch {
         setState('not-found');
       }
     };
 
     fetchDrop();
-  }, [phrase]);
+  }, [dropId]);
 
   const handleUnlock = useCallback(async () => {
     if (!password || !dropData) return;
@@ -127,8 +135,9 @@ export default function DropPage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-8">
         <div className="bg-gray-900 rounded-lg p-6 border border-gray-800 max-w-2xl w-full">
-          <h1 className="text-2xl font-bold mb-4">Create Drop: {phrase}</h1>
-          <p className="text-gray-400 mb-4">This phrase is available. Create a new drop.</p>
+          <h1 className="text-2xl font-bold mb-4">Create Drop</h1>
+          <p className="text-gray-400 mb-2">This phrase hash is available. Create a new drop.</p>
+          <p className="text-gray-600 text-sm mb-4 font-mono break-all">{dropId}</p>
 
           <div className="mb-4">
             <label className="block text-gray-400 mb-2">Password</label>
@@ -177,7 +186,7 @@ export default function DropPage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-8">
         <div className="bg-gray-900 rounded-lg p-6 border border-gray-800 max-w-2xl w-full">
-          <h1 className="text-2xl font-bold mb-4">Drop: {phrase}</h1>
+          <h1 className="text-2xl font-bold mb-4">Drop</h1>
 
           <div className="mb-4 text-sm text-gray-500">
             <span className="mr-4">Tier: {dropData?.tier ?? 'free'}</span>
@@ -216,7 +225,7 @@ export default function DropPage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-8">
         <div className="bg-gray-900 rounded-lg p-6 border border-gray-800 max-w-2xl w-full">
-          <h1 className="text-2xl font-bold mb-4">Edit Drop: {phrase}</h1>
+          <h1 className="text-2xl font-bold mb-4">Edit Drop</h1>
 
           <div className="mb-4">
             <label className="block text-gray-400 mb-2">Content</label>

@@ -48,9 +48,10 @@ export default function HomePage() {
     }
   }, [phrase]);
 
-  const handleCreateDrop = useCallback(() => {
-    // Navigate to drop creation flow
-    window.location.href = `/drop/${phrase}`;
+  const handleCreateDrop = useCallback(async () => {
+    // Hash the phrase and navigate to the drop URL
+    const dropId = await computeDropId(phrase);
+    window.location.href = `/drop/${dropId}`;
   }, [phrase]);
 
   return (
@@ -98,12 +99,12 @@ export default function HomePage() {
           {status === 'found' && (
             <div className="mt-4">
               <p className="text-green-500 mb-3">Drop found!</p>
-              <a
-                href={`/drop/${phrase}`}
+              <button
+                onClick={handleCreateDrop}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded inline-block transition-colors"
               >
                 View Drop
-              </a>
+              </button>
             </div>
           )}
         </div>
