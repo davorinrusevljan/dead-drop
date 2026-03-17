@@ -50,11 +50,42 @@ The dev container includes:
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start all dev servers |
+| `pnpm dev` | Start all dev servers (core app on port 3000) |
 | `pnpm build` | Build all packages |
-| `pnpm test` | Run all tests |
+| `pnpm test` | Run unit tests |
+| `pnpm test:coverage` | Run tests with 100% coverage |
+| `pnpm test:e2e` | Run Playwright E2E tests |
 | `pnpm lint` | Lint all code |
 | `wrangler dev` | Start local Workers dev server |
+
+### Dev Server Management
+
+**Starting the dev server:**
+```bash
+cd apps/core && pnpm dev
+```
+
+**Stopping all dev processes:**
+```bash
+pkill -f "next-server|next dev|turbo dev|pnpm.*dev"
+```
+
+**Check which port the server is running on:**
+```bash
+curl -s http://localhost:3000 | grep -o '<title>'
+```
+
+### Running E2E Tests
+
+E2E tests require a running dev server. Start the server first, then run tests:
+
+```bash
+# Terminal 1: Start dev server
+cd apps/core && pnpm dev
+
+# Terminal 2: Run E2E tests
+pnpm test:e2e
+```
 
 ## Documentation
 
