@@ -13,7 +13,7 @@ test.describe('Vanity URL Tests', () => {
     await page.waitForTimeout(1000);
 
     // Should see validation error about phrase length
-    await expect(page.locator('text=/at least 8 characters|Drop phrase/i')).toBeVisible({
+    await expect(page.locator('text=/at least 8 characters/')).toBeVisible({
       timeout: 5000,
     });
   });
