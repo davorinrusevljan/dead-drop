@@ -33,6 +33,7 @@
     "NODE_OPTIONS": "--max-old-space-size=4096"
   },
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   }
 }
