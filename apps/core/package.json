@@ -5,17 +5,18 @@
   "description": "Community edition - Free tier only, Text only, D1 Database storage",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "dev:next": "next dev",
-    "build": "tsc",
-    "build:worker": "tsc --project tsconfig.worker.json",
+    "dev": "next dev",
+    "dev:worker": "wrangler dev",
+    "build": "next build",
+    "build:pages": "next-on-pages",
+    "deploy:pages": "pnpm build:pages && wrangler pages deploy .vercel/output/static",
     "start": "next start",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "clean": "rm -rf .next coverage dist"
+    "clean": "rm -rf .next coverage dist out .vercel"
   },
   "dependencies": {
     "@dead-drop/engine": "workspace:*",
@@ -28,6 +29,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@cloudflare/workers-types": "^4.20260313.1",
     "@hono/zod-openapi": "^0.18.0",
     "@types/node": "^22.13.0",
@@ -37,6 +39,7 @@
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.1.0",
     "typescript": "^5.7.3",
+    "vercel": "^50.32.5",
     "vitest": "^3.0.0",
     "wrangler": "^4.74.0"
   }

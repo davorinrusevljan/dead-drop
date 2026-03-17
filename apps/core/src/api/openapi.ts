@@ -47,7 +47,10 @@ export const dropResponseSchema = z.object({
   visibility: dropVisibilitySchema,
   payload: z.string().openapi({ description: 'Encrypted or plaintext data' }),
   salt: z.string().openapi({ description: 'Hex-encoded salt (16 bytes)' }),
-  iv: z.string().nullable().openapi({ description: 'Hex-encoded IV (12 bytes), null for public drops' }),
+  iv: z
+    .string()
+    .nullable()
+    .openapi({ description: 'Hex-encoded IV (12 bytes), null for public drops' }),
   expiresAt: z.string().openapi({ description: 'ISO 8601 timestamp' }),
 });
 
@@ -56,7 +59,11 @@ export const dropResponseSchema = z.object({
  */
 export const createProtectedDropSchema = z.object({
   id: z.string().openapi({ description: 'SHA-256 hash of sanitized drop phrase' }),
-  phraseLength: z.number().int().min(3).openapi({ description: 'Length of original phrase for validation' }),
+  phraseLength: z
+    .number()
+    .int()
+    .min(3)
+    .openapi({ description: 'Length of original phrase for validation' }),
   tier: dropTierSchema,
   visibility: z.literal('protected'),
   payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded)' }),
@@ -71,7 +78,11 @@ export const createProtectedDropSchema = z.object({
  */
 export const createPublicDropSchema = z.object({
   id: z.string().openapi({ description: 'SHA-256 hash of sanitized drop phrase' }),
-  phraseLength: z.number().int().min(3).openapi({ description: 'Length of original phrase for validation' }),
+  phraseLength: z
+    .number()
+    .int()
+    .min(3)
+    .openapi({ description: 'Length of original phrase for validation' }),
   tier: dropTierSchema,
   visibility: z.literal('public'),
   payload: z.string().openapi({ description: 'Plaintext data' }),

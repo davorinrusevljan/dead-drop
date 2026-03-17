@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { TerminalInput } from '@dead-drop/ui';
-import { validateDropPhrase } from '@dead-drop/engine';
+import { validateDropPhrase, computeDropId } from '@dead-drop/engine';
+import { API_URL } from '../lib/config';
 
 export default function HomePage() {
   const [phrase, setPhrase] = useState('');
@@ -23,16 +24,27 @@ export default function HomePage() {
     setErrorMessage(null);
     setStatus('loading');
 
-    // In a real implementation, this would hash the phrase and check the API
-    // For now, just demonstrate the flow
     try {
-      // Simulated API check
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Hash the phrase to get the drop ID
+      const dropId = await computeDropId(phrase);
 
-      // For demo purposes, show not found state
-      setStatus('not-found');
+      // Check if drop exists via API
+      const response = await fetch(`${API_URL}/api/drops/${dropId}`);
+
+      if (response.status === 404) {
+        // Drop not found - phrase is available
+        setStatus('not-found');
+      } else if (response.ok) {
+        // Drop exists
+        setStatus('found');
+      } else {
+        // Some other error
+        setErrorMessage('Failed to check drop. Please try again.');
+        setStatus('error');
+      }
     } catch {
-      setStatus('idle');
+      setErrorMessage('Network error. Please try again.');
+      setStatus('error');
     }
   }, [phrase]);
 

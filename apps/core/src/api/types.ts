@@ -14,6 +14,7 @@ export type Env = {
 /**
  * Variables available in all routes
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Variables = {
   // Future: auth context, request ID, etc.
 };
