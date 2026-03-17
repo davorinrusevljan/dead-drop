@@ -5,8 +5,10 @@
   "description": "Community edition - Free tier only, Text only, D1 Database storage",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "echo 'No build step required for API-only package'",
+    "dev": "wrangler dev",
+    "dev:next": "next dev",
+    "build": "tsc",
+    "build:worker": "tsc --project tsconfig.worker.json",
     "start": "next start",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
@@ -26,16 +28,16 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241230.0",
+    "@cloudflare/workers-types": "^4.20260313.1",
     "@hono/zod-openapi": "^0.18.0",
     "@types/node": "^22.13.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^3.0.0",
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.1.0",
     "typescript": "^5.7.3",
     "vitest": "^3.0.0",
-    "@vitest/coverage-v8": "^3.0.0",
-    "wrangler": "^3.99.0"
+    "wrangler": "^4.74.0"
   }
 }

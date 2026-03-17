@@ -1,0 +1,18 @@
+name = "dead-drop-core"
+main = "src/worker.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ADMIN_HASH_PEPPER = "dev-pepper-change-in-production"
+UPGRADE_TOKEN = "dev-upgrade-token-change-in-production"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dead-drop-core"
+database_id = "preview-database-id"
+
+[dev]
+port = 8787
+ip = "127.0.0.1"
+local_protocol = "http"
