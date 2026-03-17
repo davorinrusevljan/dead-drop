@@ -29,6 +29,14 @@ pnpm-debug.log*
 
 # Test coverage
 coverage/
+playwright-report/
+test-results/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Core dumps
+core.*
 
 # Cloudflare
 .wrangler/

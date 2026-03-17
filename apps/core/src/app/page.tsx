@@ -12,8 +12,8 @@ export default function HomePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handlePhraseSubmit = useCallback(async () => {
-    // Validate phrase before submitting
-    const validation = validateDropPhrase(phrase, 'free');
+    // Validate phrase before submitting (Standard tier requires 8 chars)
+    const validation = validateDropPhrase(phrase, 8);
     if (!validation.valid) {
       setErrorMessage(validation.error ?? 'Invalid phrase');
       setStatus('error');
