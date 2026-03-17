@@ -2,12 +2,25 @@
 
 import { useState, useCallback } from 'react';
 import { TerminalInput } from '@dead-drop/ui';
+import { validateDropPhrase } from '@dead-drop/engine';
 
 export default function HomePage() {
   const [phrase, setPhrase] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'not-found'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'not-found' | 'error'>(
+    'idle'
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handlePhraseSubmit = useCallback(async () => {
+    // Validate phrase before submitting
+    const validation = validateDropPhrase(phrase, 'free');
+    if (!validation.valid) {
+      setErrorMessage(validation.error ?? 'Invalid phrase');
+      setStatus('error');
+      return;
+    }
+
+    setErrorMessage(null);
     setStatus('loading');
 
     // In a real implementation, this would hash the phrase and check the API
@@ -21,7 +34,7 @@ export default function HomePage() {
     } catch {
       setStatus('idle');
     }
-  }, []);
+  }, [phrase]);
 
   const handleCreateDrop = useCallback(() => {
     // Navigate to drop creation flow
@@ -52,6 +65,10 @@ export default function HomePage() {
             <div className="mt-4 text-gray-400">
               <span className="animate-pulse">Checking drop...</span>
             </div>
+          )}
+
+          {status === 'error' && errorMessage && (
+            <div className="mt-4 text-red-500">{errorMessage}</div>
           )}
 
           {status === 'not-found' && (

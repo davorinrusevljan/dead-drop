@@ -13,9 +13,9 @@ test.describe('Vanity URL Tests', () => {
     await page.waitForTimeout(1000);
 
     // Should see validation error about phrase length
-    await expect(
-      page.locator('text=/8 characters|phrase.*too short|invalid.*phrase/i')
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/at least 8 characters|Drop phrase/i')).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should accept 8-char phrase on Standard tier', async ({ page }) => {
