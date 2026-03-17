@@ -2,6 +2,7 @@
   "name": "dead-drop",
   "version": "0.0.1",
   "private": true,
+  "license": "MIT",
   "description": "Privacy-focused, ephemeral data-sharing service",
   "scripts": {
     "build": "turbo build",
