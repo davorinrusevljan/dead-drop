@@ -234,10 +234,10 @@ export const TIER_VERSION_LIMITS: Record<DropTier, number> = {
 };
 
 /**
- * Tier phrase length minimums
+ * Tier name length minimums
  */
-export const TIER_PHRASE_MIN_LENGTHS: Record<DropTier, number> = {
-  free: 8,
+export const TIER_NAME_MIN_LENGTHS: Record<DropTier, number> = {
+  free: 12,
   deep: 3,
 };
 

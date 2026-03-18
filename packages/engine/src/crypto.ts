@@ -152,9 +152,9 @@ export async function computePublicAdminHash(adminPassword: string, salt: string
 }
 
 /**
- * Compute drop ID from sanitized phrase
- * SHA-256(sanitizedPhrase)
+ * Compute drop ID from normalized name
+ * SHA-256(normalizedName)
  */
-export async function computeDropId(phrase: string): Promise<string> {
-  return sha256(phrase);
+export async function computeDropId(name: string): Promise<string> {
+  return sha256(name);
 }

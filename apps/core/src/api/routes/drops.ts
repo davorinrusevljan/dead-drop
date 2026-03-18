@@ -7,7 +7,7 @@ import {
   deleteDrop as deleteDropFromDb,
   countDropVersions,
   TIER_VERSION_LIMITS,
-  TIER_PHRASE_MIN_LENGTHS,
+  TIER_NAME_MIN_LENGTHS,
   TIER_MAX_PAYLOAD_SIZES,
   TIER_EXPIRATION_DAYS,
 } from '../db.js';
@@ -79,7 +79,7 @@ drops.post('/api/drops', async (c) => {
 
   const body = await c.req.json<{
     id: string;
-    phraseLength: number;
+    nameLength: number;
     tier?: 'free' | 'deep';
     visibility: 'protected' | 'public';
     payload: string;
@@ -108,14 +108,14 @@ drops.post('/api/drops', async (c) => {
     }
   }
 
-  // Validate phrase length
-  const minPhraseLength = TIER_PHRASE_MIN_LENGTHS[tier];
-  if (body.phraseLength < minPhraseLength) {
+  // Validate name length
+  const minNameLength = TIER_NAME_MIN_LENGTHS[tier];
+  if (body.nameLength < minNameLength) {
     return c.json(
       {
         error: {
-          code: 'INVALID_PHRASE',
-          message: `Drop phrase must be at least ${minPhraseLength} characters for ${tier} tier`,
+          code: 'INVALID_NAME',
+          message: `Drop name must be at least ${minNameLength} characters for ${tier} tier`,
         },
       },
       400
@@ -144,7 +144,7 @@ drops.post('/api/drops', async (c) => {
       {
         error: {
           code: 'DROP_EXISTS',
-          message: 'Drop phrase already taken',
+          message: 'Drop name already taken',
         },
       },
       409

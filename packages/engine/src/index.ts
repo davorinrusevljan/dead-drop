@@ -1,5 +1,10 @@
 // Engine package exports
 export {
+  normalizeDropName,
+  validateDropName,
+  dropNameSchema,
+  dropNameSchemaWithMin,
+  // Legacy aliases (deprecated)
   sanitizeDropPhrase,
   validateDropPhrase,
   dropPhraseSchema,

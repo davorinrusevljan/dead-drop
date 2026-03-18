@@ -37,8 +37,8 @@ export type DropVisibility = z.infer<typeof dropVisibilitySchema>;
 
 /**
  * Drop Tier Types
- * - Standard (free): Max 10KB, text only, 7-day lifespan, phrase >= 8 chars
- * - Deep (paid): Max 4MB, supports files, 90-day lifespan, phrase >= 3 chars
+ * - Standard (free): Max 10KB, text only, 7-day lifespan, name >= 12 chars
+ * - Deep (paid): Max 4MB, supports files, 90-day lifespan, name >= 3 chars
  */
 export const dropTierSchema = z.enum(['free', 'deep']);
 export type DropTier = z.infer<typeof dropTierSchema>;

@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Integrity Tests', () => {
   test('should reject 4MB payload on Standard tier', async ({ page }) => {
-    await page.goto('/drop/test-integrity-check');
+    // Navigate using fragment
+    await page.goto('/#test-integrity-check');
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -32,7 +33,8 @@ test.describe('Integrity Tests', () => {
   });
 
   test('should accept exactly 10KB payload on Standard tier', async ({ page }) => {
-    await page.goto('/drop/test-integrity-10kb');
+    // Navigate using fragment
+    await page.goto('/#test-integrity-10kb');
 
     await page.waitForLoadState('networkidle');
 
@@ -52,7 +54,7 @@ test.describe('Integrity Tests', () => {
       await createButton.click();
 
       // Should NOT see an error about payload size
-      // Either success or a different error (like phrase validation)
+      // Either success or a different error (like name validation)
       const errorLocator = page.locator('text=/exceeds|too large/i');
       const isVisible = await errorLocator.isVisible().catch(() => false);
       expect(isVisible).toBe(false);

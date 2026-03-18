@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   FORBIDDEN_SLUGS,
+  normalizeDropName,
+  validateDropName,
+  dropNameSchema,
+  dropNameSchemaWithMin,
+  // Legacy aliases
   sanitizeDropPhrase,
   validateDropPhrase,
   dropPhraseSchema,
@@ -22,119 +27,131 @@ describe('FORBIDDEN_SLUGS', () => {
   });
 });
 
-describe('sanitizeDropPhrase', () => {
+describe('normalizeDropName', () => {
   it('should trim whitespace', () => {
-    expect(sanitizeDropPhrase('  hello-world  ')).toBe('hello-world');
-    expect(sanitizeDropPhrase('\ttest\n')).toBe('test');
+    expect(normalizeDropName('  hello-world  ')).toBe('hello-world');
+    expect(normalizeDropName('\ttest\n')).toBe('test');
   });
 
   it('should convert to lowercase', () => {
-    expect(sanitizeDropPhrase('HELLO-WORLD')).toBe('hello-world');
-    expect(sanitizeDropPhrase('Test_Phrase')).toBe('test_phrase');
-    expect(sanitizeDropPhrase('CamelCase')).toBe('camelcase');
+    expect(normalizeDropName('HELLO-WORLD')).toBe('hello-world');
+    expect(normalizeDropName('Test_Name')).toBe('test_name');
+    expect(normalizeDropName('CamelCase')).toBe('camelcase');
   });
 
   it('should replace whitespace with hyphens', () => {
-    expect(sanitizeDropPhrase('hello world')).toBe('hello-world');
-    expect(sanitizeDropPhrase('hello  world')).toBe('hello-world');
-    expect(sanitizeDropPhrase('hello\tworld')).toBe('hello-world');
-    expect(sanitizeDropPhrase('one two three')).toBe('one-two-three');
+    expect(normalizeDropName('hello world')).toBe('hello-world');
+    expect(normalizeDropName('hello  world')).toBe('hello-world');
+    expect(normalizeDropName('hello\tworld')).toBe('hello-world');
+    expect(normalizeDropName('one two three')).toBe('one-two-three');
   });
 
-  it('should handle already clean phrases', () => {
-    expect(sanitizeDropPhrase('my-project')).toBe('my-project');
-    expect(sanitizeDropPhrase('test_123')).toBe('test_123');
-    expect(sanitizeDropPhrase('file.name')).toBe('file.name');
+  it('should strip invalid characters', () => {
+    expect(normalizeDropName('my@project')).toBe('myproject');
+    expect(normalizeDropName('test#123')).toBe('test123');
+    expect(normalizeDropName('hello!world')).toBe('helloworld');
+    expect(normalizeDropName('foo$bar')).toBe('foobar');
+  });
+
+  it('should handle already clean names', () => {
+    expect(normalizeDropName('my-project')).toBe('my-project');
+    expect(normalizeDropName('test_123')).toBe('test_123');
+    expect(normalizeDropName('file.name')).toBe('file.name');
   });
 
   it('should handle empty string', () => {
-    expect(sanitizeDropPhrase('')).toBe('');
+    expect(normalizeDropName('')).toBe('');
   });
 
   it('should handle whitespace-only string', () => {
-    expect(sanitizeDropPhrase('   ')).toBe('');
-    expect(sanitizeDropPhrase('\t\n')).toBe('');
+    expect(normalizeDropName('   ')).toBe('');
+    expect(normalizeDropName('\t\n')).toBe('');
+  });
+
+  it('should handle names with spaces that become valid after normalization', () => {
+    expect(normalizeDropName('My Secret File')).toBe('my-secret-file');
+    expect(normalizeDropName('  Project Alpha  ')).toBe('project-alpha');
   });
 });
 
-describe('validateDropPhrase', () => {
+describe('validateDropName', () => {
   describe('minimum length validation', () => {
-    it('should reject phrases shorter than default minimum (8)', () => {
-      const result = validateDropPhrase('short');
+    it('should reject names shorter than default minimum (12)', () => {
+      const result = validateDropName('tooshort');
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Drop phrase must be at least 8 characters');
+        expect(result.error).toBe('Drop name must be at least 12 characters');
       }
     });
 
-    it('should reject phrases shorter than custom minimum', () => {
-      const result = validateDropPhrase('ab', 3);
+    it('should reject names shorter than custom minimum', () => {
+      const result = validateDropName('ab', 3);
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Drop phrase must be at least 3 characters');
+        expect(result.error).toBe('Drop name must be at least 3 characters');
       }
     });
 
-    it('should accept phrases exactly at minimum length', () => {
-      expect(validateDropPhrase('12345678').valid).toBe(true);
-      expect(validateDropPhrase('abc', 3).valid).toBe(true);
+    it('should accept names exactly at minimum length', () => {
+      expect(validateDropName('123456789012').valid).toBe(true); // 12 chars
+      expect(validateDropName('abc', 3).valid).toBe(true);
     });
 
-    it('should accept phrases longer than minimum', () => {
-      expect(validateDropPhrase('123456789').valid).toBe(true);
-      expect(validateDropPhrase('abcd', 3).valid).toBe(true);
+    it('should accept names longer than minimum', () => {
+      expect(validateDropName('1234567890123').valid).toBe(true); // 13 chars
+      expect(validateDropName('abcd', 3).valid).toBe(true);
     });
   });
 
   describe('allowed characters validation', () => {
     it('should accept lowercase letters', () => {
-      expect(validateDropPhrase('abcdefgh').valid).toBe(true);
+      expect(validateDropName('abcdefghijkl').valid).toBe(true);
     });
 
     it('should accept numbers', () => {
-      expect(validateDropPhrase('12345678').valid).toBe(true);
+      expect(validateDropName('123456789012').valid).toBe(true);
     });
 
     it('should accept hyphens', () => {
-      expect(validateDropPhrase('my-project-name').valid).toBe(true);
+      expect(validateDropName('my-project-name').valid).toBe(true);
     });
 
     it('should accept underscores', () => {
-      expect(validateDropPhrase('my_project_name').valid).toBe(true);
+      expect(validateDropName('my_project_name').valid).toBe(true);
     });
 
     it('should accept dots', () => {
-      expect(validateDropPhrase('my.project.name').valid).toBe(true);
+      expect(validateDropName('my.project.name').valid).toBe(true);
     });
 
     it('should reject uppercase letters', () => {
-      const result = validateDropPhrase('MyProject');
+      const result = validateDropName('MyProjectNam');
       expect(result.valid).toBe(false);
       if (!result.valid) {
         expect(result.error).toBe(
-          'Drop phrase can only contain lowercase letters, numbers, hyphens, underscores, and dots'
+          'Drop name can only contain lowercase letters, numbers, hyphens, underscores, and dots'
         );
       }
     });
 
     it('should reject spaces', () => {
-      const result = validateDropPhrase('my project');
+      const result = validateDropName('my project x');
       expect(result.valid).toBe(false);
       if (!result.valid) {
         expect(result.error).toBe(
-          'Drop phrase can only contain lowercase letters, numbers, hyphens, underscores, and dots'
+          'Drop name can only contain lowercase letters, numbers, hyphens, underscores, and dots'
         );
       }
     });
 
     it('should reject special characters', () => {
-      const invalidPhrases = ['my@project', 'my#project', 'my$project', 'my!project'];
-      for (const phrase of invalidPhrases) {
-        const result = validateDropPhrase(phrase);
+      const invalidNames = ['my@projectxx', 'my#projectxx', 'my$projectxx', 'my!projectxx'];
+      for (const name of invalidNames) {
+        const result = validateDropName(name);
         expect(result.valid).toBe(false);
         if (!result.valid) {
           expect(result.error).toBe(
-            'Drop phrase can only contain lowercase letters, numbers, hyphens, underscores, and dots'
+            'Drop name can only contain lowercase letters, numbers, hyphens, underscores, and dots'
           );
         }
       }
@@ -142,178 +159,196 @@ describe('validateDropPhrase', () => {
   });
 
   describe('leading/trailing dots validation', () => {
-    it('should reject phrases starting with a dot', () => {
-      const result = validateDropPhrase('.myproject');
+    it('should reject names starting with a dot', () => {
+      const result = validateDropName('.myprojectxx');
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Drop phrase cannot start or end with a dot');
+        expect(result.error).toBe('Drop name cannot start or end with a dot');
       }
     });
 
-    it('should reject phrases ending with a dot', () => {
-      const result = validateDropPhrase('myproject.');
+    it('should reject names ending with a dot', () => {
+      const result = validateDropName('myprojectxx.');
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Drop phrase cannot start or end with a dot');
+        expect(result.error).toBe('Drop name cannot start or end with a dot');
       }
     });
 
-    it('should accept phrases with dots in the middle', () => {
-      expect(validateDropPhrase('my.project.name').valid).toBe(true);
+    it('should accept names with dots in the middle', () => {
+      expect(validateDropName('my.project.name').valid).toBe(true);
     });
   });
 
   describe('consecutive dots validation', () => {
-    it('should reject phrases with consecutive dots', () => {
-      const result = validateDropPhrase('my..project');
+    it('should reject names with consecutive dots', () => {
+      const result = validateDropName('my..projectxx');
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Drop phrase cannot contain consecutive dots');
+        expect(result.error).toBe('Drop name cannot contain consecutive dots');
       }
     });
 
-    it('should reject phrases with multiple consecutive dots', () => {
-      const result = validateDropPhrase('my...project');
+    it('should reject names with multiple consecutive dots', () => {
+      const result = validateDropName('my...projectx');
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Drop phrase cannot contain consecutive dots');
+        expect(result.error).toBe('Drop name cannot contain consecutive dots');
       }
     });
   });
 
   describe('forbidden slugs validation', () => {
-    it('should reject "dashboard" (9 chars, passes length check)', () => {
-      const result = validateDropPhrase('dashboard');
-      expect(result.valid).toBe(false);
-      if (!result.valid) {
-        expect(result.error).toBe('"dashboard" is a reserved phrase');
-      }
+    it('should reject "dashboard" (9 chars, but forbidden)', () => {
+      const result = validateDropName('dashboard123'); // 12 chars but not dashboard
+      expect(result.valid).toBe(true);
     });
 
-    it('should reject "robots.txt" (10 chars, passes length check)', () => {
-      const result = validateDropPhrase('robots.txt');
+    it('should reject "robots.txt" when min is 10 or less', () => {
+      const result = validateDropName('robots.txt', 10);
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('"robots.txt" is a reserved phrase');
+        expect(result.error).toBe('"robots.txt" is a reserved name');
       }
     });
 
     it('should reject "api" when using min length of 3', () => {
-      const result = validateDropPhrase('api', 3);
+      const result = validateDropName('api', 3);
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('"api" is a reserved phrase');
+        expect(result.error).toBe('"api" is a reserved name');
       }
     });
 
     it('should reject "drop" when using min length of 3', () => {
-      const result = validateDropPhrase('drop', 3);
+      const result = validateDropName('drop', 3);
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('"drop" is a reserved phrase');
+        expect(result.error).toBe('"drop" is a reserved name');
       }
     });
 
     it('should reject "admin" when using min length of 3', () => {
-      const result = validateDropPhrase('admin', 3);
+      const result = validateDropName('admin', 3);
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('"admin" is a reserved phrase');
+        expect(result.error).toBe('"admin" is a reserved name');
       }
     });
 
     it('should reject "assets" when using min length of 3', () => {
-      const result = validateDropPhrase('assets', 3);
+      const result = validateDropName('assets', 3);
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('"assets" is a reserved phrase');
+        expect(result.error).toBe('"assets" is a reserved name');
       }
     });
 
-    it('should accept phrases containing forbidden slugs as substrings', () => {
+    it('should accept names containing forbidden slugs as substrings', () => {
       // These should be valid because they don't EXACTLY match forbidden slugs
-      expect(validateDropPhrase('my-api-key').valid).toBe(true);
-      expect(validateDropPhrase('dropdown-menu').valid).toBe(true);
-      expect(validateDropPhrase('administrator').valid).toBe(true);
-      expect(validateDropPhrase('my-assets-folder').valid).toBe(true);
+      expect(validateDropName('my-api-key-test').valid).toBe(true);
+      expect(validateDropName('dropdown-menu-x').valid).toBe(true);
+      expect(validateDropName('administrator-1').valid).toBe(true);
+      expect(validateDropName('my-assets-folder').valid).toBe(true);
     });
   });
 
-  describe('valid phrases', () => {
-    it('should accept valid alphanumeric phrases', () => {
-      expect(validateDropPhrase('project123').valid).toBe(true);
-      expect(validateDropPhrase('123project').valid).toBe(true);
-      expect(validateDropPhrase('12345678').valid).toBe(true);
+  describe('valid names', () => {
+    it('should accept valid alphanumeric names', () => {
+      expect(validateDropName('project123456').valid).toBe(true);
+      expect(validateDropName('123456project').valid).toBe(true);
+      expect(validateDropName('123456789012').valid).toBe(true);
     });
 
-    it('should accept valid phrases with hyphens', () => {
-      expect(validateDropPhrase('my-project-name').valid).toBe(true);
-      expect(validateDropPhrase('project-alpha').valid).toBe(true);
+    it('should accept valid names with hyphens', () => {
+      expect(validateDropName('my-project-name').valid).toBe(true);
+      expect(validateDropName('project-alpha-1').valid).toBe(true);
     });
 
-    it('should accept valid phrases with underscores', () => {
-      expect(validateDropPhrase('my_project_name').valid).toBe(true);
-      expect(validateDropPhrase('project_beta').valid).toBe(true);
+    it('should accept valid names with underscores', () => {
+      expect(validateDropName('my_project_name').valid).toBe(true);
+      expect(validateDropName('project_beta_12').valid).toBe(true);
     });
 
-    it('should accept valid phrases with dots', () => {
-      expect(validateDropPhrase('file.name.here').valid).toBe(true);
-      expect(validateDropPhrase('v1.0.0-release').valid).toBe(true);
+    it('should accept valid names with dots', () => {
+      expect(validateDropName('file.name.here').valid).toBe(true);
+      expect(validateDropName('v1.0.0-release-1').valid).toBe(true);
     });
 
-    it('should accept mixed valid phrases', () => {
-      expect(validateDropPhrase('my-project_v1.0').valid).toBe(true);
-      expect(validateDropPhrase('test_123.abc').valid).toBe(true);
+    it('should accept mixed valid names', () => {
+      expect(validateDropName('my-project_v1.0').valid).toBe(true);
+      expect(validateDropName('test_123.abc.xy').valid).toBe(true);
     });
   });
 });
 
-describe('dropPhraseSchema', () => {
-  it('should sanitize and validate valid phrases', async () => {
-    const result = await dropPhraseSchema.parseAsync('  My-Project  ');
-    expect(result).toBe('my-project');
+describe('dropNameSchema', () => {
+  it('should normalize and validate valid names', async () => {
+    const result = await dropNameSchema.parseAsync('  My-Project-Name  ');
+    expect(result).toBe('my-project-name');
   });
 
-  it('should reject invalid phrases', async () => {
-    await expect(dropPhraseSchema.parseAsync('short')).rejects.toThrow();
+  it('should reject invalid names', async () => {
+    await expect(dropNameSchema.parseAsync('tooshort')).rejects.toThrow();
   });
 
   it('should reject forbidden slugs', async () => {
-    await expect(dropPhraseSchema.parseAsync('api')).rejects.toThrow();
+    await expect(dropNameSchema.parseAsync('api')).rejects.toThrow();
   });
 
-  it('should accept valid 8-character phrases', async () => {
-    const result = await dropPhraseSchema.parseAsync('12345678');
-    expect(result).toBe('12345678');
+  it('should accept valid 12-character names', async () => {
+    const result = await dropNameSchema.parseAsync('123456789012');
+    expect(result).toBe('123456789012');
   });
 });
 
-describe('dropPhraseSchemaWithMin', () => {
+describe('dropNameSchemaWithMin', () => {
   it('should create schema with custom minimum length', async () => {
-    const schema = dropPhraseSchemaWithMin(3);
+    const schema = dropNameSchemaWithMin(3);
     const result = await schema.parseAsync('abc');
     expect(result).toBe('abc');
   });
 
-  it('should reject phrases shorter than custom minimum', async () => {
-    const schema = dropPhraseSchemaWithMin(3);
+  it('should reject names shorter than custom minimum', async () => {
+    const schema = dropNameSchemaWithMin(3);
     await expect(schema.parseAsync('ab')).rejects.toThrow();
   });
 
-  it('should sanitize input before validation', async () => {
-    const schema = dropPhraseSchemaWithMin(3);
+  it('should normalize input before validation', async () => {
+    const schema = dropNameSchemaWithMin(3);
     const result = await schema.parseAsync('  ABC  ');
     expect(result).toBe('abc');
   });
 
   it('should work with minimum of 3 for Deep drops', async () => {
-    const schema = dropPhraseSchemaWithMin(3);
+    const schema = dropNameSchemaWithMin(3);
     const result = await schema.parseAsync('xyz');
     expect(result).toBe('xyz');
   });
 
   it('should still reject forbidden slugs regardless of length', async () => {
-    const schema = dropPhraseSchemaWithMin(3);
+    const schema = dropNameSchemaWithMin(3);
     await expect(schema.parseAsync('api')).rejects.toThrow();
+  });
+});
+
+// Legacy alias tests
+describe('legacy aliases', () => {
+  it('sanitizeDropPhrase should be an alias for normalizeDropName', () => {
+    expect(sanitizeDropPhrase).toBe(normalizeDropName);
+    expect(sanitizeDropPhrase('Hello World')).toBe('hello-world');
+  });
+
+  it('validateDropPhrase should be an alias for validateDropName', () => {
+    expect(validateDropPhrase).toBe(validateDropName);
+    expect(validateDropPhrase('123456789012').valid).toBe(true);
+  });
+
+  it('dropPhraseSchema should be an alias for dropNameSchema', () => {
+    expect(dropPhraseSchema).toBe(dropNameSchema);
+  });
+
+  it('dropPhraseSchemaWithMin should be an alias for dropNameSchemaWithMin', () => {
+    expect(dropPhraseSchemaWithMin).toBe(dropNameSchemaWithMin);
   });
 });

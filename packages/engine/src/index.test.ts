@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
+  // New names
+  normalizeDropName,
+  validateDropName,
+  dropNameSchema,
+  dropNameSchemaWithMin,
+  // Legacy aliases
   sanitizeDropPhrase,
   validateDropPhrase,
   dropPhraseSchema,
@@ -30,28 +36,48 @@ import {
 import { drops, dropHistory, dropAuditLog } from './db/index.js';
 
 describe('index.ts exports', () => {
-  describe('validation exports', () => {
-    it('should export sanitizeDropPhrase', () => {
-      expect(sanitizeDropPhrase).toBeInstanceOf(Function);
-      expect(sanitizeDropPhrase('  HELLO  ')).toBe('hello');
+  describe('validation exports (new names)', () => {
+    it('should export normalizeDropName', () => {
+      expect(normalizeDropName).toBeInstanceOf(Function);
+      expect(normalizeDropName('  HELLO WORLD  ')).toBe('hello-world');
     });
 
-    it('should export validateDropPhrase', () => {
-      expect(validateDropPhrase).toBeInstanceOf(Function);
-      expect(validateDropPhrase('valid-phrase').valid).toBe(true);
+    it('should export validateDropName', () => {
+      expect(validateDropName).toBeInstanceOf(Function);
+      expect(validateDropName('valid-name-test').valid).toBe(true);
     });
 
-    it('should export dropPhraseSchema', () => {
-      expect(dropPhraseSchema).toBeDefined();
+    it('should export dropNameSchema', () => {
+      expect(dropNameSchema).toBeDefined();
     });
 
-    it('should export dropPhraseSchemaWithMin', () => {
-      expect(dropPhraseSchemaWithMin).toBeInstanceOf(Function);
+    it('should export dropNameSchemaWithMin', () => {
+      expect(dropNameSchemaWithMin).toBeInstanceOf(Function);
     });
 
     it('should export FORBIDDEN_SLUGS', () => {
       expect(FORBIDDEN_SLUGS).toBeInstanceOf(Array);
       expect(FORBIDDEN_SLUGS).toContain('api');
+    });
+  });
+
+  describe('validation exports (legacy aliases)', () => {
+    it('should export sanitizeDropPhrase as alias', () => {
+      expect(sanitizeDropPhrase).toBe(normalizeDropName);
+      expect(sanitizeDropPhrase('  HELLO  ')).toBe('hello');
+    });
+
+    it('should export validateDropPhrase as alias', () => {
+      expect(validateDropPhrase).toBe(validateDropName);
+      expect(validateDropPhrase('valid-phrase-test').valid).toBe(true);
+    });
+
+    it('should export dropPhraseSchema as alias', () => {
+      expect(dropPhraseSchema).toBe(dropNameSchema);
+    });
+
+    it('should export dropPhraseSchemaWithMin as alias', () => {
+      expect(dropPhraseSchemaWithMin).toBe(dropNameSchemaWithMin);
     });
   });
 

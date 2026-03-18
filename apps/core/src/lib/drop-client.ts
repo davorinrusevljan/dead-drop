@@ -8,8 +8,8 @@ import {
   computeDropId,
   computeProtectedAdminHash,
   computePublicAdminHash,
-  sanitizeDropPhrase,
-  validateDropPhrase,
+  normalizeDropName,
+  validateDropName,
   type DropTier,
   type DropVisibility,
 } from '@dead-drop/engine';
@@ -26,7 +26,7 @@ export type DropContentPayload =
  */
 export interface EncryptedDropData {
   id: string;
-  phraseLength: number;
+  nameLength: number;
   visibility: 'protected';
   payload: string;
   salt: string;
@@ -39,7 +39,7 @@ export interface EncryptedDropData {
  */
 export interface PublicDropData {
   id: string;
-  phraseLength: number;
+  nameLength: number;
   visibility: 'public';
   payload: string;
   salt: string;
@@ -50,45 +50,45 @@ export interface PublicDropData {
  * Create drop data for API submission
  */
 export async function createDropData(
-  phrase: string,
+  name: string,
   password: string,
   content: DropContentPayload,
   visibility: 'protected',
   tier: DropTier
 ): Promise<EncryptedDropData>;
 export async function createDropData(
-  phrase: string,
+  name: string,
   password: string,
   content: DropContentPayload,
   visibility: 'public',
   tier: DropTier
 ): Promise<PublicDropData>;
 export async function createDropData(
-  phrase: string,
+  name: string,
   password: string,
   content: DropContentPayload,
   visibility: DropVisibility,
   tier: DropTier
 ): Promise<EncryptedDropData | PublicDropData> {
-  // Sanitize and validate phrase
-  const sanitizedPhrase = sanitizeDropPhrase(phrase);
-  const minChars = tier === 'deep' ? 3 : 8;
-  const validation = validateDropPhrase(sanitizedPhrase, minChars);
+  // Normalize and validate name
+  const normalizedName = normalizeDropName(name);
+  const minChars = tier === 'deep' ? 3 : 12;
+  const validation = validateDropName(normalizedName, minChars);
 
   if (!validation.valid) {
     throw new Error(validation.error);
   }
 
   // Compute drop ID
-  const id = await computeDropId(sanitizedPhrase);
+  const id = await computeDropId(normalizedName);
 
   // Serialize content
   const contentJson = JSON.stringify(content);
 
   if (visibility === 'protected') {
-    return createProtectedDropData(id, sanitizedPhrase, password, contentJson);
+    return createProtectedDropData(id, normalizedName, password, contentJson);
   } else {
-    return createPublicDropData(id, sanitizedPhrase, password, contentJson);
+    return createPublicDropData(id, normalizedName, password, contentJson);
   }
 }
 
@@ -97,7 +97,7 @@ export async function createDropData(
  */
 async function createProtectedDropData(
   id: string,
-  phrase: string,
+  normalizedName: string,
   password: string,
   contentJson: string
 ): Promise<EncryptedDropData> {
@@ -116,7 +116,7 @@ async function createProtectedDropData(
 
   return {
     id,
-    phraseLength: phrase.length,
+    nameLength: normalizedName.length,
     visibility: 'protected',
     payload,
     salt,
@@ -130,7 +130,7 @@ async function createProtectedDropData(
  */
 async function createPublicDropData(
   id: string,
-  phrase: string,
+  normalizedName: string,
   password: string,
   contentJson: string
 ): Promise<PublicDropData> {
@@ -145,7 +145,7 @@ async function createPublicDropData(
 
   return {
     id,
-    phraseLength: phrase.length,
+    nameLength: normalizedName.length,
     visibility: 'public',
     payload,
     salt,

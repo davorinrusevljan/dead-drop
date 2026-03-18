@@ -7,12 +7,12 @@ describe('TerminalInput', () => {
   describe('rendering', () => {
     it('should render input with default placeholder', () => {
       render(<TerminalInput value="" onChange={() => {}} />);
-      expect(screen.getByPlaceholderText('Enter drop phrase')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter drop name')).toBeInTheDocument();
     });
 
     it('should render input with custom placeholder', () => {
-      render(<TerminalInput value="" onChange={() => {}} placeholder="my-secret-phrase" />);
-      expect(screen.getByPlaceholderText('my-secret-phrase')).toBeInTheDocument();
+      render(<TerminalInput value="" onChange={() => {}} placeholder="my-secret-name" />);
+      expect(screen.getByPlaceholderText('my-secret-name')).toBeInTheDocument();
     });
 
     it('should display the current value', () => {

@@ -4,7 +4,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
  * Drops table - Main drop storage
  */
 export const drops = sqliteTable('drops', {
-  /** SHA-256(phrase) - Primary key */
+  /** SHA-256(normalizedName) - Primary key */
   id: text('id').primaryKey(),
   /** Current version number */
   version: integer('version').default(1).notNull(),

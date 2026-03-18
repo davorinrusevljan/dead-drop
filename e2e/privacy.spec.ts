@@ -14,8 +14,9 @@ test.describe('Privacy Tests', () => {
     });
 
     await page.goto('/');
-    await page.fill('input[placeholder="my-secret-phrase"]', 'test-privacy-check');
-    await page.press('input[placeholder="my-secret-phrase"]', 'Enter');
+
+    // Navigate to a drop using fragment
+    await page.goto('/#test-privacy-check');
 
     // Wait for potential API calls
     await page.waitForTimeout(1000);
@@ -26,6 +27,32 @@ test.describe('Privacy Tests', () => {
         // Should not contain common password patterns in plaintext
         expect(req.postData).not.toMatch(/"password"\s*:\s*"test-password"/);
         expect(req.postData).not.toMatch(/"adminPassword"\s*:\s*"test-password"/);
+      }
+    }
+  });
+
+  test('should not send drop name to server in URL path', async ({ page }) => {
+    // Navigate using fragment
+    await page.goto('/#my-secret-drop-name');
+
+    // Track all requests
+    const urls: string[] = [];
+    page.on('request', (request) => {
+      urls.push(request.url());
+    });
+
+    // Wait for page load
+    await page.waitForLoadState('networkidle');
+
+    // Check that no request URL contains the plaintext name in the path
+    // The fragment (#) is never sent to the server
+    for (const url of urls) {
+      // API calls should only contain the hash, not the name
+      if (url.includes('/api/drops/')) {
+        expect(url).not.toContain('my-secret-drop-name');
+        // Should contain a hash (64 hex chars for SHA-256)
+        const hashMatch = url.match(/\/api\/drops\/([a-f0-9]{64})/);
+        expect(hashMatch).toBeTruthy();
       }
     }
   });
@@ -48,7 +75,8 @@ test.describe('Privacy Tests', () => {
       }
     });
 
-    await page.goto('/drop/test-protected-drop');
+    // Navigate using fragment
+    await page.goto('/#test-protected-drop');
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');

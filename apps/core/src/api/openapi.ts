@@ -42,7 +42,7 @@ export const dropTierSchema = z.enum(['free', 'deep']).openapi({
  * Drop response schema
  */
 export const dropResponseSchema = z.object({
-  id: z.string().openapi({ example: 'abc123...', description: 'SHA-256 hash of drop phrase' }),
+  id: z.string().openapi({ example: 'abc123...', description: 'SHA-256 hash of drop name' }),
   tier: dropTierSchema,
   visibility: dropVisibilitySchema,
   payload: z.string().openapi({ description: 'Encrypted or plaintext data' }),
@@ -58,12 +58,12 @@ export const dropResponseSchema = z.object({
  * Create drop request schema (protected)
  */
 export const createProtectedDropSchema = z.object({
-  id: z.string().openapi({ description: 'SHA-256 hash of sanitized drop phrase' }),
-  phraseLength: z
+  id: z.string().openapi({ description: 'SHA-256 hash of normalized drop name' }),
+  nameLength: z
     .number()
     .int()
     .min(3)
-    .openapi({ description: 'Length of original phrase for validation' }),
+    .openapi({ description: 'Length of normalized name for validation' }),
   tier: dropTierSchema,
   visibility: z.literal('protected'),
   payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded)' }),
@@ -77,12 +77,12 @@ export const createProtectedDropSchema = z.object({
  * Create drop request schema (public)
  */
 export const createPublicDropSchema = z.object({
-  id: z.string().openapi({ description: 'SHA-256 hash of sanitized drop phrase' }),
-  phraseLength: z
+  id: z.string().openapi({ description: 'SHA-256 hash of normalized drop name' }),
+  nameLength: z
     .number()
     .int()
     .min(3)
-    .openapi({ description: 'Length of original phrase for validation' }),
+    .openapi({ description: 'Length of normalized name for validation' }),
   tier: dropTierSchema,
   visibility: z.literal('public'),
   payload: z.string().openapi({ description: 'Plaintext data' }),

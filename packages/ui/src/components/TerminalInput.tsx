@@ -10,13 +10,13 @@ export interface TerminalInputProps {
 }
 
 /**
- * Terminal-style input component for dead-drop phrase entry
+ * Terminal-style input component for dead-drop name entry
  */
 export function TerminalInput({
   value,
   onChange,
   onSubmit,
-  placeholder = 'Enter drop phrase',
+  placeholder = 'Enter drop name',
   disabled = false,
   className = '',
 }: TerminalInputProps) {
