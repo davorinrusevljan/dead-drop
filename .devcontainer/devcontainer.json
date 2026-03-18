@@ -3,7 +3,10 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "mounts": ["source=/home/davorin/.claude,target=/root/.claude,type=bind,consistency=cached"],
+  "mounts": [
+    "source=/home/davorin/.claude,target=/root/.claude,type=bind,consistency=cached",
+    "source=/home/davorin/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
