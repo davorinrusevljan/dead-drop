@@ -14,3 +14,4 @@ export {
 export * from './types.js';
 export * from './crypto.js';
 export * from './db/index.js';
+export { generateRandomDropName, generateDropNameSuggestions, WORDS } from './wordlist.js';

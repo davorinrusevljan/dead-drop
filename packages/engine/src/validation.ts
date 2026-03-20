@@ -106,3 +106,6 @@ export const sanitizeDropPhrase = normalizeDropName;
 export const validateDropPhrase = validateDropName;
 export const dropPhraseSchema = dropNameSchema;
 export const dropPhraseSchemaWithMin = dropNameSchemaWithMin;
+
+// Re-export wordlist functions
+export { generateRandomDropName, generateDropNameSuggestions, WORDS } from './wordlist.js';
