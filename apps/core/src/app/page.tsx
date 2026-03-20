@@ -5,7 +5,7 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-2xl text-center">
         <h1 className="text-5xl font-bold mb-4">dead-drop</h1>
-        <p className="text-gray-400 text-xl mb-12">Privacy-focused, ephemeral data sharing</p>
+        <p className="text-gray-400 text-xl mb-12">Privacy-focused, ephemeral snippet sharing</p>
 
         <div className="grid gap-6 mb-12">
           <Link
@@ -54,7 +54,7 @@ export default function HomePage() {
 
         <div className="text-gray-600 text-sm">
           <p className="mb-1">Standard drops: Free, 10KB max, 7-day expiry, name ≥ 12 chars</p>
-          <p>Deep drops: $1, 4MB max, 90-day expiry, name ≥ 3 chars</p>
+          <p>Deep drops: $?, 4MB max, 90-day expiry, name ≥ 3 chars</p>
         </div>
       </div>
     </main>

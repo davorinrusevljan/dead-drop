@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'dead-drop',
-  description: 'Privacy-focused, ephemeral data sharing',
+  description: 'Privacy-focused, ephemeral snippet sharing',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -292,7 +292,7 @@ export default function ViewPage() {
 
         <div className="mt-8 text-gray-600 text-sm text-center">
           <p>Standard drops: Free, 10KB max, 7-day expiry, name ≥ 12 chars</p>
-          <p>Deep drops: $1, 4MB max, 90-day expiry, name ≥ 3 chars</p>
+          <p>Deep drops: $?, 4MB max, 90-day expiry, name ≥ 3 chars</p>
         </div>
       </div>
     </main>
