@@ -9,10 +9,13 @@ import {
   computeDropId,
   deriveKey,
   decrypt,
+  encrypt,
+  generateIV,
+  sha256,
 } from '@dead-drop/engine';
 import { API_URL } from '../../lib/config';
 
-type PageState = 'idle' | 'loading' | 'not-found' | 'unlock' | 'view';
+type PageState = 'idle' | 'loading' | 'not-found' | 'unlock' | 'view' | 'edit';
 
 interface DropData {
   id: string;
@@ -38,6 +41,12 @@ export default function ViewPage() {
   const [unlockPassword, setUnlockPassword] = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
+  const [originalContentHash, setOriginalContentHash] = useState<string | null>(null);
+
+  // Edit state
+  const [editContent, setEditContent] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Extract drop name from URL fragment on mount
   useEffect(() => {
@@ -120,6 +129,9 @@ export default function ViewPage() {
     setInputValue('');
     setUnlockPassword('');
     setDecryptedContent(null);
+    setOriginalContentHash(null);
+    setEditContent('');
+    setEditPassword('');
     window.history.replaceState(null, '', window.location.pathname);
   }, []);
 
@@ -133,6 +145,10 @@ export default function ViewPage() {
       const key = await deriveKey(unlockPassword, dropData.salt);
       const contentJson = await decrypt(dropData.payload, key, dropData.iv!);
       const content = JSON.parse(contentJson) as DropContent;
+
+      // Store hash of original content for authentication
+      const contentHash = await sha256(contentJson);
+      setOriginalContentHash(contentHash);
       setDecryptedContent(content.content);
       setState('view');
     } catch {
@@ -141,6 +157,108 @@ export default function ViewPage() {
       setIsUnlocking(false);
     }
   }, [dropData, unlockPassword]);
+
+  const handleStartEdit = useCallback(() => {
+    if (!decryptedContent) return;
+    setEditContent(decryptedContent);
+    // For public drops, we need a separate password input
+    // For protected drops, we already have the password
+    if (dropData?.visibility === 'public') {
+      setEditPassword('');
+    } else {
+      setEditPassword(unlockPassword);
+    }
+    setState('edit');
+  }, [decryptedContent, dropData?.visibility, unlockPassword]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditContent('');
+    setEditPassword('');
+    setErrorMessage(null);
+    setState('view');
+  }, []);
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!dropData || !decryptedContent) return;
+
+    // Validate
+    if (!editContent.trim()) {
+      setErrorMessage('Content cannot be empty');
+      return;
+    }
+
+    // For public drops, require password
+    if (dropData.visibility === 'public' && !editPassword) {
+      setErrorMessage('Password is required to edit');
+      return;
+    }
+
+    // Check content size
+    const contentSize = new TextEncoder().encode(editContent).length;
+    const maxSize = dropData.tier === 'deep' ? 4 * 1024 * 1024 : 10 * 1024;
+    if (contentSize > maxSize) {
+      setErrorMessage(`Content exceeds ${maxSize / 1024}KB limit`);
+      return;
+    }
+
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    try {
+      const contentPayload: DropContent = {
+        type: 'text',
+        content: editContent,
+      };
+      const contentJson = JSON.stringify(contentPayload);
+
+      let payload: string;
+      let iv: string | null = null;
+      let contentHash: string | null = null;
+
+      if (dropData.visibility === 'protected') {
+        // Re-encrypt with same password
+        const key = await deriveKey(editPassword, dropData.salt);
+        iv = generateIV();
+        payload = await encrypt(contentJson, key, iv);
+        contentHash = originalContentHash; // Use original hash for auth
+      } else {
+        // Public drop - base64 encode
+        payload = btoa(contentJson);
+      }
+
+      const response = await fetch(`${API_URL}/api/drops/${dropData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payload,
+          iv,
+          contentHash,
+          adminPassword: dropData.visibility === 'public' ? editPassword : undefined,
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state with new content
+        setDecryptedContent(editContent);
+        // Update hash for future edits
+        if (dropData.visibility === 'protected') {
+          setOriginalContentHash(await sha256(contentJson));
+        }
+        setState('view');
+      } else {
+        const error = (await response.json()) as { error?: { message?: string } };
+        if (response.status === 401) {
+          setErrorMessage('Invalid password');
+        } else {
+          setErrorMessage(error.error?.message || 'Failed to save changes');
+        }
+      }
+    } catch {
+      setErrorMessage('Network error. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [dropData, decryptedContent, editContent, editPassword, originalContentHash]);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -246,7 +364,7 @@ export default function ViewPage() {
           </div>
         )}
 
-        {state === 'view' && dropData && (
+        {state === 'view' && dropData && decryptedContent && (
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold">
@@ -268,23 +386,84 @@ export default function ViewPage() {
             </div>
 
             <div className="bg-gray-800 rounded p-4 mb-4 min-h-32 font-mono text-sm whitespace-pre-wrap break-all">
-              {decryptedContent || dropData.payload}
+              {decryptedContent}
             </div>
 
             <div className="flex gap-4">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(decryptedContent || dropData.payload);
+                  navigator.clipboard.writeText(decryptedContent);
                 }}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
               >
                 📋 Copy
               </button>
               <button
+                onClick={handleStartEdit}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors"
+              >
+                ✏️ Edit
+              </button>
+              <button
                 onClick={handleReset}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
               >
                 View Another
+              </button>
+            </div>
+          </div>
+        )}
+
+        {state === 'edit' && dropData && (
+          <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+            <h2 className="text-2xl font-bold mb-4">✏️ Edit Drop</h2>
+
+            {/* For public drops, require password */}
+            {dropData.visibility === 'public' && (
+              <div className="mb-4">
+                <label className="block text-gray-400 mb-2">Admin Password</label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                  placeholder="Enter admin password"
+                />
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-gray-400 mb-2">Content</label>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-white font-mono min-h-32 focus:outline-none focus:border-green-500"
+                placeholder="Enter your content..."
+              />
+              <p className="text-gray-500 text-xs mt-1">
+                {editContent.length.toLocaleString()} characters
+              </p>
+            </div>
+
+            {errorMessage && <div className="mb-4 text-red-500">{errorMessage}</div>}
+
+            <div className="flex gap-4">
+              <button
+                onClick={handleSaveEdit}
+                disabled={
+                  isSaving ||
+                  !editContent.trim() ||
+                  (dropData.visibility === 'public' && !editPassword)
+                }
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:text-gray-500 text-white px-4 py-2 rounded transition-colors"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+              >
+                Cancel
               </button>
             </div>
           </div>
