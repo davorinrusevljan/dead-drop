@@ -19,6 +19,9 @@ export default function NotFound() {
       <a href="/" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
         ← Go home
       </a>
+      <p style={{ position: 'fixed', bottom: '1.5rem', fontSize: '0.75rem', opacity: 0.3 }}>
+        © Ghostgrammer.xyz
+      </p>
     </div>
   );
 }

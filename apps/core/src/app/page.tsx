@@ -358,50 +358,41 @@ export default function HomePage() {
         <>
           {/* LANDING STATE */}
           {state === 'landing' && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '28rem' }}>
               <div className="hero">
-                <p className="hero-tagline">Zero-Knowledge · Ephemeral · Encrypted</p>
-                <h1 className="hero-title">
-                  <span className="accent">dead</span> simple
-                  <br />
-                  secret sharing
-                </h1>
+                <h1 className="hero-title">dead-drop.xyz</h1>
                 <p className="hero-subtitle">
-                  Create encrypted messages that self-destruct after 7 days. We can&apos;t read
-                  them. Only those with the link &amp; password can.
+                  Create encrypted, ephemeral messages that self-destruct after 7 days.
+                  Zero-knowledge encryption — even we can&apos;t read them.
                 </p>
               </div>
 
-              <div className="terminal-container">
-                <div className="terminal-prompt">
-                  <span className="prompt-symbol">›</span>
-                  <span className="prompt-path">~/new-drop</span>
-                </div>
+              <div className="drop-name-section">
+                <label className="drop-name-label">Name your drop</label>
+                <p className="drop-name-hint">
+                  This becomes part of the shareable link. Use something memorable.
+                </p>
 
-                <input
-                  type="text"
-                  value={dropName}
-                  onChange={(e) => setDropName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleProceed()}
-                  className="terminal-input"
-                  placeholder="name-your-drop"
-                  autoFocus
-                  spellCheck={false}
-                />
+                <div className="drop-name-input-wrapper">
+                  <input
+                    type="text"
+                    value={dropName}
+                    onChange={(e) => setDropName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleProceed()}
+                    className="drop-name-input"
+                    placeholder="e.g., project-alpha-review"
+                    autoFocus
+                    spellCheck={false}
+                  />
 
-                <div className="terminal-footer">
-                  <span
-                    className={`char-count ${validation.valid ? 'valid' : validation.error ? 'invalid' : ''}`}
+                  <button
+                    onClick={generateNew}
+                    className="generate-btn"
+                    title="Generate random name"
                   >
-                    {normalizedName.length}/12 chars
-                    {!validation.valid && normalizedName.length > 0 && (
-                      <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}>— too short</span>
-                    )}
-                  </span>
-                  <button onClick={generateNew} className="generate-btn">
                     <svg
-                      width="14"
-                      height="14"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -410,21 +401,23 @@ export default function HomePage() {
                       <path d="M21 12a9 9 0 11-9-9" />
                       <path d="M21 3v6h-6" />
                     </svg>
-                    random
                   </button>
                 </div>
 
-                <button
-                  onClick={handleProceed}
-                  disabled={!validation.valid}
-                  className="action-btn"
-                  style={{ marginTop: '1.5rem' }}
-                >
-                  {isLoading ? 'SCANNING...' : 'CREATE DROP →'}
+                <div className="drop-name-footer">
+                  <span
+                    className={`char-count ${validation.valid ? 'valid' : validation.error ? 'invalid' : ''}`}
+                  >
+                    {normalizedName.length}/12 min chars
+                  </span>
+                </div>
+
+                <button onClick={handleProceed} disabled={!validation.valid} className="action-btn">
+                  {isLoading ? 'Checking...' : 'Continue'}
                 </button>
               </div>
 
-              <p className="info-text">Free: 10KB text · 7 days · End-to-end encrypted</p>
+              <p className="info-text">10KB · 7 days · End-to-end encrypted</p>
             </div>
           )}
 
@@ -843,7 +836,7 @@ export default function HomePage() {
           )}
         </>
       )}
-      <footer className="footer">© ghostgrammer.xyz</footer>
+      <footer className="footer">© Ghostgrammer.xyz</footer>
     </main>
   );
 }
