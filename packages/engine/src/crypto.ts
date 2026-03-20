@@ -129,12 +129,12 @@ export async function decrypt(ciphertext: string, key: CryptoKey, iv: string): P
 }
 
 /**
- * Compute admin hash for protected drops
+ * Compute admin hash for private drops
  * Uses server-side pepper: SHA-256(contentHash + PEPPER)
  * @param contentHash - SHA-256 hash of the content payload
  * @param pepper - Server-side secret pepper
  */
-export async function computeProtectedAdminHash(
+export async function computePrivateAdminHash(
   contentHash: string,
   pepper: string
 ): Promise<string> {

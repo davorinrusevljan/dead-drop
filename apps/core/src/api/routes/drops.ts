@@ -11,7 +11,7 @@ import {
   TIER_MAX_PAYLOAD_SIZES,
   TIER_EXPIRATION_DAYS,
 } from '../db.js';
-import { computeProtectedAdminHash, sha256 } from '@dead-drop/engine/crypto';
+import { computePrivateAdminHash, sha256 } from '@dead-drop/engine/crypto';
 
 /**
  * Drop routes
@@ -81,7 +81,7 @@ drops.post('/api/drops', async (c) => {
     id: string;
     nameLength: number;
     tier?: 'free' | 'deep';
-    visibility: 'protected' | 'public';
+    visibility: 'private' | 'public';
     payload: string;
     salt: string;
     iv?: string;
@@ -157,8 +157,8 @@ drops.post('/api/drops', async (c) => {
 
   // Calculate admin hash based on visibility
   let adminHash: string;
-  if (body.visibility === 'protected') {
-    adminHash = await computeProtectedAdminHash(body.contentHash ?? '', pepper);
+  if (body.visibility === 'private') {
+    adminHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
   } else {
     adminHash = body.adminHash ?? '';
   }
@@ -246,8 +246,8 @@ drops.put('/api/drops/:id', async (c) => {
 
   // Verify admin credentials
   let providedHash: string;
-  if (drop.visibility === 'protected') {
-    providedHash = await computeProtectedAdminHash(body.contentHash ?? '', pepper);
+  if (drop.visibility === 'private') {
+    providedHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
   } else {
     providedHash = await sha256((body.adminPassword ?? '') + drop.salt);
   }
@@ -309,8 +309,8 @@ drops.delete('/api/drops/:id', async (c) => {
 
   // Verify admin credentials
   let providedHash: string;
-  if (drop.visibility === 'protected') {
-    providedHash = await computeProtectedAdminHash(body.contentHash ?? '', pepper);
+  if (drop.visibility === 'private') {
+    providedHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
   } else {
     providedHash = await sha256((body.adminPassword ?? '') + drop.salt);
   }

@@ -20,7 +20,7 @@ type PageState = 'idle' | 'loading' | 'not-found' | 'unlock' | 'view' | 'edit';
 interface DropData {
   id: string;
   tier: 'free' | 'deep';
-  visibility: 'protected' | 'public';
+  visibility: 'private' | 'public';
   payload: string;
   salt: string;
   iv: string | null;
@@ -96,7 +96,7 @@ export default function ViewPage() {
             setErrorMessage('Failed to decode drop content');
           }
         }
-        setState(data.visibility === 'protected' ? 'unlock' : 'view');
+        setState(data.visibility === 'private' ? 'unlock' : 'view');
       } else {
         setErrorMessage('Failed to check drop. Please try again.');
         setState('idle');
@@ -162,7 +162,7 @@ export default function ViewPage() {
     if (!decryptedContent) return;
     setEditContent(decryptedContent);
     // For public drops, we need a separate password input
-    // For protected drops, we already have the password
+    // For private drops, we already have the password
     if (dropData?.visibility === 'public') {
       setEditPassword('');
     } else {
@@ -215,7 +215,7 @@ export default function ViewPage() {
       let iv: string | null = null;
       let contentHash: string | null = null;
 
-      if (dropData.visibility === 'protected') {
+      if (dropData.visibility === 'private') {
         // Re-encrypt with same password
         const key = await deriveKey(editPassword, dropData.salt);
         iv = generateIV();
@@ -241,7 +241,7 @@ export default function ViewPage() {
         // Update local state with new content
         setDecryptedContent(editContent);
         // Update hash for future edits
-        if (dropData.visibility === 'protected') {
+        if (dropData.visibility === 'private') {
           setOriginalContentHash(await sha256(contentJson));
         }
         setState('view');
@@ -328,7 +328,7 @@ export default function ViewPage() {
 
         {state === 'unlock' && dropData && (
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <h2 className="text-2xl font-bold mb-4">🔒 Protected Drop</h2>
+            <h2 className="text-2xl font-bold mb-4">🔒 Private Drop</h2>
             <p className="text-gray-400 mb-4">Enter the password to unlock this drop.</p>
 
             <div className="mb-4">
@@ -368,7 +368,7 @@ export default function ViewPage() {
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold">
-                {dropData.visibility === 'protected' ? '🔒 Drop' : '👁 Drop'}
+                {dropData.visibility === 'private' ? '🔒 Drop' : '👁 Drop'}
               </h2>
               <span
                 className={`text-xs px-2 py-1 rounded ${

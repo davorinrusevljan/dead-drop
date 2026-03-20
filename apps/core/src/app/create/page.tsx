@@ -24,7 +24,7 @@ export default function CreatePage() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [visibility, setVisibility] = useState<'protected' | 'public'>('protected');
+  const [visibility, setVisibility] = useState<'private' | 'public'>('private');
   const [content, setContent] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -77,7 +77,7 @@ export default function CreatePage() {
       let contentHash: string | null = null;
       let adminHash: string | null = null;
 
-      if (visibility === 'protected') {
+      if (visibility === 'private') {
         const key = await deriveKey(password, salt);
         iv = generateIV();
         payload = await encrypt(contentJson, key, iv);
@@ -154,7 +154,7 @@ export default function CreatePage() {
             <div className="bg-yellow-900/30 border border-yellow-600 rounded p-4 mb-4">
               <p className="text-yellow-400 text-sm">
                 ⚠️ <strong>Important:</strong> Save the password! Without it, you cannot access a
-                protected drop.
+                private drop.
               </p>
             </div>
 
@@ -214,14 +214,14 @@ export default function CreatePage() {
             <label className="block text-gray-400 mb-2">Visibility</label>
             <div className="flex gap-2">
               <button
-                onClick={() => setVisibility('protected')}
+                onClick={() => setVisibility('private')}
                 className={`flex-1 px-4 py-2 rounded border transition-colors ${
-                  visibility === 'protected'
+                  visibility === 'private'
                     ? 'bg-green-600 border-green-500 text-white'
                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
                 }`}
               >
-                🔒 Protected
+                🔒 Private
               </button>
               <button
                 onClick={() => setVisibility('public')}
@@ -235,7 +235,7 @@ export default function CreatePage() {
               </button>
             </div>
             <p className="text-gray-500 text-xs mt-1">
-              {visibility === 'protected'
+              {visibility === 'private'
                 ? 'Encrypted. Password required to read.'
                 : 'Plaintext. Anyone can read, password to edit.'}
             </p>

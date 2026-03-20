@@ -16,7 +16,7 @@ export default function HomePage() {
               <span className="text-green-500">+</span> Create Drop
             </h2>
             <p className="text-gray-400">
-              Create a new encrypted drop. Choose protected (password required to read) or public
+              Create a new encrypted drop. Choose private (password required to read) or public
               (anyone can read).
             </p>
           </Link>
@@ -29,7 +29,7 @@ export default function HomePage() {
               <span className="text-blue-500">→</span> View Drop
             </h2>
             <p className="text-gray-400">
-              Access an existing drop by name. Protected drops require a password.
+              Access an existing drop by name. Private drops require a password.
             </p>
           </Link>
         </div>

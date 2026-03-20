@@ -25,8 +25,8 @@ export const healthResponseSchema = z.object({
 /**
  * Drop visibility schema
  */
-export const dropVisibilitySchema = z.enum(['protected', 'public']).openapi({
-  example: 'protected',
+export const dropVisibilitySchema = z.enum(['private', 'public']).openapi({
+  example: 'private',
   description: 'Drop visibility type',
 });
 
@@ -55,9 +55,9 @@ export const dropResponseSchema = z.object({
 });
 
 /**
- * Create drop request schema (protected)
+ * Create drop request schema (private)
  */
-export const createProtectedDropSchema = z.object({
+export const createPrivateDropSchema = z.object({
   id: z.string().openapi({ description: 'SHA-256 hash of normalized drop name' }),
   nameLength: z
     .number()
@@ -65,7 +65,7 @@ export const createProtectedDropSchema = z.object({
     .min(3)
     .openapi({ description: 'Length of normalized name for validation' }),
   tier: dropTierSchema,
-  visibility: z.literal('protected'),
+  visibility: z.literal('private'),
   payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded)' }),
   salt: z.string().openapi({ description: 'Hex-encoded salt (16 bytes)' }),
   iv: z.string().openapi({ description: 'Hex-encoded IV (12 bytes)' }),
@@ -95,7 +95,7 @@ export const createPublicDropSchema = z.object({
  * Create drop request union
  */
 export const createDropSchema = z.discriminatedUnion('visibility', [
-  createProtectedDropSchema,
+  createPrivateDropSchema,
   createPublicDropSchema,
 ]);
 
@@ -109,9 +109,9 @@ export const createDropResponseSchema = z.object({
 });
 
 /**
- * Update drop request schema (protected)
+ * Update drop request schema (private)
  */
-export const updateProtectedDropSchema = z.object({
+export const updatePrivateDropSchema = z.object({
   payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded)' }),
   iv: z.string().openapi({ description: 'Hex-encoded IV (12 bytes)' }),
   contentHash: z.string().openapi({ description: 'SHA-256 hash of content payload JSON' }),
@@ -134,9 +134,9 @@ export const updateDropResponseSchema = z.object({
 });
 
 /**
- * Delete drop request schema (protected)
+ * Delete drop request schema (private)
  */
-export const deleteProtectedDropSchema = z.object({
+export const deletePrivateDropSchema = z.object({
   contentHash: z.string().openapi({ description: 'SHA-256 hash of content payload JSON' }),
 });
 

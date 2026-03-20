@@ -29,10 +29,10 @@ export type DropContentPayload = z.infer<typeof dropContentPayloadSchema>;
 
 /**
  * Drop Visibility Types
- * - Protected: Zero-knowledge encryption, password required to read AND edit
+ * - Private: Zero-knowledge encryption, password required to read AND edit
  * - Public: Plaintext, anyone can read, password required only to edit
  */
-export const dropVisibilitySchema = z.enum(['protected', 'public']);
+export const dropVisibilitySchema = z.enum(['private', 'public']);
 export type DropVisibility = z.infer<typeof dropVisibilitySchema>;
 
 /**

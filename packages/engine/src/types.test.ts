@@ -160,11 +160,11 @@ describe('dropContentPayloadSchema', () => {
 });
 
 describe('dropVisibilitySchema', () => {
-  it('should accept "protected"', () => {
-    const result = dropVisibilitySchema.safeParse('protected');
+  it('should accept "private"', () => {
+    const result = dropVisibilitySchema.safeParse('private');
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data).toBe('protected');
+      expect(result.data).toBe('private');
     }
   });
 
@@ -177,7 +177,7 @@ describe('dropVisibilitySchema', () => {
   });
 
   it('should reject invalid values', () => {
-    const invalidValues = ['private', 'hidden', 'open', '', 'PROTECTED', 'Public'];
+    const invalidValues = ['hidden', 'open', '', 'PROTECTED', 'Public', 'protected'];
     for (const value of invalidValues) {
       const result = dropVisibilitySchema.safeParse(value);
       expect(result.success).toBe(false);

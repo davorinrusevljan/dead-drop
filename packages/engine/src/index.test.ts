@@ -29,7 +29,7 @@ import {
   deriveKey,
   encrypt,
   decrypt,
-  computeProtectedAdminHash,
+  computePrivateAdminHash,
   computePublicAdminHash,
   computeDropId,
 } from './index.js';
@@ -156,8 +156,8 @@ describe('index.ts exports', () => {
       expect(decrypt).toBeInstanceOf(Function);
     });
 
-    it('should export computeProtectedAdminHash', () => {
-      expect(computeProtectedAdminHash).toBeInstanceOf(Function);
+    it('should export computePrivateAdminHash', () => {
+      expect(computePrivateAdminHash).toBeInstanceOf(Function);
     });
 
     it('should export computePublicAdminHash', () => {

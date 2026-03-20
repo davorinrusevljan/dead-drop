@@ -11,7 +11,7 @@ export interface DropRecord {
   version: number;
   data: string | null;
   r2Key: string | null;
-  visibility: 'protected' | 'public';
+  visibility: 'private' | 'public';
   salt: string;
   iv: string | null;
   adminHash: string;

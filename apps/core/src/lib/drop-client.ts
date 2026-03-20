@@ -6,7 +6,7 @@ import {
   encrypt,
   decrypt,
   computeDropId,
-  computeProtectedAdminHash,
+  computePrivateAdminHash,
   computePublicAdminHash,
   normalizeDropName,
   validateDropName,
@@ -27,7 +27,7 @@ export type DropContentPayload =
 export interface EncryptedDropData {
   id: string;
   nameLength: number;
-  visibility: 'protected';
+  visibility: 'private';
   payload: string;
   salt: string;
   iv: string;
@@ -53,7 +53,7 @@ export async function createDropData(
   name: string,
   password: string,
   content: DropContentPayload,
-  visibility: 'protected',
+  visibility: 'private',
   tier: DropTier
 ): Promise<EncryptedDropData>;
 export async function createDropData(
@@ -85,17 +85,17 @@ export async function createDropData(
   // Serialize content
   const contentJson = JSON.stringify(content);
 
-  if (visibility === 'protected') {
-    return createProtectedDropData(id, normalizedName, password, contentJson);
+  if (visibility === 'private') {
+    return createPrivateDropData(id, normalizedName, password, contentJson);
   } else {
     return createPublicDropData(id, normalizedName, password, contentJson);
   }
 }
 
 /**
- * Create protected drop data with client-side encryption
+ * Create private drop data with client-side encryption
  */
-async function createProtectedDropData(
+async function createPrivateDropData(
   id: string,
   normalizedName: string,
   password: string,
@@ -117,7 +117,7 @@ async function createProtectedDropData(
   return {
     id,
     nameLength: normalizedName.length,
-    visibility: 'protected',
+    visibility: 'private',
     payload,
     salt,
     iv,
@@ -154,7 +154,7 @@ async function createPublicDropData(
 }
 
 /**
- * Decrypt a protected drop
+ * Decrypt a private drop
  */
 export async function decryptDrop(
   payload: string,
@@ -181,9 +181,9 @@ export function decodePublicDrop(payload: string): DropContentPayload {
 }
 
 /**
- * Verify admin password for a protected drop
+ * Verify admin password for a private drop
  */
-export async function verifyProtectedPassword(
+export async function verifyPrivatePassword(
   content: DropContentPayload,
   _password: string,
   storedAdminHash: string,
@@ -191,7 +191,7 @@ export async function verifyProtectedPassword(
 ): Promise<boolean> {
   const contentJson = JSON.stringify(content);
   const contentHash = await sha256(contentJson);
-  const computedHash = await computeProtectedAdminHash(contentHash, pepper);
+  const computedHash = await computePrivateAdminHash(contentHash, pepper);
   return computedHash === storedAdminHash;
 }
 

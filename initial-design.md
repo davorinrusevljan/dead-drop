@@ -41,7 +41,7 @@ The system is decoupled into a UI frontend and a lightweight Edge API.
 *   **Deep Drop:** Paid ($1). Max 4 MB. Supports text/files. 90-Day lifespan. Name can be `>= 3` chars (Vanity URLs).
 
 ### Axis 2: Security & Access (Visibility)
-*   **Protected Drop:** Content encrypted client-side. Zero-Knowledge. Password required to *read* and *edit*.
+*   **Private Drop:** Content encrypted client-side. Zero-Knowledge. Password required to *read* and *edit*.
 *   **Public Drop:** Content is plaintext. Anyone with the URL can *read*. Password required only to *edit*.
 
 ### Core Terms
@@ -99,7 +99,7 @@ export default function Home() {
 4.  **Result:**
     *   If `404 Not Found`: UI transitions to Creation state ("Drop available.").
     *   If `200 OK` (Public): UI transitions to Viewer state.
-    *   If `200 OK` (Protected): UI transitions to Unlock state ("Enter Drop Password.").
+    *   If `200 OK` (Private): UI transitions to Unlock state ("Enter Drop Password.").
 
 ### 5.2 Access via "The Front Door" (Manual Entry)
 1.  **Given** a user visits `dead-drop.xyz`.
@@ -110,7 +110,7 @@ export default function Home() {
 ### 5.3 Creating a Drop
 1.  **Given** a user is in the Creation state for `#project-alpha`.
 2.  **When** they input their Drop Password, select visibility, type their content, and click "Create".
-3.  **Then** the client encrypts the data (if Protected) or Hashes the Admin Password (if Public).
+3.  **Then** the client encrypts the data (if Private) or Hashes the Admin Password (if Public).
 4.  **And** the client `POST`s the payload to the API.
 5.  **Result:** User is shown a success message with the shareable URL.
 
@@ -160,7 +160,7 @@ To support multi-word phrases (e.g., `"quick brown polar bear"`) while preventin
 ### `PUT /api/drops/:id`
 *   **Body:** `{ payload, adminPassword? }`
 *   **Logic:** Fetch drop. If `404`, return `404`.
-    *   **Protected:** Overwrite `payload` in D1/R2. Reset `expiresAt`.
+    *   **Private:** Overwrite `payload` in D1/R2. Reset `expiresAt`.
     *   **Public:** Compute `SHA-256(adminPassword + db.salt)`. If `!== db.adminHash`, return `401 Unauthorized`. If match, overwrite `payload`.
 *   **Response (200):** `{ success: true }`
 
@@ -207,8 +207,8 @@ export const drops = sqliteTable('drops', {
 **File:** `packages/engine/src/crypto.ts` (Must use native Web Crypto API, no Node.js `crypto` module).
 *   **ID Hash:** `SHA-256(NormalizedName)`
 *   **Admin Hash (Public):** `SHA-256(AdminPassword + Salt)`
-*   **Key Derivation (Protected):** `PBKDF2` (100,000 iterations, SHA-256, 16-byte random salt).
-*   **Encryption (Protected):** `AES-GCM` 256-bit (12-byte random IV).
+*   **Key Derivation (Private):** `PBKDF2` (100,000 iterations, SHA-256, 16-byte random salt).
+*   **Encryption (Private):** `AES-GCM` 256-bit (12-byte random IV).
 
 ---
 

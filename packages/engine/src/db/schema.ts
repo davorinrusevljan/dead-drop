@@ -12,13 +12,13 @@ export const drops = sqliteTable('drops', {
   data: text('data'),
   /** R2 object key - Null if payload <= 10KB */
   r2Key: text('r2_key'),
-  /** Visibility: 'protected' | 'public' */
-  visibility: text('visibility').default('protected').notNull(),
+  /** Visibility: 'private' | 'public' */
+  visibility: text('visibility').default('private').notNull(),
   /** Hex-encoded salt (16 bytes) */
   salt: text('salt').notNull(),
   /** Hex-encoded IV (12 bytes) - Null if public */
   iv: text('iv'),
-  /** SHA-256(contentHash + PEPPER) for protected, SHA-256(adminPassword + salt) for public */
+  /** SHA-256(contentHash + PEPPER) for private, SHA-256(adminPassword + salt) for public */
   adminHash: text('admin_hash').notNull(),
   /** Tier: 'free' | 'deep' */
   tier: text('tier').default('free').notNull(),

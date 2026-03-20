@@ -9,7 +9,7 @@ import {
   deriveKey,
   encrypt,
   decrypt,
-  computeProtectedAdminHash,
+  computePrivateAdminHash,
   computePublicAdminHash,
   computeDropId,
 } from './crypto.js';
@@ -321,11 +321,11 @@ describe('encrypt and decrypt', () => {
   });
 });
 
-describe('computeProtectedAdminHash', () => {
+describe('computePrivateAdminHash', () => {
   it('should compute hash of contentHash + pepper', async () => {
     const contentHash = 'abc123';
     const pepper = 'secret-pepper';
-    const hash = await computeProtectedAdminHash(contentHash, pepper);
+    const hash = await computePrivateAdminHash(contentHash, pepper);
 
     // Should be SHA-256 of 'abc123secret-pepper'
     const expectedHash = await sha256('abc123secret-pepper');
@@ -333,20 +333,20 @@ describe('computeProtectedAdminHash', () => {
   });
 
   it('should produce consistent hashes', async () => {
-    const hash1 = await computeProtectedAdminHash('content', 'pepper');
-    const hash2 = await computeProtectedAdminHash('content', 'pepper');
+    const hash1 = await computePrivateAdminHash('content', 'pepper');
+    const hash2 = await computePrivateAdminHash('content', 'pepper');
     expect(hash1).toBe(hash2);
   });
 
   it('should produce different hashes for different content', async () => {
-    const hash1 = await computeProtectedAdminHash('content1', 'pepper');
-    const hash2 = await computeProtectedAdminHash('content2', 'pepper');
+    const hash1 = await computePrivateAdminHash('content1', 'pepper');
+    const hash2 = await computePrivateAdminHash('content2', 'pepper');
     expect(hash1).not.toBe(hash2);
   });
 
   it('should produce different hashes for different peppers', async () => {
-    const hash1 = await computeProtectedAdminHash('content', 'pepper1');
-    const hash2 = await computeProtectedAdminHash('content', 'pepper2');
+    const hash1 = await computePrivateAdminHash('content', 'pepper1');
+    const hash2 = await computePrivateAdminHash('content', 'pepper2');
     expect(hash1).not.toBe(hash2);
   });
 });
