@@ -5,7 +5,8 @@
   },
   "mounts": [
     "source=/home/davorin/.claude,target=/root/.claude,type=bind,consistency=cached",
-    "source=/home/davorin/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
+    "source=/home/davorin/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached",
+    "source=/home/davorin/.config/.wrangler,target=/root/.config/.wrangler,type=bind,consistency=cached"
   ],
   "customizations": {
     "vscode": {
