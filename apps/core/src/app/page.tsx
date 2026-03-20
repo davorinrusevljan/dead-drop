@@ -377,515 +377,533 @@ export default function HomePage() {
 
   // Render
   return (
-    <main className="main-container">
-      {!mounted ? (
-        <div className="loader animate-fade-in">
-          <div className="loader-spinner" />
-          <span>Initializing...</span>
-        </div>
-      ) : (
-        <>
-          {/* LANDING STATE */}
-          {state === 'landing' && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '28rem' }}>
-              <div className="hero">
-                <h1 className="hero-title">dead-drop.xyz</h1>
-                <p className="hero-subtitle">
-                  Create encrypted, ephemeral messages that self-destruct after 7 days.
-                  Zero-knowledge encryption — even we can&apos;t read them.
-                </p>
-              </div>
+    <>
+      <div className="construction-banner">
+        ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+        <a
+          href="https://github.com/davorinrusevljan/dead-drop"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View on GitHub
+        </a>
+      </div>
+      <main className="main-container" style={{ paddingTop: '4rem' }}>
+        {!mounted ? (
+          <div className="loader animate-fade-in">
+            <div className="loader-spinner" />
+            <span>Initializing...</span>
+          </div>
+        ) : (
+          <>
+            {/* LANDING STATE */}
+            {state === 'landing' && (
+              <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '28rem' }}>
+                <div className="hero">
+                  <h1 className="hero-title">dead-drop.xyz</h1>
+                  <p className="hero-subtitle">
+                    Create encrypted, ephemeral messages that self-destruct after 7 days.
+                    Zero-knowledge encryption — even we can&apos;t read them.
+                  </p>
+                </div>
 
-              <div className="drop-name-section">
-                <label className="drop-name-label">Name your drop</label>
-                <p className="drop-name-hint">
-                  This becomes part of the shareable link. Use something memorable.
-                </p>
+                <div className="drop-name-section">
+                  <label className="drop-name-label">Name your drop</label>
+                  <p className="drop-name-hint">
+                    This becomes part of the shareable link. Use something memorable.
+                  </p>
 
-                <div className="drop-name-input-wrapper">
-                  <input
-                    type="text"
-                    value={dropName}
-                    onChange={(e) => setDropName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleProceed()}
-                    className="drop-name-input"
-                    placeholder="e.g., project-alpha-review"
-                    autoFocus
-                    spellCheck={false}
-                  />
+                  <div className="drop-name-input-wrapper">
+                    <input
+                      type="text"
+                      value={dropName}
+                      onChange={(e) => setDropName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleProceed()}
+                      className="drop-name-input"
+                      placeholder="e.g., project-alpha-review"
+                      autoFocus
+                      spellCheck={false}
+                    />
+
+                    <button
+                      onClick={generateNew}
+                      className="generate-btn"
+                      title="Generate random name"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 12a9 9 0 11-9-9" />
+                        <path d="M21 3v6h-6" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="drop-name-footer">
+                    <span
+                      className={`char-count ${validation.valid ? 'valid' : validation.error ? 'invalid' : ''}`}
+                    >
+                      {normalizedName.length}/12 min chars
+                    </span>
+                  </div>
 
                   <button
-                    onClick={generateNew}
-                    className="generate-btn"
-                    title="Generate random name"
+                    onClick={handleProceed}
+                    disabled={!validation.valid || checkingName}
+                    className="action-btn"
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M21 12a9 9 0 11-9-9" />
-                      <path d="M21 3v6h-6" />
-                    </svg>
+                    {isLoading || checkingName
+                      ? 'Checking...'
+                      : dropExists === true
+                        ? 'VIEW DROP'
+                        : dropExists === false
+                          ? 'CREATE DROP'
+                          : 'Continue'}
                   </button>
                 </div>
 
-                <div className="drop-name-footer">
-                  <span
-                    className={`char-count ${validation.valid ? 'valid' : validation.error ? 'invalid' : ''}`}
-                  >
-                    {normalizedName.length}/12 min chars
-                  </span>
-                </div>
-
-                <button
-                  onClick={handleProceed}
-                  disabled={!validation.valid || checkingName}
-                  className="action-btn"
-                >
-                  {isLoading || checkingName
-                    ? 'Checking...'
-                    : dropExists === true
-                      ? 'VIEW DROP'
-                      : dropExists === false
-                        ? 'CREATE DROP'
-                        : 'Continue'}
-                </button>
+                <p className="info-text">10KB · 7 days · End-to-end encrypted</p>
               </div>
+            )}
 
-              <p className="info-text">10KB · 7 days · End-to-end encrypted</p>
-            </div>
-          )}
+            {/* CHECKING STATE */}
+            {state === 'checking' && (
+              <div className="loader animate-fade-in">
+                <div className="loader-spinner" />
+                <span>Scanning...</span>
+              </div>
+            )}
 
-          {/* CHECKING STATE */}
-          {state === 'checking' && (
-            <div className="loader animate-fade-in">
-              <div className="loader-spinner" />
-              <span>Scanning...</span>
-            </div>
-          )}
-
-          {/* CREATE STATE */}
-          {state === 'create' && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-              <div className="terminal-container">
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1.5rem',
-                  }}
-                >
-                  <div>
-                    <span className="tag">✓ AVAILABLE</span>
-                    <p
-                      style={{
-                        color: 'var(--accent)',
-                        fontSize: '1.125rem',
-                        marginTop: '0.75rem',
-                        fontFamily: 'JetBrains Mono',
-                      }}
+            {/* CREATE STATE */}
+            {state === 'create' && (
+              <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+                <div className="terminal-container">
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '1.5rem',
+                    }}
+                  >
+                    <div>
+                      <span className="tag">✓ AVAILABLE</span>
+                      <p
+                        style={{
+                          color: 'var(--accent)',
+                          fontSize: '1.125rem',
+                          marginTop: '0.75rem',
+                          fontFamily: 'JetBrains Mono',
+                        }}
+                      >
+                        {normalizedName}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleReset}
+                      className="secondary-btn"
+                      style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}
                     >
-                      {normalizedName}
-                    </p>
+                      ✕
+                    </button>
                   </div>
+
+                  <div className="visibility-toggle">
+                    <button
+                      onClick={() => setVisibility('private')}
+                      className={`visibility-option ${visibility === 'private' ? 'active' : ''}`}
+                    >
+                      🔒 Private
+                      <br />
+                      <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>encrypted</span>
+                    </button>
+                    <button
+                      onClick={() => setVisibility('public')}
+                      className={`visibility-option ${visibility === 'public' ? 'active' : ''}`}
+                    >
+                      👁 Public
+                      <br />
+                      <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>readable</span>
+                    </button>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Password</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="form-input"
+                      placeholder="min 8 characters"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Confirm Password</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="form-input"
+                      placeholder="repeat password"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Your Secret</label>
+                    <textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      className="form-textarea"
+                      placeholder="Type your secret message here..."
+                      rows={6}
+                    />
+                  </div>
+
+                  {error && <p className="error-message">{error}</p>}
+
+                  <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                    <button
+                      onClick={handleCreate}
+                      disabled={isLoading || !password || !confirmPassword || !content}
+                      className="action-btn"
+                    >
+                      {isLoading ? 'CREATING...' : 'CREATE DROP'}
+                    </button>
+                    <button onClick={handleReset} className="secondary-btn">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* UNLOCK STATE */}
+            {state === 'unlock' && dropData && (
+              <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+                <div className="terminal-container">
+                  <span className="tag tag-danger">🔒 ENCRYPTED</span>
+                  <p
+                    style={{
+                      color: 'var(--accent)',
+                      fontSize: '1.125rem',
+                      marginTop: '0.75rem',
+                      fontFamily: 'JetBrains Mono',
+                      marginBottom: '2rem',
+                    }}
+                  >
+                    {normalizedName}
+                  </p>
+
+                  <div className="form-group">
+                    <label className="form-label">Password</label>
+                    <input
+                      type="password"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleUnlock((e.target as HTMLInputElement).value);
+                        }
+                      }}
+                      className="form-input"
+                      placeholder="enter password"
+                      autoFocus
+                    />
+                  </div>
+
+                  {error && <p className="error-message">{error}</p>}
+
+                  <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                    <button
+                      onClick={(e) =>
+                        handleUnlock(
+                          (e.currentTarget.previousElementSibling as HTMLInputElement)?.value || ''
+                        )
+                      }
+                      disabled={isLoading}
+                      className="action-btn"
+                    >
+                      {isLoading ? 'DECRYPTING...' : 'UNLOCK'}
+                    </button>
+                    <button onClick={handleReset} className="secondary-btn">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW STATE */}
+            {state === 'view' && dropData && decryptedContent && (
+              <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+                <div className="terminal-container">
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    <div>
+                      <span
+                        className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : ''}`}
+                      >
+                        {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
+                        {dropData.visibility.toUpperCase()}
+                      </span>
+                      <p
+                        style={{
+                          color: 'var(--accent)',
+                          fontSize: '1rem',
+                          marginTop: '0.5rem',
+                          fontFamily: 'JetBrains Mono',
+                        }}
+                      >
+                        {normalizedName}
+                      </p>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--fg-muted)' }}>
+                      expires {new Date(dropData.expiresAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="content-viewer">{decryptedContent}</div>
+
+                  <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(decryptedContent)}
+                      className="secondary-btn"
+                    >
+                      Copy
+                    </button>
+                    <button onClick={() => setState('edit')} className="secondary-btn">
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setState('delete')}
+                      className="secondary-btn"
+                      style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
                   <button
                     onClick={handleReset}
                     className="secondary-btn"
-                    style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}
+                    style={{ width: '100%', marginTop: '1rem' }}
                   >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="visibility-toggle">
-                  <button
-                    onClick={() => setVisibility('private')}
-                    className={`visibility-option ${visibility === 'private' ? 'active' : ''}`}
-                  >
-                    🔒 Private
-                    <br />
-                    <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>encrypted</span>
-                  </button>
-                  <button
-                    onClick={() => setVisibility('public')}
-                    className={`visibility-option ${visibility === 'public' ? 'active' : ''}`}
-                  >
-                    👁 Public
-                    <br />
-                    <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>readable</span>
-                  </button>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="form-input"
-                    placeholder="min 8 characters"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Confirm Password</label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="form-input"
-                    placeholder="repeat password"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Your Secret</label>
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="form-textarea"
-                    placeholder="Type your secret message here..."
-                    rows={6}
-                  />
-                </div>
-
-                {error && <p className="error-message">{error}</p>}
-
-                <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                  <button
-                    onClick={handleCreate}
-                    disabled={isLoading || !password || !confirmPassword || !content}
-                    className="action-btn"
-                  >
-                    {isLoading ? 'CREATING...' : 'CREATE DROP'}
-                  </button>
-                  <button onClick={handleReset} className="secondary-btn">
-                    Cancel
+                    View Another Drop
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* UNLOCK STATE */}
-          {state === 'unlock' && dropData && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-              <div className="terminal-container">
-                <span className="tag tag-danger">🔒 ENCRYPTED</span>
-                <p
-                  style={{
-                    color: 'var(--accent)',
-                    fontSize: '1.125rem',
-                    marginTop: '0.75rem',
-                    fontFamily: 'JetBrains Mono',
-                    marginBottom: '2rem',
-                  }}
-                >
-                  {normalizedName}
-                </p>
-
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleUnlock((e.target as HTMLInputElement).value);
-                      }
+            {/* EDIT STATE */}
+            {state === 'edit' && dropData && decryptedContent && (
+              <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+                <div className="terminal-container">
+                  <span className="tag">EDITING</span>
+                  <p
+                    style={{
+                      color: 'var(--accent)',
+                      fontSize: '1rem',
+                      marginTop: '0.5rem',
+                      fontFamily: 'JetBrains Mono',
+                      marginBottom: '1.5rem',
                     }}
-                    className="form-input"
-                    placeholder="enter password"
-                    autoFocus
-                  />
-                </div>
-
-                {error && <p className="error-message">{error}</p>}
-
-                <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                  <button
-                    onClick={(e) =>
-                      handleUnlock(
-                        (e.currentTarget.previousElementSibling as HTMLInputElement)?.value || ''
-                      )
-                    }
-                    disabled={isLoading}
-                    className="action-btn"
                   >
-                    {isLoading ? 'DECRYPTING...' : 'UNLOCK'}
-                  </button>
-                  <button onClick={handleReset} className="secondary-btn">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+                    {normalizedName}
+                  </p>
 
-          {/* VIEW STATE */}
-          {state === 'view' && dropData && decryptedContent && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-              <div className="terminal-container">
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  <div>
-                    <span className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : ''}`}>
-                      {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
-                      {dropData.visibility.toUpperCase()}
-                    </span>
-                    <p
-                      style={{
-                        color: 'var(--accent)',
-                        fontSize: '1rem',
-                        marginTop: '0.5rem',
-                        fontFamily: 'JetBrains Mono',
-                      }}
-                    >
-                      {normalizedName}
-                    </p>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--fg-muted)' }}>
-                    expires {new Date(dropData.expiresAt).toLocaleDateString()}
-                  </span>
-                </div>
+                  {dropData.visibility === 'public' && (
+                    <div className="form-group">
+                      <label className="form-label">Admin Password</label>
+                      <input
+                        type="password"
+                        id="edit-pwd"
+                        className="form-input"
+                        placeholder="required"
+                      />
+                    </div>
+                  )}
 
-                <div className="content-viewer">{decryptedContent}</div>
-
-                <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(decryptedContent)}
-                    className="secondary-btn"
-                  >
-                    Copy
-                  </button>
-                  <button onClick={() => setState('edit')} className="secondary-btn">
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setState('delete')}
-                    className="secondary-btn"
-                    style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
-                  >
-                    Delete
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleReset}
-                  className="secondary-btn"
-                  style={{ width: '100%', marginTop: '1rem' }}
-                >
-                  View Another Drop
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* EDIT STATE */}
-          {state === 'edit' && dropData && decryptedContent && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-              <div className="terminal-container">
-                <span className="tag">EDITING</span>
-                <p
-                  style={{
-                    color: 'var(--accent)',
-                    fontSize: '1rem',
-                    marginTop: '0.5rem',
-                    fontFamily: 'JetBrains Mono',
-                    marginBottom: '1.5rem',
-                  }}
-                >
-                  {normalizedName}
-                </p>
-
-                {dropData.visibility === 'public' && (
                   <div className="form-group">
-                    <label className="form-label">Admin Password</label>
-                    <input
-                      type="password"
-                      id="edit-pwd"
-                      className="form-input"
-                      placeholder="required"
+                    <textarea
+                      id="edit-content"
+                      defaultValue={decryptedContent}
+                      className="form-textarea"
+                      rows={8}
                     />
                   </div>
-                )}
 
-                <div className="form-group">
-                  <textarea
-                    id="edit-content"
-                    defaultValue={decryptedContent}
-                    className="form-textarea"
-                    rows={8}
-                  />
-                </div>
+                  {error && <p className="error-message">{error}</p>}
 
-                {error && <p className="error-message">{error}</p>}
-
-                <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                  <button
-                    onClick={() => {
-                      const newContent =
-                        (document.getElementById('edit-content') as HTMLTextAreaElement)?.value ||
-                        '';
-                      const pwd =
-                        dropData.visibility === 'public'
-                          ? (document.getElementById('edit-pwd') as HTMLInputElement)?.value
-                          : undefined;
-                      handleSaveEdit(newContent, pwd);
-                    }}
-                    disabled={isLoading}
-                    className="action-btn"
-                  >
-                    {isLoading ? 'SAVING...' : 'SAVE'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setError(null);
-                      setState('view');
-                    }}
-                    className="secondary-btn"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* DELETE STATE */}
-          {state === 'delete' && dropData && (
-            <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-              <div className="terminal-container" style={{ textAlign: 'center' }}>
-                <p
-                  style={{
-                    color: 'var(--danger)',
-                    fontSize: '1.25rem',
-                    fontWeight: 600,
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Delete this drop?
-                </p>
-                <p
-                  style={{
-                    color: 'var(--accent)',
-                    fontFamily: 'JetBrains Mono',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {normalizedName}
-                </p>
-                <p
-                  style={{ color: 'var(--fg-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}
-                >
-                  This cannot be undone.
-                </p>
-
-                {dropData.visibility === 'public' && (
-                  <div className="form-group" style={{ textAlign: 'left' }}>
-                    <label className="form-label">Admin Password</label>
-                    <input
-                      type="password"
-                      id="delete-pwd"
-                      className="form-input"
-                      placeholder="required"
-                    />
+                  <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                    <button
+                      onClick={() => {
+                        const newContent =
+                          (document.getElementById('edit-content') as HTMLTextAreaElement)?.value ||
+                          '';
+                        const pwd =
+                          dropData.visibility === 'public'
+                            ? (document.getElementById('edit-pwd') as HTMLInputElement)?.value
+                            : undefined;
+                        handleSaveEdit(newContent, pwd);
+                      }}
+                      disabled={isLoading}
+                      className="action-btn"
+                    >
+                      {isLoading ? 'SAVING...' : 'SAVE'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setError(null);
+                        setState('view');
+                      }}
+                      className="secondary-btn"
+                    >
+                      Cancel
+                    </button>
                   </div>
-                )}
-
-                {error && <p className="error-message">{error}</p>}
-
-                <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                  <button
-                    onClick={() => {
-                      const pwd =
-                        dropData.visibility === 'public'
-                          ? (document.getElementById('delete-pwd') as HTMLInputElement)?.value
-                          : undefined;
-                      handleDelete(pwd);
-                    }}
-                    disabled={isLoading}
-                    className="action-btn"
-                    style={{ background: 'var(--danger)' }}
-                  >
-                    {isLoading ? 'DELETING...' : 'DELETE'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setError(null);
-                      setState('view');
-                    }}
-                    className="secondary-btn"
-                  >
-                    Cancel
-                  </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* SUCCESS STATE */}
-          {state === 'success' && (
-            <div
-              className="animate-fade-in-up"
-              style={{ width: '100%', maxWidth: '32rem', textAlign: 'center' }}
-            >
-              <svg className="checkmark" viewBox="0 0 52 52">
-                <circle className="checkmark-circle" cx="26" cy="26" r="25" />
-                <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-              </svg>
+            {/* DELETE STATE */}
+            {state === 'delete' && dropData && (
+              <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+                <div className="terminal-container" style={{ textAlign: 'center' }}>
+                  <p
+                    style={{
+                      color: 'var(--danger)',
+                      fontSize: '1.25rem',
+                      fontWeight: 600,
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Delete this drop?
+                  </p>
+                  <p
+                    style={{
+                      color: 'var(--accent)',
+                      fontFamily: 'JetBrains Mono',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    {normalizedName}
+                  </p>
+                  <p
+                    style={{
+                      color: 'var(--fg-muted)',
+                      fontSize: '0.875rem',
+                      marginBottom: '1.5rem',
+                    }}
+                  >
+                    This cannot be undone.
+                  </p>
 
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>DROP CREATED</h2>
-              <p style={{ color: 'var(--fg-muted)', marginBottom: '2rem' }}>Share this link:</p>
+                  {dropData.visibility === 'public' && (
+                    <div className="form-group" style={{ textAlign: 'left' }}>
+                      <label className="form-label">Admin Password</label>
+                      <input
+                        type="password"
+                        id="delete-pwd"
+                        className="form-input"
+                        placeholder="required"
+                      />
+                    </div>
+                  )}
 
-              <div className="success-url">
-                {typeof window !== 'undefined' && `${window.location.origin}/#${normalizedName}`}
+                  {error && <p className="error-message">{error}</p>}
+
+                  <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                    <button
+                      onClick={() => {
+                        const pwd =
+                          dropData.visibility === 'public'
+                            ? (document.getElementById('delete-pwd') as HTMLInputElement)?.value
+                            : undefined;
+                        handleDelete(pwd);
+                      }}
+                      disabled={isLoading}
+                      className="action-btn"
+                      style={{ background: 'var(--danger)' }}
+                    >
+                      {isLoading ? 'DELETING...' : 'DELETE'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setError(null);
+                        setState('view');
+                      }}
+                      className="secondary-btn"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
+            )}
 
-              <div className="btn-group" style={{ marginTop: '2rem' }}>
-                <button onClick={copyUrl} className="action-btn">
-                  COPY LINK
-                </button>
-                <button onClick={handleReset} className="secondary-btn">
-                  Create Another
-                </button>
-              </div>
-
-              <p
-                style={{
-                  fontSize: '0.75rem',
-                  color: 'var(--fg-muted)',
-                  marginTop: '2rem',
-                  opacity: 0.6,
-                }}
+            {/* SUCCESS STATE */}
+            {state === 'success' && (
+              <div
+                className="animate-fade-in-up"
+                style={{ width: '100%', maxWidth: '32rem', textAlign: 'center' }}
               >
-                ⚠ Save your password. It cannot be recovered.
-              </p>
-            </div>
-          )}
-        </>
-      )}
-      <footer className="footer">
-        ©{' '}
-        <a
-          href="https://ghostgrammer.xyz"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'inherit' }}
-        >
-          Ghostgrammer.xyz
-        </a>
-      </footer>
-    </main>
+                <svg className="checkmark" viewBox="0 0 52 52">
+                  <circle className="checkmark-circle" cx="26" cy="26" r="25" />
+                  <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                </svg>
+
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>DROP CREATED</h2>
+                <p style={{ color: 'var(--fg-muted)', marginBottom: '2rem' }}>Share this link:</p>
+
+                <div className="success-url">
+                  {typeof window !== 'undefined' && `${window.location.origin}/#${normalizedName}`}
+                </div>
+
+                <div className="btn-group" style={{ marginTop: '2rem' }}>
+                  <button onClick={copyUrl} className="action-btn">
+                    COPY LINK
+                  </button>
+                  <button onClick={handleReset} className="secondary-btn">
+                    Create Another
+                  </button>
+                </div>
+
+                <p
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--fg-muted)',
+                    marginTop: '2rem',
+                    opacity: 0.6,
+                  }}
+                >
+                  ⚠ Save your password. It cannot be recovered.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+        <footer className="footer">
+          ©{' '}
+          <a
+            href="https://ghostgrammer.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'inherit' }}
+          >
+            Ghostgrammer.xyz
+          </a>
+        </footer>
+      </main>
+    </>
   );
 }
