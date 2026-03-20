@@ -3,7 +3,7 @@
  * @see https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases
  */
 
-import wordlist from './wordlist.json';
+import wordlist from './wordlist.json' with { type: 'json' };
 
 // The EFF Diceware wordlist contains 7776 memorable words
 export const WORDS: readonly string[] = wordlist;
