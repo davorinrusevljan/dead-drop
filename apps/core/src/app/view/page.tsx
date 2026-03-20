@@ -15,7 +15,7 @@ import {
 } from '@dead-drop/engine';
 import { API_URL } from '../../lib/config';
 
-type PageState = 'idle' | 'loading' | 'not-found' | 'unlock' | 'view' | 'edit';
+type PageState = 'idle' | 'loading' | 'not-found' | 'unlock' | 'view' | 'edit' | 'delete';
 
 interface DropData {
   id: string;
@@ -47,6 +47,9 @@ export default function ViewPage() {
   const [editContent, setEditContent] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Delete state
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Extract drop name from URL fragment on mount
   useEffect(() => {
@@ -260,6 +263,68 @@ export default function ViewPage() {
     }
   }, [dropData, decryptedContent, editContent, editPassword, originalContentHash]);
 
+  const handleStartDelete = useCallback(() => {
+    setErrorMessage(null);
+    setState('delete');
+  }, []);
+
+  const handleCancelDelete = useCallback(() => {
+    setErrorMessage(null);
+    setState('view');
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!dropData) return;
+
+    // For public drops, require password
+    if (dropData.visibility === 'public' && !editPassword) {
+      setErrorMessage('Password is required to delete');
+      return;
+    }
+
+    setIsDeleting(true);
+    setErrorMessage(null);
+
+    try {
+      const body: { contentHash?: string; adminPassword?: string } = {};
+
+      if (dropData.visibility === 'private') {
+        body.contentHash = originalContentHash ?? '';
+      } else {
+        body.adminPassword = editPassword;
+      }
+
+      const response = await fetch(`${API_URL}/api/drops/${dropData.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        // Reset everything and go back to idle
+        setState('idle');
+        setNormalizedName(null);
+        setDropData(null);
+        setDecryptedContent(null);
+        setOriginalContentHash(null);
+        setInputValue('');
+        setEditPassword('');
+        window.history.replaceState(null, '', window.location.pathname);
+      } else {
+        const error = (await response.json()) as { error?: { message?: string } };
+        if (response.status === 401) {
+          setErrorMessage('Invalid password');
+        } else {
+          setErrorMessage(error.error?.message || 'Failed to delete drop');
+        }
+      }
+    } catch {
+      setErrorMessage('Network error. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [dropData, editPassword, originalContentHash]);
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-2xl">
@@ -405,6 +470,12 @@ export default function ViewPage() {
                 ✏️ Edit
               </button>
               <button
+                onClick={handleStartDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors"
+              >
+                🗑️ Delete
+              </button>
+              <button
                 onClick={handleReset}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
               >
@@ -461,6 +532,47 @@ export default function ViewPage() {
               </button>
               <button
                 onClick={handleCancelEdit}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {state === 'delete' && dropData && (
+          <div className="bg-gray-900 rounded-lg p-6 border border-red-800">
+            <h2 className="text-2xl font-bold mb-4 text-red-500">🗑️ Delete Drop</h2>
+            <p className="text-gray-400 mb-4">
+              Are you sure you want to delete this drop? This action cannot be undone.
+            </p>
+
+            {/* For public drops, require password */}
+            {dropData.visibility === 'public' && (
+              <div className="mb-4">
+                <label className="block text-gray-400 mb-2">Admin Password</label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-white focus:outline-none focus:border-red-500"
+                  placeholder="Enter admin password"
+                />
+              </div>
+            )}
+
+            {errorMessage && <div className="mb-4 text-red-500">{errorMessage}</div>}
+
+            <div className="flex gap-4">
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting || (dropData.visibility === 'public' && !editPassword)}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 disabled:text-gray-500 text-white px-4 py-2 rounded transition-colors"
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+              <button
+                onClick={handleCancelDelete}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
               >
                 Cancel
