@@ -4,13 +4,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['**/*.{test,spec}.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
-      include: ['src/**'],
       thresholds: {
         statements: 100,
         branches: 100,
@@ -27,22 +26,10 @@ export default defineConfig({
         // Build outputs
         '**/dist/**',
         '**/.next/**',
-        // Node modules (explicit patterns)
-        'node_modules/**',
-        '../../node_modules/**',
-        // App code (tested via E2E)
-        '**/app/**',
-        // API routes (tested via integration tests)
-        '**/api/routes/**',
-        '**/api/db.ts',
-        // Client-side code (requires browser environment)
-        '**/lib/drop-client.ts',
-        // Types
-        '**/api/types.ts',
-        // Worker entry point (requires Cloudflare environment)
-        '**/worker.ts',
-        // Config
-        '**/lib/config.ts',
+        // Node modules
+        '**/node_modules/**',
+        // App pages (placeholder, not yet implemented)
+        'src/app/**',
       ],
     },
   },
