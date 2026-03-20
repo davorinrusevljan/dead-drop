@@ -46,6 +46,8 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [dropExists, setDropExists] = useState<boolean | null>(null); // null = checking, true = exists, false = doesn't exist
+  const [checkingName, setCheckingName] = useState(false);
 
   const [dropName, setDropName] = useState('');
   const [dropData, setDropData] = useState<DropData | null>(null);
@@ -82,6 +84,32 @@ export default function HomePage() {
 
   const normalizedName = normalizeDropName(dropName);
   const validation = validateDropName(normalizedName, 12);
+
+  // Check if drop exists when name changes (debounced)
+  useEffect(() => {
+    if (state !== 'landing') return;
+
+    const v = validateDropName(normalizedName, 3);
+    if (!v.valid) {
+      setDropExists(null);
+      return;
+    }
+
+    setCheckingName(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const dropId = await computeDropId(normalizedName);
+        const response = await fetch(`${API_URL}/api/drops/${dropId}`);
+        setDropExists(response.ok);
+      } catch {
+        setDropExists(null);
+      } finally {
+        setCheckingName(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [normalizedName, state]);
 
   // API calls
   const checkDrop = useCallback(async (name: string) => {
@@ -326,6 +354,7 @@ export default function HomePage() {
     setError(null);
     setDecryptedContent(null);
     setContentHash(null);
+    setDropExists(null);
     setUnlockPassword('');
     setPassword('');
     setConfirmPassword('');
@@ -412,8 +441,18 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <button onClick={handleProceed} disabled={!validation.valid} className="action-btn">
-                  {isLoading ? 'Checking...' : 'Continue'}
+                <button
+                  onClick={handleProceed}
+                  disabled={!validation.valid || checkingName}
+                  className="action-btn"
+                >
+                  {isLoading || checkingName
+                    ? 'Checking...'
+                    : dropExists === true
+                      ? 'VIEW DROP'
+                      : dropExists === false
+                        ? 'CREATE DROP'
+                        : 'Continue'}
                 </button>
               </div>
 
@@ -836,7 +875,17 @@ export default function HomePage() {
           )}
         </>
       )}
-      <footer className="footer">© Ghostgrammer.xyz</footer>
+      <footer className="footer">
+        ©{' '}
+        <a
+          href="https://ghostgrammer.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'inherit' }}
+        >
+          Ghostgrammer.xyz
+        </a>
+      </footer>
     </main>
   );
 }
