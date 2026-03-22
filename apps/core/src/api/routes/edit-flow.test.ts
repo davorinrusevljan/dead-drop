@@ -105,7 +105,7 @@ function createMockClient() {
     salt: null as string | null,
 
     /** Called when unlocking a private drop - stores the original content hash */
-    setUnlockData(password: string, salt: string, originalContentJson: string) {
+    setUnlockData(password: string, salt: string, _originalContentJson: string) {
       this.password = password;
       this.salt = salt;
       // KEY FIX: We compute and store the ORIGINAL content hash
@@ -271,12 +271,8 @@ describe('Private Drop Edit Flow - E2E Test', () => {
 
     // Simulate multiple edit cycles - hash should stay the same
     for (let i = 0; i < 5; i++) {
-      const editContent = { type: 'text' as const, content: `edit ${i}` };
-      const editJson = JSON.stringify(editContent);
-
-      // With the fix, we do NOT update contentHash
-      // const currentHash = await client.getContentHash();
-      // expect(currentHash).toBe(initialHash);
+      // With the fix, we do NOT update contentHash after edits
+      void i; // Just to verify the loop runs
     }
 
     const finalHash = await client.getContentHash();

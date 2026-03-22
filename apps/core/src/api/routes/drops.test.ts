@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  sha256,
-  generateSalt,
-  generateIV,
-  deriveKey,
-  encrypt,
-  computePrivateAdminHash,
-} from '@dead-drop/engine';
+import { sha256, computePrivateAdminHash } from '@dead-drop/engine';
 
 /**
  * These tests demonstrate the bug in the private drop edit flow.
