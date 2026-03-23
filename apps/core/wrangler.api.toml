@@ -1,0 +1,15 @@
+# API Worker deployment config
+# Deploy with: wrangler deploy -c wrangler.api.toml
+
+name = "dead-drop-core"
+main = "src/worker.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dead-drop-core"
+database_id = "7e0211a4-bfb1-4357-95ad-9d28b79dd615"
+
+[vars]
+ENVIRONMENT = "production"
