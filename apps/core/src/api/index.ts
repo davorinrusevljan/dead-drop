@@ -8,6 +8,7 @@ import { docsRoute, docsHandler, openapiRoute } from './routes/docs.js';
 import { dropRoutes } from './routes/drops.js';
 import { historyRoutes } from './routes/history.js';
 import { upgradeRoutes } from './routes/upgrade.js';
+import { generateNameRoute, generateNameHandler } from './routes/generate-name.js';
 
 /**
  * OpenAPI document configuration
@@ -59,6 +60,9 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
   // Upgrade routes
   app.route('/', upgradeRoutes);
+
+  // Generate name endpoint (OpenAPI documented)
+  app.openapi(generateNameRoute, generateNameHandler);
 
   // Error handler
   app.onError((err, c) => {

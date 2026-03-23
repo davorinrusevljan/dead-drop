@@ -8,7 +8,6 @@ import {
   deriveKey,
   decrypt,
   sha256,
-  generateDropNameSuggestions,
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
 
@@ -46,6 +45,7 @@ export default function HomePage() {
   const [dropName, setDropName] = useState('');
   const [dropExists, setDropExists] = useState<boolean | null>(null);
   const [checkingName, setCheckingName] = useState(false);
+  const [generatingName, setGeneratingName] = useState(false);
 
   // View/unlock state
   const [state, setState] = useState<AppState>('landing');
@@ -64,11 +64,11 @@ export default function HomePage() {
       const normalized = normalizeDropName(hash);
       checkDrop(normalized);
     } else {
-      // Pre-populate with a random name
-      const suggestions = generateDropNameSuggestions(1, 4);
-      setDropName(suggestions[0]!);
+      // Pre-populate with a random name from API
+      fetchGeneratedName();
     }
     setMounted(true);
+    // Intentionally empty deps - we only want this to run once on mount
   }, []);
 
   // Check if drop exists when name changes (debounced) - only on landing
@@ -300,6 +300,28 @@ export default function HomePage() {
     setError(null); // Clear error when user starts typing
   }, []);
 
+  // Fetch a random generated name from the API
+  const fetchGeneratedName = useCallback(async () => {
+    setGeneratingName(true);
+    try {
+      const response = await fetch(`${API_URL}/api/drops/generate-name`);
+      if (response.ok) {
+        const data = (await response.json()) as { name: string; id: string };
+        handleInputChange(data.name);
+      } else {
+        // Fallback: generate locally if API fails
+        const { generateDropNameSuggestions } = await import('@dead-drop/engine');
+        handleInputChange(generateDropNameSuggestions(1, 4)[0]!);
+      }
+    } catch {
+      // Fallback: generate locally if API fails
+      const { generateDropNameSuggestions } = await import('@dead-drop/engine');
+      handleInputChange(generateDropNameSuggestions(1, 4)[0]!);
+    } finally {
+      setGeneratingName(false);
+    }
+  }, [handleInputChange]);
+
   const handleProceed = useCallback(() => {
     if (!validation.valid) {
       setError(validation.error ?? 'Invalid drop name');
@@ -405,9 +427,8 @@ export default function HomePage() {
                 )}
 
                 <button
-                  onClick={() => {
-                    handleInputChange(generateDropNameSuggestions(1, 4)[0]!);
-                  }}
+                  onClick={fetchGeneratedName}
+                  disabled={generatingName}
                   className="generate-btn"
                   title="Generate random name"
                 >
