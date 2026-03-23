@@ -211,6 +211,7 @@ drops.put('/api/drops/:id', async (c) => {
     payload: string;
     iv?: string;
     contentHash?: string;
+    newContentHash?: string;
     adminPassword?: string;
   }>();
 
@@ -246,10 +247,18 @@ drops.put('/api/drops/:id', async (c) => {
 
   // Verify admin credentials
   let providedHash: string;
+  let newAdminHash: string;
   if (drop.visibility === 'private') {
+    // Verify with the OLD content hash
     providedHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
+    // Store the NEW content hash for future authentications
+    newAdminHash = await computePrivateAdminHash(
+      body.newContentHash ?? body.contentHash ?? '',
+      pepper
+    );
   } else {
     providedHash = await sha256((body.adminPassword ?? '') + drop.salt);
+    newAdminHash = providedHash;
   }
 
   if (providedHash !== drop.adminHash) {
@@ -264,12 +273,12 @@ drops.put('/api/drops/:id', async (c) => {
     );
   }
 
-  // Update the drop
+  // Update the drop - store the NEW admin hash for future edits
   const updated = await updateDrop(db, id, {
     data: body.payload,
     r2Key: null,
     iv: body.iv ?? null,
-    adminHash: providedHash,
+    adminHash: newAdminHash,
   });
 
   return c.json(

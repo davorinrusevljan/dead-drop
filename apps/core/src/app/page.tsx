@@ -204,12 +204,15 @@ export default function HomePage() {
         let payload: string;
         let iv: string | null = null;
         let reqContentHash: string | null = null;
+        let newReqContentHash: string | null = null;
 
         if (dropData.visibility === 'private') {
           const key = await deriveKey(unlockPassword, dropData.salt);
           iv = generateIV();
           payload = await encrypt(contentJson, key, iv);
           reqContentHash = contentHash;
+          // Compute the NEW content hash for the server to store
+          newReqContentHash = await sha256(contentJson);
         } else {
           payload = btoa(contentJson);
         }
@@ -221,15 +224,17 @@ export default function HomePage() {
             payload,
             iv,
             contentHash: reqContentHash,
+            newContentHash: newReqContentHash,
             adminPassword: dropData.visibility === 'public' ? editPwd : undefined,
           }),
         });
 
         if (response.ok) {
           setDecryptedContent(newContent);
-          // NOTE: We do NOT update contentHash here!
-          // The adminHash is based on the ORIGINAL content hash, not the new content.
-          // We must always send the original content hash for authentication.
+          // Update contentHash to the NEW hash for the next edit
+          if (dropData.visibility === 'private' && newReqContentHash) {
+            setContentHash(newReqContentHash);
+          }
           setState('view');
         } else if (response.status === 401) {
           setError('Invalid password');
