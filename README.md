@@ -2,6 +2,8 @@
 
 A privacy-focused, ephemeral data-sharing service running on Cloudflare Workers.
 
+**Live site: [dead-drop.xyz](https://dead-drop.xyz)**
+
 ## Development Setup
 
 ### Prerequisites
