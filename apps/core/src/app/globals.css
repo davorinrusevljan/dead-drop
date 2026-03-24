@@ -633,14 +633,13 @@ h1, h2, h3 {
 .page-header {
   display: flex;
   justify-content: center;
-  padding: 1rem 1.5rem;
-  position: relative;
-  z-index: 10;
+  padding: 1.5rem;
+  margin-top: 2.5rem;
 }
 
 .page-header a {
   font-family: 'Syne', sans-serif;
-  font-size: 1.25rem;
+  font-size: clamp(2rem, 7vw, 3rem);
   font-weight: 700;
   color: var(--accent);
   text-decoration: none;

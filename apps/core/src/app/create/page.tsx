@@ -206,34 +206,18 @@ export default function CreatePage() {
         {(state === 'form' || state === 'error') && (
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <div>
-                  <span className="tag">✓ AVAILABLE</span>
-                  <p
-                    style={{
-                      color: 'var(--accent)',
-                      fontSize: '1.125rem',
-                      marginTop: '0.75rem',
-                      fontFamily: 'JetBrains Mono',
-                    }}
-                  >
-                    {normalizedName}
-                  </p>
-                </div>
-                <button
-                  onClick={goHome}
-                  className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <span className="tag">✓ AVAILABLE</span>
+                <p
+                  style={{
+                    color: 'var(--accent)',
+                    fontSize: '1.125rem',
+                    marginTop: '0.75rem',
+                    fontFamily: 'JetBrains Mono',
+                  }}
                 >
-                  ← Home
-                </button>
+                  {normalizedName}
+                </p>
               </div>
 
               <div className="visibility-toggle">

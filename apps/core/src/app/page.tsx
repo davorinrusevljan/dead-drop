@@ -839,34 +839,19 @@ export default function HomePage() {
         <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '1rem',
-                }}
-              >
+              <div style={{ marginBottom: '1rem' }}>
                 <span className="tag tag-amber">🔒 ENCRYPTED</span>
-                <button
-                  onClick={goHome}
-                  className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+                <p
+                  style={{
+                    color: 'var(--amber)',
+                    fontSize: '1.125rem',
+                    marginTop: '0.5rem',
+                    fontFamily: 'JetBrains Mono',
+                  }}
                 >
-                  ← Home
-                </button>
+                  {currentDropName}
+                </p>
               </div>
-              <p
-                style={{
-                  color: 'var(--amber)',
-                  fontSize: '1.125rem',
-                  marginTop: '0.5rem',
-                  fontFamily: 'JetBrains Mono',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                {currentDropName}
-              </p>
 
               <p style={{ color: 'var(--fg-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
                 This drop is encrypted. Enter the password to unlock and view the content.
@@ -940,39 +925,23 @@ export default function HomePage() {
         <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '1rem',
-                }}
-              >
-                <div>
-                  <span
-                    className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : 'tag-amber'}`}
-                  >
-                    {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
-                    {dropData.visibility.toUpperCase()}
-                  </span>
-                  <p
-                    style={{
-                      color: 'var(--amber)',
-                      fontSize: '1rem',
-                      marginTop: '0.5rem',
-                      fontFamily: 'JetBrains Mono',
-                    }}
-                  >
-                    {currentDropName}
-                  </p>
-                </div>
-                <button
-                  onClick={goHome}
-                  className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
+              <div style={{ marginBottom: '1rem' }}>
+                <span
+                  className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : 'tag-amber'}`}
                 >
-                  ← Home
-                </button>
+                  {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
+                  {dropData.visibility.toUpperCase()}
+                </span>
+                <p
+                  style={{
+                    color: 'var(--amber)',
+                    fontSize: '1rem',
+                    marginTop: '0.5rem',
+                    fontFamily: 'JetBrains Mono',
+                  }}
+                >
+                  {currentDropName}
+                </p>
               </div>
 
               <p
