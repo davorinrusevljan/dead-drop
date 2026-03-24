@@ -634,7 +634,8 @@ h1, h2, h3 {
   display: flex;
   justify-content: center;
   padding: 1.5rem;
-  margin-top: 2.5rem;
+  padding-top: 4rem;
+  position: relative;
 }
 
 .page-header a {
