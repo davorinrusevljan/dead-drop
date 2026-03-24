@@ -493,7 +493,7 @@ export default function HomePage() {
                       className="split-btn-icon"
                       title="Clear"
                       style={{
-                        opacity: createName ? 1 : 0.3,
+                        opacity: createName ? 1 : 0.5,
                         pointerEvents: createName ? 'auto' : 'none',
                       }}
                     >
@@ -624,7 +624,7 @@ export default function HomePage() {
                       className="split-btn-icon"
                       title="Clear"
                       style={{
-                        opacity: viewName ? 1 : 0.3,
+                        opacity: viewName ? 1 : 0.5,
                         pointerEvents: viewName ? 'auto' : 'none',
                       }}
                     >
@@ -727,7 +727,7 @@ export default function HomePage() {
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="loader animate-fade-in">
-            <div className="loader-spinner" />
+            <div className="loader-spinner amber" />
             <span>Loading drop...</span>
           </div>
         </main>
@@ -753,7 +753,7 @@ export default function HomePage() {
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="terminal-container" style={{ textAlign: 'center' }}>
+            <div className="terminal-container view-mode" style={{ textAlign: 'center' }}>
               <p
                 style={{
                   color: 'var(--danger)',
@@ -787,7 +787,7 @@ export default function HomePage() {
               >
                 The drop you&apos;re looking for doesn&apos;t exist or has expired.
               </p>
-              <button onClick={goHome} className="action-btn">
+              <button onClick={goHome} className="action-btn amber">
                 Go to Home
               </button>
             </div>
@@ -826,7 +826,7 @@ export default function HomePage() {
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="terminal-container">
+            <div className="terminal-container view-mode">
               <div
                 style={{
                   display: 'flex',
@@ -835,18 +835,18 @@ export default function HomePage() {
                   marginBottom: '1rem',
                 }}
               >
-                <span className="tag tag-danger">🔒 ENCRYPTED</span>
+                <span className="tag tag-amber">🔒 ENCRYPTED</span>
                 <button
                   onClick={goHome}
                   className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}
+                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
                 >
                   ← Home
                 </button>
               </div>
               <p
                 style={{
-                  color: 'var(--accent)',
+                  color: 'var(--amber)',
                   fontSize: '1.125rem',
                   marginTop: '0.5rem',
                   fontFamily: 'JetBrains Mono',
@@ -883,7 +883,7 @@ export default function HomePage() {
                 <button
                   onClick={() => handleUnlock(unlockPassword)}
                   disabled={isLoading || !unlockPassword}
-                  className="action-btn"
+                  className="action-btn amber"
                 >
                   {isLoading ? 'DECRYPTING...' : 'UNLOCK'}
                 </button>
@@ -924,7 +924,7 @@ export default function HomePage() {
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="terminal-container">
+            <div className="terminal-container view-mode">
               <div
                 style={{
                   display: 'flex',
@@ -934,13 +934,15 @@ export default function HomePage() {
                 }}
               >
                 <div>
-                  <span className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : ''}`}>
+                  <span
+                    className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : 'tag-amber'}`}
+                  >
                     {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
                     {dropData.visibility.toUpperCase()}
                   </span>
                   <p
                     style={{
-                      color: 'var(--accent)',
+                      color: 'var(--amber)',
                       fontSize: '1rem',
                       marginTop: '0.5rem',
                       fontFamily: 'JetBrains Mono',
@@ -952,7 +954,7 @@ export default function HomePage() {
                 <button
                   onClick={goHome}
                   className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}
+                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
                 >
                   ← Home
                 </button>
@@ -1024,7 +1026,7 @@ export default function HomePage() {
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="terminal-container">
+            <div className="terminal-container view-mode">
               <div
                 style={{
                   display: 'flex',
@@ -1033,21 +1035,21 @@ export default function HomePage() {
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="tag">EDITING</span>
+                <span className="tag tag-amber">EDITING</span>
                 <button
                   onClick={() => {
                     setError(null);
                     setState('view');
                   }}
                   className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}
+                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
                 >
                   Cancel
                 </button>
               </div>
               <p
                 style={{
-                  color: 'var(--accent)',
+                  color: 'var(--amber)',
                   fontSize: '1rem',
                   marginBottom: '1.5rem',
                   fontFamily: 'JetBrains Mono',
@@ -1091,7 +1093,7 @@ export default function HomePage() {
                     handleSaveEdit(newContent, pwd);
                   }}
                   disabled={isLoading}
-                  className="action-btn"
+                  className="action-btn amber"
                 >
                   {isLoading ? 'SAVING...' : 'SAVE'}
                 </button>
@@ -1132,7 +1134,7 @@ export default function HomePage() {
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="terminal-container" style={{ textAlign: 'center' }}>
+            <div className="terminal-container view-mode" style={{ textAlign: 'center' }}>
               <p
                 style={{
                   color: 'var(--danger)',
@@ -1145,7 +1147,7 @@ export default function HomePage() {
               </p>
               <p
                 style={{
-                  color: 'var(--accent)',
+                  color: 'var(--amber)',
                   fontFamily: 'JetBrains Mono',
                   marginBottom: '0.5rem',
                 }}
