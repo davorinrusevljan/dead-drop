@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   normalizeDropName,
   validateDropName,
@@ -37,21 +37,38 @@ function filterDropNameInput(value: string): string {
     .replace(/[^a-z0-9\-_.]/g, '');
 }
 
+// Validation thresholds
+const CREATE_MIN_LENGTH = 12;
+const VIEW_MIN_LENGTH = 3;
+
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [hasFragment, setHasFragment] = useState(false);
 
-  // Landing state
-  const [dropName, setDropName] = useState('');
-  const [dropExists, setDropExists] = useState<boolean | null>(null);
-  const [checkingName, setCheckingName] = useState(false);
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'create' | 'view'>('create');
+
+  // Refs for input focus
+  const createInputRef = useRef<HTMLInputElement>(null);
+  const viewInputRef = useRef<HTMLInputElement>(null);
+
+  // Create tab state
+  const [createName, setCreateName] = useState('');
+  const [createChecking, setCreateChecking] = useState(false);
+  const [createAvailable, setCreateAvailable] = useState<boolean | null>(null);
   const [generatingName, setGeneratingName] = useState(false);
+
+  // View tab state
+  const [viewName, setViewName] = useState('');
+  const [viewChecking, setViewChecking] = useState(false);
+  const [viewExists, setViewExists] = useState<boolean | null>(null);
 
   // View/unlock state
   const [state, setState] = useState<AppState>('landing');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dropData, setDropData] = useState<DropData | null>(null);
+  const [currentDropName, setCurrentDropName] = useState('');
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
   const [contentHash, setContentHash] = useState<string | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
@@ -64,50 +81,76 @@ export default function HomePage() {
       const normalized = normalizeDropName(hash);
       checkDrop(normalized);
     } else {
-      // Pre-populate with a random name from API
+      // Pre-populate create lane with a random name from API
       fetchGeneratedName();
     }
     setMounted(true);
     // Intentionally empty deps - we only want this to run once on mount
   }, []);
 
-  // Check if drop exists when name changes (debounced) - only on landing
+  // Check availability for create lane (debounced)
   useEffect(() => {
-    // Don't check if we have a fragment (view mode) or not on landing
     if (hasFragment || state !== 'landing') return;
 
-    // Don't re-check if we just came back from a "not found" error
-    if (error === 'Drop not found') return;
-
-    const normalizedName = normalizeDropName(dropName);
-    const v = validateDropName(normalizedName, 3);
+    const normalizedName = normalizeDropName(createName);
+    const v = validateDropName(normalizedName, CREATE_MIN_LENGTH);
     if (!v.valid) {
-      setDropExists(null);
+      setCreateAvailable(null);
       return;
     }
 
-    setCheckingName(true);
+    setCreateChecking(true);
     const timeoutId = setTimeout(async () => {
       try {
         const dropId = await computeDropId(normalizedName);
         const response = await fetch(`${API_URL}/api/drops/${dropId}`);
-        setDropExists(response.ok);
+        setCreateAvailable(!response.ok); // Available if NOT found
       } catch {
-        setDropExists(null);
+        setCreateAvailable(null);
       } finally {
-        setCheckingName(false);
+        setCreateChecking(false);
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [dropName, hasFragment, state, error]);
+  }, [createName, hasFragment, state]);
 
-  const normalizedName = normalizeDropName(dropName);
-  const validation = validateDropName(normalizedName, 12);
+  // Check existence for view lane (debounced)
+  useEffect(() => {
+    if (hasFragment || state !== 'landing') return;
+
+    const normalizedName = normalizeDropName(viewName);
+    const v = validateDropName(normalizedName, VIEW_MIN_LENGTH);
+    if (!v.valid) {
+      setViewExists(null);
+      return;
+    }
+
+    setViewChecking(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const dropId = await computeDropId(normalizedName);
+        const response = await fetch(`${API_URL}/api/drops/${dropId}`);
+        setViewExists(response.ok);
+      } catch {
+        setViewExists(null);
+      } finally {
+        setViewChecking(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [viewName, hasFragment, state]);
+
+  const normalizedCreateName = normalizeDropName(createName);
+  const createValidation = validateDropName(normalizedCreateName, CREATE_MIN_LENGTH);
+
+  const normalizedViewName = normalizeDropName(viewName);
+  const viewValidation = validateDropName(normalizedViewName, VIEW_MIN_LENGTH);
 
   // API calls
   const checkDrop = useCallback(async (name: string) => {
-    const v = validateDropName(name, 3);
+    const v = validateDropName(name, VIEW_MIN_LENGTH);
     if (!v.valid) {
       setError(v.error ?? 'Invalid drop name');
       setState('landing');
@@ -131,7 +174,7 @@ export default function HomePage() {
       if (response.ok) {
         const data = (await response.json()) as DropData;
         setDropData(data);
-        setDropName(name);
+        setCurrentDropName(name);
         if (data.visibility === 'public') {
           try {
             const contentJson = atob(data.payload);
@@ -293,11 +336,18 @@ export default function HomePage() {
     window.location.href = '/';
   }, []);
 
-  const handleInputChange = useCallback((value: string) => {
+  const handleCreateInputChange = useCallback((value: string) => {
     const filtered = filterDropNameInput(value);
-    setDropName(filtered);
-    setDropExists(null);
-    setError(null); // Clear error when user starts typing
+    setCreateName(filtered);
+    setCreateAvailable(null);
+    setError(null);
+  }, []);
+
+  const handleViewInputChange = useCallback((value: string) => {
+    const filtered = filterDropNameInput(value);
+    setViewName(filtered);
+    setViewExists(null);
+    setError(null);
   }, []);
 
   // Fetch a random generated name from the API
@@ -307,35 +357,48 @@ export default function HomePage() {
       const response = await fetch(`${API_URL}/api/drops/generate-name`);
       if (response.ok) {
         const data = (await response.json()) as { name: string; id: string };
-        handleInputChange(data.name);
+        handleCreateInputChange(data.name);
       } else {
         // Fallback: generate locally if API fails
         const { generateDropNameSuggestions } = await import('@dead-drop/engine');
-        handleInputChange(generateDropNameSuggestions(1, 4)[0]!);
+        handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
       }
     } catch {
       // Fallback: generate locally if API fails
       const { generateDropNameSuggestions } = await import('@dead-drop/engine');
-      handleInputChange(generateDropNameSuggestions(1, 4)[0]!);
+      handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
     } finally {
       setGeneratingName(false);
     }
-  }, [handleInputChange]);
+  }, [handleCreateInputChange]);
 
-  const handleProceed = useCallback(() => {
-    if (!validation.valid) {
-      setError(validation.error ?? 'Invalid drop name');
+  const handleCreate = useCallback(() => {
+    if (!createValidation.valid) {
+      setError(createValidation.error ?? 'Invalid drop name');
       return;
     }
+    window.location.href = `/create/#${normalizedCreateName}`;
+  }, [createValidation, normalizedCreateName]);
 
-    if (dropExists) {
-      // Navigate to view
-      checkDrop(normalizedName);
-    } else {
-      // Navigate to create page
-      window.location.href = `/create/#${normalizedName}`;
+  const handleView = useCallback(() => {
+    if (!viewValidation.valid) {
+      setError(viewValidation.error ?? 'Invalid drop name');
+      return;
     }
-  }, [validation, dropExists, normalizedName, checkDrop]);
+    checkDrop(normalizedViewName);
+  }, [viewValidation, normalizedViewName, checkDrop]);
+
+  const handleTabSwitch = useCallback((tab: 'create' | 'view') => {
+    setActiveTab(tab);
+    // Focus the input after a short delay to allow the animation to complete
+    setTimeout(() => {
+      if (tab === 'create' && createInputRef.current) {
+        createInputRef.current.focus();
+      } else if (tab === 'view' && viewInputRef.current) {
+        viewInputRef.current.focus();
+      }
+    }, 100);
+  }, []);
 
   // Render loading state
   if (!mounted) {
@@ -362,7 +425,7 @@ export default function HomePage() {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // LANDING PAGE (no fragment)
+  // LANDING PAGE (no fragment) - SPLIT PANEL DESIGN
   // ═══════════════════════════════════════════════════════════
   if (!hasFragment && state === 'landing') {
     return (
@@ -378,125 +441,257 @@ export default function HomePage() {
           </a>
         </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
-          <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="hero">
+          <div className="animate-fade-in-up" style={{ width: '100%' }}>
+            <div className="hero" style={{ marginBottom: '2rem' }}>
               <h1 className="hero-title">dead-drop.xyz</h1>
               <p className="hero-subtitle">
-                Share encrypted secrets that self-destruct after 7 days. Enter a drop name below to{' '}
-                <strong>view an existing drop</strong> or <strong>create a new one</strong>.
+                Share encrypted secrets that self-destruct after 7 days.
               </p>
             </div>
 
-            <div className="drop-name-section">
-              <label className="drop-name-label">Enter drop name</label>
-              <p className="drop-name-hint">
-                Letters, numbers, hyphens, and underscores only. Minimum 12 characters to create.
-              </p>
-
-              <div className="drop-name-input-wrapper">
-                <input
-                  type="text"
-                  value={dropName}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && validation.valid && handleProceed()}
-                  onFocus={(e) => e.target.select()}
-                  className="drop-name-input"
-                  placeholder="e.g., project-alpha-review"
-                  autoFocus
-                  spellCheck={false}
-                />
-
-                {dropName && (
-                  <button
-                    onClick={() => handleInputChange('')}
-                    className="generate-btn"
-                    title="Clear"
-                    style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-
-                <button
-                  onClick={fetchGeneratedName}
-                  disabled={generatingName}
-                  className="generate-btn"
-                  title="Generate random name"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M21 12a9 9 0 11-9-9" />
-                    <path d="M21 3v6h-6" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="drop-name-footer">
-                <span
-                  className={`char-count ${validation.valid ? 'valid' : validation.error ? 'invalid' : ''}`}
-                >
-                  {normalizedName.length}/12 min chars
-                </span>
-              </div>
-
-              {/* Status message */}
-              {validation.valid && (
-                <div
-                  style={{
-                    marginTop: '1rem',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '8px',
-                    background: dropExists ? 'var(--accent-dim)' : 'rgba(100, 100, 255, 0.1)',
-                    border: `1px solid ${dropExists ? 'var(--accent)' : 'rgba(100, 100, 255, 0.3)'}`,
-                    color: dropExists ? 'var(--accent)' : '#a0a0ff',
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  {checkingName ? (
-                    'Checking availability...'
-                  ) : dropExists ? (
-                    <>🔒 Drop found — click to view and enter password</>
-                  ) : dropExists === false ? (
-                    <>✓ Name available — create a new encrypted drop</>
-                  ) : (
-                    'Enter a name to check availability'
-                  )}
-                </div>
-              )}
-
-              {error && <p className="error-message">{error}</p>}
-
-              <button
-                onClick={handleProceed}
-                disabled={!validation.valid || checkingName}
-                className="action-btn"
+            <div className="split-container">
+              {/* CREATE CARD - Expanded by default */}
+              <div
+                className={`split-card split-card-create ${activeTab === 'create' ? 'expanded' : ''}`}
+                onClick={() => activeTab !== 'create' && handleTabSwitch('create')}
               >
-                {checkingName
-                  ? 'Checking...'
-                  : dropExists === true
-                    ? 'VIEW DROP'
-                    : dropExists === false
-                      ? 'CREATE DROP'
-                      : 'Continue'}
-              </button>
-            </div>
+                <div className="split-header">
+                  <div className="split-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="split-header-text">
+                    <div className="split-title">Create Drop</div>
+                    <div className="split-desc">
+                      Generate a new encrypted drop with a unique name.
+                    </div>
+                  </div>
+                  <div className="split-hint">min 12 chars</div>
+                </div>
 
-            <p className="info-text">10KB · 7 days · End-to-end encrypted</p>
+                <div className="split-content">
+                  <div className="split-input-wrapper">
+                    <input
+                      ref={createInputRef}
+                      type="text"
+                      value={createName}
+                      onChange={(e) => handleCreateInputChange(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' && createValidation.valid && handleCreate()
+                      }
+                      className={`split-input ${(createName && !createValidation.valid) || (createValidation.valid && createAvailable === false) ? 'error' : ''}`}
+                      placeholder="enter-your-drop-name"
+                      spellCheck={false}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateInputChange('');
+                      }}
+                      className="split-btn-icon"
+                      title="Clear"
+                      style={{
+                        opacity: createName ? 1 : 0.3,
+                        pointerEvents: createName ? 'auto' : 'none',
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fetchGeneratedName();
+                      }}
+                      disabled={generatingName}
+                      className="split-btn-icon"
+                      title="Generate random name"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 12a9 9 0 11-9-9" />
+                        <path d="M21 3v6h-6" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="split-footer">
+                    <span className={`split-char-count ${createValidation.valid ? 'valid' : ''}`}>
+                      {normalizedCreateName.length}/{CREATE_MIN_LENGTH} min chars
+                    </span>
+                  </div>
+
+                  {createValidation.valid && (
+                    <div
+                      className={`split-status ${createChecking ? 'checking' : createAvailable ? 'available' : 'exists'}`}
+                    >
+                      {createChecking ? (
+                        <>
+                          <span
+                            className="loader-spinner"
+                            style={{ width: 14, height: 14, borderWidth: 1 }}
+                          />
+                          Checking...
+                        </>
+                      ) : createAvailable ? (
+                        <>✓ Name available — ready to create</>
+                      ) : (
+                        <>⚠ Name already taken</>
+                      )}
+                    </div>
+                  )}
+
+                  {error && activeTab === 'create' && <p className="error-message">{error}</p>}
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCreate();
+                    }}
+                    disabled={
+                      !createValidation.valid || createChecking || createAvailable === false
+                    }
+                    className="split-action-btn"
+                  >
+                    {createChecking ? 'Checking...' : 'Create Drop'}
+                  </button>
+
+                  <div className="split-badges">
+                    <span className="split-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                      E2E Encrypted
+                    </span>
+                    <span className="split-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                      7 Days
+                    </span>
+                    <span className="split-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <path d="M14 2v6h6M12 18v-6M9 15h6" />
+                      </svg>
+                      10KB
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* VIEW CARD - Collapsed by default */}
+              <div
+                className={`split-card split-card-view ${activeTab === 'view' ? 'expanded' : ''}`}
+                onClick={() => activeTab !== 'view' && handleTabSwitch('view')}
+              >
+                <div className="split-header">
+                  <div className="split-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </div>
+                  <div className="split-header-text">
+                    <div className="split-title">View Drop</div>
+                    <div className="split-desc">Access an existing drop by entering its name.</div>
+                  </div>
+                  <div className="split-hint">min 3 chars</div>
+                </div>
+
+                <div className="split-content">
+                  <div className="split-input-wrapper">
+                    <input
+                      ref={viewInputRef}
+                      type="text"
+                      value={viewName}
+                      onChange={(e) => handleViewInputChange(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && viewValidation.valid && handleView()}
+                      className={`split-input ${viewValidation.valid && viewExists === false ? 'error' : ''}`}
+                      placeholder="enter-drop-name"
+                      spellCheck={false}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewInputChange('');
+                      }}
+                      className="split-btn-icon"
+                      title="Clear"
+                      style={{
+                        opacity: viewName ? 1 : 0.3,
+                        pointerEvents: viewName ? 'auto' : 'none',
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="split-footer">
+                    <span className={`split-char-count ${viewValidation.valid ? 'valid' : ''}`}>
+                      {normalizedViewName.length}/{VIEW_MIN_LENGTH} min chars
+                    </span>
+                  </div>
+
+                  {viewValidation.valid && (
+                    <div
+                      className={`split-status ${viewChecking ? 'checking' : viewExists ? 'exists' : 'notfound'}`}
+                    >
+                      {viewChecking ? (
+                        <>
+                          <span
+                            className="loader-spinner"
+                            style={{ width: 14, height: 14, borderWidth: 1 }}
+                          />
+                          Searching...
+                        </>
+                      ) : viewExists ? (
+                        <>🔒 Drop found — click to unlock</>
+                      ) : (
+                        <>✗ No drop found</>
+                      )}
+                    </div>
+                  )}
+
+                  {error && activeTab === 'view' && <p className="error-message">{error}</p>}
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleView();
+                    }}
+                    disabled={!viewValidation.valid || viewChecking || viewExists === false}
+                    className="split-action-btn"
+                  >
+                    {viewChecking ? 'Searching...' : 'View Drop'}
+                  </button>
+
+                  <div className="split-badges">
+                    <span className="split-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                      Password Protected
+                    </span>
+                    <span className="split-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                      Editable
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <footer className="footer">
             ©{' '}
@@ -658,7 +853,7 @@ export default function HomePage() {
                   marginBottom: '1.5rem',
                 }}
               >
-                {normalizedName}
+                {currentDropName}
               </p>
 
               <p style={{ color: 'var(--fg-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
@@ -751,7 +946,7 @@ export default function HomePage() {
                       fontFamily: 'JetBrains Mono',
                     }}
                   >
-                    {normalizedName}
+                    {currentDropName}
                   </p>
                 </div>
                 <button
@@ -858,7 +1053,7 @@ export default function HomePage() {
                   fontFamily: 'JetBrains Mono',
                 }}
               >
-                {normalizedName}
+                {currentDropName}
               </p>
 
               {dropData.visibility === 'public' && (
@@ -955,7 +1150,7 @@ export default function HomePage() {
                   marginBottom: '0.5rem',
                 }}
               >
-                {normalizedName}
+                {currentDropName}
               </p>
               <p
                 style={{
