@@ -142,7 +142,10 @@ export default function CreatePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="loader animate-fade-in">
             <div className="loader-spinner" />
             <span>Loading...</span>
@@ -165,7 +168,10 @@ export default function CreatePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="terminal-container animate-fade-in-up" style={{ maxWidth: '32rem' }}>
             <p style={{ color: 'var(--danger)', marginBottom: '1rem' }}>Invalid drop name</p>
             <p style={{ color: 'var(--fg-muted)', marginBottom: '1.5rem' }}>
@@ -192,7 +198,10 @@ export default function CreatePage() {
           View on GitHub
         </a>
       </div>
-      <main className="main-container" style={{ paddingTop: '4rem' }}>
+      <header className="page-header">
+        <a href="/">dead-drop.xyz</a>
+      </header>
+      <main className="main-container">
         {/* FORM STATE */}
         {(state === 'form' || state === 'error') && (
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
@@ -221,7 +230,7 @@ export default function CreatePage() {
                 <button
                   onClick={goHome}
                   className="secondary-btn"
-                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem' }}
+                  style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
                 >
                   ← Home
                 </button>
@@ -234,7 +243,7 @@ export default function CreatePage() {
                 >
                   🔒 Private
                   <br />
-                  <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>encrypted</span>
+                  <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>encrypted</span>
                 </button>
                 <button
                   onClick={() => setVisibility('public')}
@@ -242,7 +251,7 @@ export default function CreatePage() {
                 >
                   👁 Public
                   <br />
-                  <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>readable</span>
+                  <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>readable</span>
                 </button>
               </div>
 
@@ -323,10 +332,10 @@ export default function CreatePage() {
 
             <p
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.9375rem',
                 color: 'var(--fg-muted)',
                 marginTop: '2rem',
-                opacity: 0.6,
+                opacity: 0.8,
               }}
             >
               ⚠ Save your password. It cannot be recovered.

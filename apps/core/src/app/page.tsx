@@ -414,7 +414,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="loader animate-fade-in">
             <div className="loader-spinner" />
             <span>Initializing...</span>
@@ -725,7 +728,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="loader animate-fade-in">
             <div className="loader-spinner amber" />
             <span>Loading drop...</span>
@@ -751,7 +757,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode" style={{ textAlign: 'center' }}>
               <p
@@ -824,7 +833,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode">
               <div
@@ -922,7 +934,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode">
               <div
@@ -1024,7 +1039,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode">
               <div
@@ -1132,7 +1150,10 @@ export default function HomePage() {
             View on GitHub
           </a>
         </div>
-        <main className="main-container" style={{ paddingTop: '4rem' }}>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode" style={{ textAlign: 'center' }}>
               <p

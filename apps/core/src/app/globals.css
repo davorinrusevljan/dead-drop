@@ -627,6 +627,36 @@ h1, h2, h3 {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   PAGE HEADER
+   ═══════════════════════════════════════════════════════════ */
+
+.page-header {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.page-header a {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  transition: opacity 0.2s ease;
+}
+
+.page-header a:hover {
+  opacity: 0.8;
+}
+
+.page-header.amber a {
+  color: var(--amber);
+}
+
+/* ═══════════════════════════════════════════════════════════
    ANIMATIONS
    ═══════════════════════════════════════════════════════════ */
 
