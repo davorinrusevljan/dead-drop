@@ -405,7 +405,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -434,7 +434,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -704,7 +704,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               style={{ color: 'inherit' }}
             >
-              Ghostgrammer.xyz
+              ghostgrammer.xyz
             </a>
           </footer>
         </main>
@@ -719,7 +719,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -748,7 +748,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -809,7 +809,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               style={{ color: 'inherit' }}
             >
-              Ghostgrammer.xyz
+              ghostgrammer.xyz
             </a>
           </footer>
         </main>
@@ -824,7 +824,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -895,7 +895,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               style={{ color: 'inherit' }}
             >
-              Ghostgrammer.xyz
+              ghostgrammer.xyz
             </a>
           </footer>
         </main>
@@ -910,7 +910,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -984,7 +984,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               style={{ color: 'inherit' }}
             >
-              Ghostgrammer.xyz
+              ghostgrammer.xyz
             </a>
           </footer>
         </main>
@@ -999,7 +999,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -1095,7 +1095,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               style={{ color: 'inherit' }}
             >
-              Ghostgrammer.xyz
+              ghostgrammer.xyz
             </a>
           </footer>
         </main>
@@ -1110,7 +1110,7 @@ export default function HomePage() {
     return (
       <>
         <div className="construction-banner">
-          ⚠️ Under Construction — Features may change, drops may be lost.{' '}
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
           <a
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
@@ -1203,7 +1203,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               style={{ color: 'inherit' }}
             >
-              Ghostgrammer.xyz
+              ghostgrammer.xyz
             </a>
           </footer>
         </main>

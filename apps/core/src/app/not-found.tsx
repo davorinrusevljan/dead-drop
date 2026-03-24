@@ -20,7 +20,7 @@ export default function NotFound() {
         ← Go home
       </a>
       <p style={{ marginTop: 'auto', paddingTop: '2rem', fontSize: '0.875rem', opacity: 0.7 }}>
-        © Ghostgrammer.xyz
+        © ghostgrammer.xyz
       </p>
     </div>
   );
