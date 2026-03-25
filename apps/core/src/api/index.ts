@@ -52,6 +52,9 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
   });
   app.openapi(docsRoute, docsHandler);
 
+  // Generate name endpoint (must be before /api/drops/:id to avoid route collision)
+  app.openapi(generateNameRoute, generateNameHandler);
+
   // Drop routes (Hono routes for CRUD operations)
   app.route('/', dropRoutes);
 
@@ -60,9 +63,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
   // Upgrade routes
   app.route('/', upgradeRoutes);
-
-  // Generate name endpoint (OpenAPI documented)
-  app.openapi(generateNameRoute, generateNameHandler);
 
   // Error handler
   app.onError((err, c) => {
