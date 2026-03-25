@@ -7,11 +7,14 @@ import {
   dropTierSchema,
   paymentStatusSchema,
   auditActionSchema,
+  mimeTypeSchema,
+  isMimeTypeAllowed,
   isTextPayload,
   isFilePayload,
   type TextPayload,
   type FilePayload,
   type DropContentPayload,
+  type MimeType,
 } from './types.js';
 
 describe('textPayloadSchema', () => {
@@ -355,5 +358,58 @@ describe('type exports', () => {
     };
     const result = filePayloadSchema.parse(data);
     expect(result).toEqual(data);
+  });
+});
+
+describe('mimeTypeSchema', () => {
+  it('should accept "text/plain"', () => {
+    const result = mimeTypeSchema.safeParse('text/plain');
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toBe('text/plain');
+    }
+  });
+
+  it('should reject other MIME types', () => {
+    const invalidMimeTypes = [
+      'text/html',
+      'application/json',
+      'image/png',
+      'application/pdf',
+      'text/plain; charset=utf-8',
+      '',
+      'TEXT/PLAIN',
+    ];
+    for (const mimeType of invalidMimeTypes) {
+      const result = mimeTypeSchema.safeParse(mimeType);
+      expect(result.success, `Expected ${mimeType} to be rejected`).toBe(false);
+    }
+  });
+});
+
+describe('isMimeTypeAllowed', () => {
+  it('should return true for "text/plain"', () => {
+    expect(isMimeTypeAllowed('text/plain')).toBe(true);
+  });
+
+  it('should return false for other MIME types', () => {
+    const disallowedMimeTypes = [
+      'text/html',
+      'application/json',
+      'image/png',
+      'application/pdf',
+      'text/plain; charset=utf-8',
+      '',
+    ];
+    for (const mimeType of disallowedMimeTypes) {
+      expect(isMimeTypeAllowed(mimeType), `Expected ${mimeType} to be disallowed`).toBe(false);
+    }
+  });
+});
+
+describe('MimeType type', () => {
+  it('should allow "text/plain" as MimeType', () => {
+    const mimeType: MimeType = 'text/plain';
+    expect(mimeType).toBe('text/plain');
   });
 });

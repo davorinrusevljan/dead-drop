@@ -6,6 +6,7 @@ import type {
   DropVisibility,
   EncryptionAlgorithm,
   EncryptionParams,
+  MimeType,
 } from '@dead-drop/engine';
 
 /**
@@ -21,6 +22,7 @@ export interface DropRecord {
   iv: string | null;
   encryptionAlgo: EncryptionAlgorithm;
   encryptionParams: string | null;
+  mimeType: MimeType;
   adminHash: string;
   tier: 'free' | 'deep';
   paymentStatus: 'none' | 'pending' | 'completed';
@@ -40,6 +42,7 @@ export interface DropHistoryRecord {
   iv: string | null;
   encryptionAlgo: EncryptionAlgorithm | null;
   encryptionParams: string | null;
+  mimeType: MimeType | null;
   createdAt: Date;
 }
 
@@ -57,6 +60,7 @@ export async function createDrop(
     iv: string | null;
     encryptionAlgo?: EncryptionAlgorithm;
     encryptionParams?: EncryptionParams | null;
+    mimeType?: MimeType;
     adminHash: string;
     tier: DropTier;
     expiresAt: Date;
@@ -75,6 +79,7 @@ export async function createDrop(
     iv: data.iv,
     encryptionAlgo: data.encryptionAlgo ?? 'pbkdf2-aes256-gcm-v1',
     encryptionParams: data.encryptionParams ? JSON.stringify(data.encryptionParams) : null,
+    mimeType: data.mimeType ?? 'text/plain',
     adminHash: data.adminHash,
     tier: data.tier,
     paymentStatus: 'none',
@@ -111,6 +116,7 @@ export async function updateDrop(
     data: string | null;
     r2Key: string | null;
     iv: string | null;
+    mimeType?: MimeType;
     adminHash: string;
   }
 ): Promise<DropRecord | null> {
@@ -119,7 +125,7 @@ export async function updateDrop(
   if (!existing) return null;
   const newVersion = existing.version + 1;
   const now = new Date();
-  // Archive current version to history (including algorithm info)
+  // Archive current version to history (including algorithm info and mime type)
   await orm.insert(dropHistory).values({
     dropId: id,
     version: existing.version,
@@ -128,6 +134,7 @@ export async function updateDrop(
     iv: existing.iv,
     encryptionAlgo: existing.encryptionAlgo,
     encryptionParams: existing.encryptionParams,
+    mimeType: existing.mimeType,
     createdAt: existing.createdAt,
   });
   // Update the drop
@@ -138,6 +145,7 @@ export async function updateDrop(
       data: data.data,
       r2Key: data.r2Key,
       iv: data.iv,
+      mimeType: data.mimeType ?? existing.mimeType,
       adminHash: data.adminHash,
       createdAt: now,
     })

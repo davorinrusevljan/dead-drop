@@ -18,6 +18,22 @@ export const filePayloadSchema = z.object({
   data: z.string(),
 });
 
+/**
+ * MIME Type Support
+ * Allowed MIME types for core edition (text only for now)
+ */
+export const ALLOWED_MIME_TYPES = ['text/plain'] as const;
+
+export const mimeTypeSchema = z.enum(ALLOWED_MIME_TYPES);
+export type MimeType = z.infer<typeof mimeTypeSchema>;
+
+/**
+ * Check if a MIME type is allowed
+ */
+export function isMimeTypeAllowed(mimeType: string): boolean {
+  return ALLOWED_MIME_TYPES.includes(mimeType as MimeType);
+}
+
 export const dropContentPayloadSchema = z.discriminatedUnion('type', [
   textPayloadSchema,
   filePayloadSchema,

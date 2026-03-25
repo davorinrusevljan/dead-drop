@@ -150,11 +150,11 @@ To support multi-word phrases (e.g., `"quick brown polar bear"`) while preventin
 
 ### `GET /api/drops/:id`
 *   **Logic:** Fetch from D1. If `expiresAt < NOW()`, trigger async deletion of D1 row (and R2 object if applicable), return `404`. If `r2Key` exists, fetch payload from R2. Otherwise, use D1 `data`.
-*   **Response (200):** `{ id, tier, visibility, payload, salt, iv, encryptionAlgo, encryptionParams, expiresAt }`
+*   **Response (200):** `{ id, tier, visibility, payload, salt, iv, encryptionAlgo, encryptionParams, mimeType, expiresAt }`
 
 ### `POST /api/drops`
-*   **Body:** `{ id, nameLength, tier, visibility, payload, salt, iv?, encryptionAlgo?, encryptionParams?, adminHash? }`
-*   **Logic:** Validate `nameLength` against tier (e.g., `>= 12` if free). If payload `> 10KB` and `tier == 'free'`, return `402`. Validate `encryptionAlgo` against supported algorithms. Insert into D1. If `id` exists, return `409`.
+*   **Body:** `{ id, nameLength, tier, visibility, payload, salt, iv?, encryptionAlgo?, encryptionParams?, mimeType?, adminHash? }`
+*   **Logic:** Validate `nameLength` against tier (e.g., `>= 12` if free). If payload `> 10KB` and `tier == 'free'`, return `402`. Validate `encryptionAlgo` against supported algorithms. Validate `mimeType` against allowed types (core edition: `text/plain` only). Insert into D1. If `id` exists, return `409`.
 *   **Response (201):** `{ success: true }`
 
 ### `PUT /api/drops/:id`
@@ -173,12 +173,15 @@ To support multi-word phrases (e.g., `"quick brown polar bear"`) while preventin
 ## 8. Data Structures & Storage
 
 ### 8.1 Drop Payload (Client-Side Encapsulation)
-The client wraps all inputs in JSON *before* encryption/upload.
+The client wraps all inputs in JSON *before* encryption/upload. The MIME type is also stored at the database level for efficient content-type lookup without decryption.
 ```typescript
 // Defined in packages/engine/src/types.ts
-type DropContentPayload = 
+type DropContentPayload =
   | { type: 'text'; content: string }
   | { type: 'file'; mime: string; name: string; data: string /* Base64 */ };
+
+// MIME types supported (core edition: text only)
+type MimeType = 'text/plain';
 ```
 
 ### 8.2 Drizzle Schema (Cloudflare D1)
@@ -195,6 +198,7 @@ export const drops = sqliteTable('drops', {
   iv: text('iv'),              // Null if public
   encryptionAlgo: text('encryption_algo').default('pbkdf2-aes256-gcm-v1').notNull(), // Algorithm identifier
   encryptionParams: text('encryption_params'), // Algorithm-specific params (JSON)
+  mimeType: text('mime_type').default('text/plain').notNull(), // MIME type of content
   adminHash: text('admin_hash'), // Null if private
   tier: text('tier').default('free').notNull(),
   paymentStatus: text('payment_status').default('none').notNull(),

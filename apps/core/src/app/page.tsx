@@ -9,6 +9,7 @@ import {
   sha256,
   type EncryptionAlgorithm,
   type EncryptionParams,
+  type MimeType,
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
 
@@ -23,6 +24,7 @@ interface DropData {
   iv: string | null;
   encryptionAlgo: EncryptionAlgorithm;
   encryptionParams: EncryptionParams | null;
+  mimeType: MimeType;
   expiresAt: string;
 }
 

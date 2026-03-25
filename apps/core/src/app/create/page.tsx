@@ -97,6 +97,7 @@ export default function CreatePage() {
           payload,
           salt,
           iv,
+          mimeType: 'text/plain',
           contentHash: respContentHash,
           adminHash,
         }),

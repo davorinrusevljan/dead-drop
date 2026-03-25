@@ -15,8 +15,10 @@ import {
   computePrivateAdminHash,
   sha256,
   isAlgorithmSupported,
+  isMimeTypeAllowed,
   type EncryptionAlgorithm,
   type EncryptionParams,
+  type MimeType,
 } from '@dead-drop/engine';
 
 /**
@@ -71,6 +73,7 @@ drops.get('/api/drops/:id', async (c) => {
       iv: drop.iv,
       encryptionAlgo: drop.encryptionAlgo,
       encryptionParams: drop.encryptionParams ? JSON.parse(drop.encryptionParams) : null,
+      mimeType: drop.mimeType,
       expiresAt: drop.expiresAt.toISOString(),
     },
     200
@@ -95,10 +98,24 @@ drops.post('/api/drops', async (c) => {
     iv?: string;
     encryptionAlgo?: EncryptionAlgorithm;
     encryptionParams?: EncryptionParams;
+    mimeType?: MimeType;
     contentHash?: string;
     adminHash?: string;
     upgradeToken?: string;
   }>();
+
+  // Validate MIME type - only text/plain is allowed in core edition
+  if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
+    return c.json(
+      {
+        error: {
+          code: 'INVALID_MIME_TYPE',
+          message: `Unsupported MIME type: ${body.mimeType}. Only text/plain is supported.`,
+        },
+      },
+      400
+    );
+  }
 
   // Validate encryption algorithm if provided
   if (body.encryptionAlgo && !isAlgorithmSupported(body.encryptionAlgo)) {
@@ -196,6 +213,7 @@ drops.post('/api/drops', async (c) => {
     iv: body.iv ?? null,
     encryptionAlgo: body.encryptionAlgo,
     encryptionParams: body.encryptionParams,
+    mimeType: body.mimeType ?? 'text/plain',
     adminHash,
     tier,
     expiresAt,
@@ -235,10 +253,24 @@ drops.put('/api/drops/:id', async (c) => {
   const body = await c.req.json<{
     payload: string;
     iv?: string;
+    mimeType?: MimeType;
     contentHash?: string;
     newContentHash?: string;
     adminPassword?: string;
   }>();
+
+  // Validate MIME type - only text/plain is allowed in core edition
+  if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
+    return c.json(
+      {
+        error: {
+          code: 'INVALID_MIME_TYPE',
+          message: `Unsupported MIME type: ${body.mimeType}. Only text/plain is supported.`,
+        },
+      },
+      400
+    );
+  }
 
   // Validate payload size
   const payloadSize = new TextEncoder().encode(body.payload).length;
@@ -303,6 +335,7 @@ drops.put('/api/drops/:id', async (c) => {
     data: body.payload,
     r2Key: null,
     iv: body.iv ?? null,
+    mimeType: body.mimeType,
     adminHash: newAdminHash,
   });
 

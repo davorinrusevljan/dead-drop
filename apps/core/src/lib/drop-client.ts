@@ -11,6 +11,7 @@ import {
   type DropVisibility,
   type EncryptionAlgorithm,
   type EncryptionParams,
+  type MimeType,
 } from '@dead-drop/engine';
 
 /**
@@ -32,6 +33,7 @@ export interface EncryptedDropData {
   iv: string;
   encryptionAlgo: EncryptionAlgorithm;
   encryptionParams: EncryptionParams | null;
+  mimeType: MimeType;
   contentHash: string;
 }
 
@@ -44,6 +46,7 @@ export interface PublicDropData {
   visibility: 'public';
   payload: string;
   salt: string;
+  mimeType: MimeType;
   adminHash: string;
 }
 
@@ -56,7 +59,8 @@ export async function createDropData(
   content: DropContentPayload,
   visibility: 'private',
   tier: DropTier,
-  algorithm?: EncryptionAlgorithm
+  algorithm?: EncryptionAlgorithm,
+  mimeType?: MimeType
 ): Promise<EncryptedDropData>;
 export async function createDropData(
   name: string,
@@ -64,7 +68,8 @@ export async function createDropData(
   content: DropContentPayload,
   visibility: 'public',
   tier: DropTier,
-  algorithm?: EncryptionAlgorithm
+  algorithm?: EncryptionAlgorithm,
+  mimeType?: MimeType
 ): Promise<PublicDropData>;
 export async function createDropData(
   name: string,
@@ -72,7 +77,8 @@ export async function createDropData(
   content: DropContentPayload,
   visibility: DropVisibility,
   tier: DropTier,
-  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1'
+  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1',
+  mimeType: MimeType = 'text/plain'
 ): Promise<EncryptedDropData | PublicDropData> {
   // Normalize and validate name
   const normalizedName = normalizeDropName(name);
@@ -90,9 +96,9 @@ export async function createDropData(
   const contentJson = JSON.stringify(content);
 
   if (visibility === 'private') {
-    return createPrivateDropData(id, normalizedName, password, contentJson, algorithm);
+    return createPrivateDropData(id, normalizedName, password, contentJson, algorithm, mimeType);
   } else {
-    return createPublicDropData(id, normalizedName, password, contentJson);
+    return createPublicDropData(id, normalizedName, password, contentJson, mimeType);
   }
 }
 
@@ -104,7 +110,8 @@ async function createPrivateDropData(
   normalizedName: string,
   password: string,
   contentJson: string,
-  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1'
+  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1',
+  mimeType: MimeType = 'text/plain'
 ): Promise<EncryptedDropData> {
   // Get the crypto provider for the specified algorithm
   const provider = cryptoRegistry.get(algorithm);
@@ -131,6 +138,7 @@ async function createPrivateDropData(
     iv,
     encryptionAlgo: algorithm,
     encryptionParams: null,
+    mimeType,
     contentHash,
   };
 }
@@ -142,7 +150,8 @@ async function createPublicDropData(
   id: string,
   normalizedName: string,
   password: string,
-  contentJson: string
+  contentJson: string,
+  mimeType: MimeType = 'text/plain'
 ): Promise<PublicDropData> {
   // Generate salt for admin hash
   const salt = generateSalt();
@@ -159,6 +168,7 @@ async function createPublicDropData(
     visibility: 'public',
     payload,
     salt,
+    mimeType,
     adminHash,
   };
 }

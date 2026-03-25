@@ -22,6 +22,8 @@ export const drops = sqliteTable('drops', {
   encryptionAlgo: text('encryption_algo').default('pbkdf2-aes256-gcm-v1').notNull(),
   /** Algorithm-specific parameters (JSON string) */
   encryptionParams: text('encryption_params'),
+  /** MIME type of the content */
+  mimeType: text('mime_type').default('text/plain').notNull(),
   /** SHA-256(contentHash + PEPPER) for private, SHA-256(adminPassword + salt) for public */
   adminHash: text('admin_hash').notNull(),
   /** Tier: 'free' | 'deep' */
@@ -57,6 +59,8 @@ export const dropHistory = sqliteTable('drop_history', {
   encryptionAlgo: text('encryption_algo'),
   /** Historical algorithm-specific parameters (JSON string) */
   encryptionParams: text('encryption_params'),
+  /** Historical MIME type */
+  mimeType: text('mime_type'),
   /** Creation timestamp */
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
