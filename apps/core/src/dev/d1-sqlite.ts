@@ -86,7 +86,7 @@ class D1PreparedStatement {
     // Convert to raw array format
     if (results.length === 0) return [];
     const keys = Object.keys(results[0] as Record<string, unknown>);
-    return results.map((row) => keys.map((k) => (row as Record<string, unknown>)[k]));
+    return results.map((row) => keys.map((k) => (row as Record<string, unknown>)[k])) as T[][];
   }
 }
 
