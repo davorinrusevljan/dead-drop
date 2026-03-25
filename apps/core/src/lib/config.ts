@@ -25,7 +25,7 @@ const getApiUrl = (): string => {
 
   // Default based on environment
   if (process.env.NODE_ENV === 'development') {
-    return 'http://127.0.0.1:8787';
+    return 'http://localhost:9090';
   }
 
   // Production default
