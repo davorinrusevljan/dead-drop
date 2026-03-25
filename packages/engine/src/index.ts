@@ -12,6 +12,12 @@ export {
   FORBIDDEN_SLUGS,
 } from './validation.js';
 export * from './types.js';
-export * from './crypto.js';
+
+// Crypto exports - new module with algorithm registry
+export * from './crypto/index.js';
+
+// Database exports
 export * from './db/index.js';
+
+// Wordlist utilities
 export { generateRandomDropName, generateDropNameSuggestions, WORDS } from './wordlist.js';

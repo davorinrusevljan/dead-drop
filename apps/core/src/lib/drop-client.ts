@@ -1,17 +1,16 @@
 import {
   generateSalt,
-  generateIV,
   sha256,
-  deriveKey,
-  encrypt,
-  decrypt,
   computeDropId,
   computePrivateAdminHash,
   computePublicAdminHash,
   normalizeDropName,
   validateDropName,
+  cryptoRegistry,
   type DropTier,
   type DropVisibility,
+  type EncryptionAlgorithm,
+  type EncryptionParams,
 } from '@dead-drop/engine';
 
 /**
@@ -31,6 +30,8 @@ export interface EncryptedDropData {
   payload: string;
   salt: string;
   iv: string;
+  encryptionAlgo: EncryptionAlgorithm;
+  encryptionParams: EncryptionParams | null;
   contentHash: string;
 }
 
@@ -54,21 +55,24 @@ export async function createDropData(
   password: string,
   content: DropContentPayload,
   visibility: 'private',
-  tier: DropTier
+  tier: DropTier,
+  algorithm?: EncryptionAlgorithm
 ): Promise<EncryptedDropData>;
 export async function createDropData(
   name: string,
   password: string,
   content: DropContentPayload,
   visibility: 'public',
-  tier: DropTier
+  tier: DropTier,
+  algorithm?: EncryptionAlgorithm
 ): Promise<PublicDropData>;
 export async function createDropData(
   name: string,
   password: string,
   content: DropContentPayload,
   visibility: DropVisibility,
-  tier: DropTier
+  tier: DropTier,
+  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1'
 ): Promise<EncryptedDropData | PublicDropData> {
   // Normalize and validate name
   const normalizedName = normalizeDropName(name);
@@ -86,7 +90,7 @@ export async function createDropData(
   const contentJson = JSON.stringify(content);
 
   if (visibility === 'private') {
-    return createPrivateDropData(id, normalizedName, password, contentJson);
+    return createPrivateDropData(id, normalizedName, password, contentJson, algorithm);
   } else {
     return createPublicDropData(id, normalizedName, password, contentJson);
   }
@@ -99,20 +103,24 @@ async function createPrivateDropData(
   id: string,
   normalizedName: string,
   password: string,
-  contentJson: string
+  contentJson: string,
+  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1'
 ): Promise<EncryptedDropData> {
+  // Get the crypto provider for the specified algorithm
+  const provider = cryptoRegistry.get(algorithm);
+
   // Generate cryptographic parameters
-  const salt = generateSalt();
-  const iv = generateIV();
+  const salt = provider.generateSalt();
+  const iv = provider.generateIV();
 
   // Compute content hash
   const contentHash = await sha256(contentJson);
 
   // Derive encryption key from password
-  const key = await deriveKey(password, salt);
+  const key = await provider.deriveKey(password, salt);
 
   // Encrypt content
-  const payload = await encrypt(contentJson, key, iv);
+  const payload = await provider.encrypt(contentJson, key, iv);
 
   return {
     id,
@@ -121,6 +129,8 @@ async function createPrivateDropData(
     payload,
     salt,
     iv,
+    encryptionAlgo: algorithm,
+    encryptionParams: null,
     contentHash,
   };
 }
@@ -160,13 +170,18 @@ export async function decryptDrop(
   payload: string,
   password: string,
   salt: string,
-  iv: string
+  iv: string,
+  algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1',
+  _params?: EncryptionParams
 ): Promise<DropContentPayload> {
+  // Get the crypto provider for the specified algorithm
+  const provider = cryptoRegistry.get(algorithm);
+
   // Derive key from password
-  const key = await deriveKey(password, salt);
+  const key = await provider.deriveKey(password, salt, _params);
 
   // Decrypt content
-  const contentJson = await decrypt(payload, key, iv);
+  const contentJson = await provider.decrypt(payload, key, iv);
 
   // Parse and return content
   return JSON.parse(contentJson) as DropContentPayload;

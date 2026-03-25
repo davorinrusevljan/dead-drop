@@ -5,9 +5,10 @@ import {
   normalizeDropName,
   validateDropName,
   computeDropId,
-  deriveKey,
-  decrypt,
+  cryptoRegistry,
   sha256,
+  type EncryptionAlgorithm,
+  type EncryptionParams,
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
 
@@ -20,6 +21,8 @@ interface DropData {
   payload: string;
   salt: string;
   iv: string | null;
+  encryptionAlgo: EncryptionAlgorithm;
+  encryptionParams: EncryptionParams | null;
   expiresAt: string;
 }
 
@@ -211,8 +214,14 @@ export default function HomePage() {
       setError(null);
       setUnlockPassword(pwd);
       try {
-        const key = await deriveKey(pwd, dropData.salt);
-        const contentJson = await decrypt(dropData.payload, key, dropData.iv!);
+        // Get the crypto provider for the drop's algorithm
+        const provider = cryptoRegistry.get(dropData.encryptionAlgo);
+        const key = await provider.deriveKey(
+          pwd,
+          dropData.salt,
+          dropData.encryptionParams ?? undefined
+        );
+        const contentJson = await provider.decrypt(dropData.payload, key, dropData.iv!);
         const parsed = JSON.parse(contentJson) as DropContent;
         const hash = await sha256(contentJson);
         setContentHash(hash);
@@ -241,7 +250,6 @@ export default function HomePage() {
       setIsLoading(true);
       setError(null);
       try {
-        const { generateIV, encrypt } = await import('@dead-drop/engine');
         const contentPayload: DropContent = { type: 'text', content: newContent };
         const contentJson = JSON.stringify(contentPayload);
         let payload: string;
@@ -250,9 +258,15 @@ export default function HomePage() {
         let newReqContentHash: string | null = null;
 
         if (dropData.visibility === 'private') {
-          const key = await deriveKey(unlockPassword, dropData.salt);
-          iv = generateIV();
-          payload = await encrypt(contentJson, key, iv);
+          // Get the crypto provider for the drop's algorithm
+          const provider = cryptoRegistry.get(dropData.encryptionAlgo);
+          const key = await provider.deriveKey(
+            unlockPassword,
+            dropData.salt,
+            dropData.encryptionParams ?? undefined
+          );
+          iv = provider.generateIV();
+          payload = await provider.encrypt(contentJson, key, iv);
           reqContentHash = contentHash;
           // Compute the NEW content hash for the server to store
           newReqContentHash = await sha256(contentJson);

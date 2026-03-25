@@ -18,6 +18,10 @@ export const drops = sqliteTable('drops', {
   salt: text('salt').notNull(),
   /** Hex-encoded IV (12 bytes) - Null if public */
   iv: text('iv'),
+  /** Encryption algorithm identifier */
+  encryptionAlgo: text('encryption_algo').default('pbkdf2-aes256-gcm-v1').notNull(),
+  /** Algorithm-specific parameters (JSON string) */
+  encryptionParams: text('encryption_params'),
   /** SHA-256(contentHash + PEPPER) for private, SHA-256(adminPassword + salt) for public */
   adminHash: text('admin_hash').notNull(),
   /** Tier: 'free' | 'deep' */
@@ -49,6 +53,10 @@ export const dropHistory = sqliteTable('drop_history', {
   r2Key: text('r2_key'),
   /** Historical IV - Null if public */
   iv: text('iv'),
+  /** Historical encryption algorithm identifier */
+  encryptionAlgo: text('encryption_algo'),
+  /** Historical algorithm-specific parameters (JSON string) */
+  encryptionParams: text('encryption_params'),
   /** Creation timestamp */
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()

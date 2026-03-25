@@ -1,7 +1,12 @@
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, desc, and } from 'drizzle-orm';
 import { drops, dropHistory, dropAuditLog } from '@dead-drop/engine/db';
-import type { DropTier, DropVisibility } from '@dead-drop/engine';
+import type {
+  DropTier,
+  DropVisibility,
+  EncryptionAlgorithm,
+  EncryptionParams,
+} from '@dead-drop/engine';
 
 /**
  * Drop record type from database
@@ -14,6 +19,8 @@ export interface DropRecord {
   visibility: 'private' | 'public';
   salt: string;
   iv: string | null;
+  encryptionAlgo: EncryptionAlgorithm;
+  encryptionParams: string | null;
   adminHash: string;
   tier: 'free' | 'deep';
   paymentStatus: 'none' | 'pending' | 'completed';
@@ -31,6 +38,8 @@ export interface DropHistoryRecord {
   data: string | null;
   r2Key: string | null;
   iv: string | null;
+  encryptionAlgo: EncryptionAlgorithm | null;
+  encryptionParams: string | null;
   createdAt: Date;
 }
 
@@ -46,6 +55,8 @@ export async function createDrop(
     r2Key: string | null;
     salt: string;
     iv: string | null;
+    encryptionAlgo?: EncryptionAlgorithm;
+    encryptionParams?: EncryptionParams | null;
     adminHash: string;
     tier: DropTier;
     expiresAt: Date;
@@ -62,6 +73,8 @@ export async function createDrop(
     visibility: data.visibility,
     salt: data.salt,
     iv: data.iv,
+    encryptionAlgo: data.encryptionAlgo ?? 'pbkdf2-aes256-gcm-v1',
+    encryptionParams: data.encryptionParams ? JSON.stringify(data.encryptionParams) : null,
     adminHash: data.adminHash,
     tier: data.tier,
     paymentStatus: 'none',
@@ -106,13 +119,15 @@ export async function updateDrop(
   if (!existing) return null;
   const newVersion = existing.version + 1;
   const now = new Date();
-  // Archive current version to history
+  // Archive current version to history (including algorithm info)
   await orm.insert(dropHistory).values({
     dropId: id,
     version: existing.version,
     data: existing.data,
     r2Key: existing.r2Key,
     iv: existing.iv,
+    encryptionAlgo: existing.encryptionAlgo,
+    encryptionParams: existing.encryptionParams,
     createdAt: existing.createdAt,
   });
   // Update the drop

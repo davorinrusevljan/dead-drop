@@ -11,7 +11,13 @@ import {
   TIER_MAX_PAYLOAD_SIZES,
   TIER_EXPIRATION_DAYS,
 } from '../db.js';
-import { computePrivateAdminHash, sha256 } from '@dead-drop/engine/crypto';
+import {
+  computePrivateAdminHash,
+  sha256,
+  isAlgorithmSupported,
+  type EncryptionAlgorithm,
+  type EncryptionParams,
+} from '@dead-drop/engine';
 
 /**
  * Drop routes
@@ -63,6 +69,8 @@ drops.get('/api/drops/:id', async (c) => {
       payload: drop.data ?? '',
       salt: drop.salt,
       iv: drop.iv,
+      encryptionAlgo: drop.encryptionAlgo,
+      encryptionParams: drop.encryptionParams ? JSON.parse(drop.encryptionParams) : null,
       expiresAt: drop.expiresAt.toISOString(),
     },
     200
@@ -85,10 +93,25 @@ drops.post('/api/drops', async (c) => {
     payload: string;
     salt: string;
     iv?: string;
+    encryptionAlgo?: EncryptionAlgorithm;
+    encryptionParams?: EncryptionParams;
     contentHash?: string;
     adminHash?: string;
     upgradeToken?: string;
   }>();
+
+  // Validate encryption algorithm if provided
+  if (body.encryptionAlgo && !isAlgorithmSupported(body.encryptionAlgo)) {
+    return c.json(
+      {
+        error: {
+          code: 'INVALID_ALGORITHM',
+          message: `Unsupported encryption algorithm: ${body.encryptionAlgo}`,
+        },
+      },
+      400
+    );
+  }
 
   // Determine tier based on upgrade token
   let tier: 'free' | 'deep' = body.tier ?? 'free';
@@ -171,6 +194,8 @@ drops.post('/api/drops', async (c) => {
     r2Key: null, // Core edition doesn't use R2
     salt: body.salt,
     iv: body.iv ?? null,
+    encryptionAlgo: body.encryptionAlgo,
+    encryptionParams: body.encryptionParams,
     adminHash,
     tier,
     expiresAt,

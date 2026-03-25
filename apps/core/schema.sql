@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS drops (
   visibility TEXT NOT NULL DEFAULT 'protected',
   salt TEXT NOT NULL,
   iv TEXT,
+  encryption_algo TEXT NOT NULL DEFAULT 'pbkdf2-aes256-gcm-v1',
+  encryption_params TEXT,
   admin_hash TEXT NOT NULL,
   tier TEXT NOT NULL DEFAULT 'free',
   payment_status TEXT NOT NULL DEFAULT 'none',
@@ -22,6 +24,8 @@ CREATE TABLE IF NOT EXISTS drop_history (
   data TEXT,
   r2_key TEXT,
   iv TEXT,
+  encryption_algo TEXT,
+  encryption_params TEXT,
   created_at INTEGER NOT NULL,
   FOREIGN KEY (drop_id) REFERENCES drops(id)
 );

@@ -150,11 +150,11 @@ To support multi-word phrases (e.g., `"quick brown polar bear"`) while preventin
 
 ### `GET /api/drops/:id`
 *   **Logic:** Fetch from D1. If `expiresAt < NOW()`, trigger async deletion of D1 row (and R2 object if applicable), return `404`. If `r2Key` exists, fetch payload from R2. Otherwise, use D1 `data`.
-*   **Response (200):** `{ id, tier, visibility, payload, salt, iv, expiresAt }`
+*   **Response (200):** `{ id, tier, visibility, payload, salt, iv, encryptionAlgo, encryptionParams, expiresAt }`
 
 ### `POST /api/drops`
-*   **Body:** `{ id, nameLength, tier, visibility, payload, salt, iv?, adminHash? }`
-*   **Logic:** Validate `nameLength` against tier (e.g., `>= 12` if free). If payload `> 10KB` and `tier == 'free'`, return `402`. Insert into D1. If `id` exists, return `409`.
+*   **Body:** `{ id, nameLength, tier, visibility, payload, salt, iv?, encryptionAlgo?, encryptionParams?, adminHash? }`
+*   **Logic:** Validate `nameLength` against tier (e.g., `>= 12` if free). If payload `> 10KB` and `tier == 'free'`, return `402`. Validate `encryptionAlgo` against supported algorithms. Insert into D1. If `id` exists, return `409`.
 *   **Response (201):** `{ success: true }`
 
 ### `PUT /api/drops/:id`
@@ -190,9 +190,11 @@ export const drops = sqliteTable('drops', {
   id: text('id').primaryKey(), // SHA-256(normalized_name)
   data: text('data'),          // Null if payload > 10KB
   r2Key: text('r2_key'),       // Null if payload <= 10KB
-  visibility: text('visibility').default('private').notNull(), 
+  visibility: text('visibility').default('private').notNull(),
   salt: text('salt').notNull(),
   iv: text('iv'),              // Null if public
+  encryptionAlgo: text('encryption_algo').default('pbkdf2-aes256-gcm-v1').notNull(), // Algorithm identifier
+  encryptionParams: text('encryption_params'), // Algorithm-specific params (JSON)
   adminHash: text('admin_hash'), // Null if private
   tier: text('tier').default('free').notNull(),
   paymentStatus: text('payment_status').default('none').notNull(),
@@ -204,11 +206,51 @@ export const drops = sqliteTable('drops', {
 ---
 
 ## 9. Cryptography Algorithms (Web Crypto API)
-**File:** `packages/engine/src/crypto.ts` (Must use native Web Crypto API, no Node.js `crypto` module).
+**Directory:** `packages/engine/src/crypto/` (Must use native Web Crypto API, no Node.js `crypto` module).
+
+### 9.1 Algorithm Registry Pattern
+The crypto module uses a **provider registry pattern** to support multiple encryption algorithms with forward compatibility:
+
+```typescript
+// Algorithm identifiers are versioned for future upgrades
+type EncryptionAlgorithm =
+  | 'pbkdf2-aes256-gcm-v1'      // Current: PBKDF2 (100k iter) + AES-256-GCM
+  | 'xchacha20-poly1305-v1'      // Future: XChaCha20-Poly1305
+  | 'argon2id-xchacha20-v1';     // Future: Argon2id KDF + XChaCha20-Poly1305
+
+// Provider interface for algorithm implementations
+interface CryptoProvider {
+  readonly algorithm: EncryptionAlgorithm;
+  generateSalt(): string;
+  generateIV(): string;
+  deriveKey(password: string, salt: string, params?: EncryptionParams): Promise<CryptoKey>;
+  encrypt(data: string, key: CryptoKey, iv: string): Promise<string>;
+  decrypt(ciphertext: string, key: CryptoKey, iv: string): Promise<string>;
+}
+
+// Usage via registry
+const provider = cryptoRegistry.get('pbkdf2-aes256-gcm-v1');
+```
+
+### 9.2 Current Algorithms
 *   **ID Hash:** `SHA-256(NormalizedName)`
 *   **Admin Hash (Public):** `SHA-256(AdminPassword + Salt)`
 *   **Key Derivation (Private):** `PBKDF2` (100,000 iterations, SHA-256, 16-byte random salt).
 *   **Encryption (Private):** `AES-GCM` 256-bit (12-byte random IV).
+
+### 9.3 Module Structure
+```
+packages/engine/src/crypto/
+├── algorithms.ts       # Algorithm identifiers and param schemas (Zod)
+├── provider.ts         # CryptoProvider interface and registry
+├── providers/
+│   └── pbkdf2-aes256-gcm.ts  # Current algorithm implementation
+├── legacy.ts           # Backward-compatible exports
+└── index.ts            # Barrel file
+```
+
+### 9.4 Backward Compatibility
+Legacy functions (`generateSalt`, `deriveKey`, `encrypt`, `decrypt`) are maintained in `legacy.ts` for backward compatibility. They use the default algorithm (`pbkdf2-aes256-gcm-v1`).
 
 ---
 
