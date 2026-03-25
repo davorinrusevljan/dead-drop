@@ -10,7 +10,9 @@ const nextConfig = {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9090',
+    // Production default: api.dead-drop.xyz
+    // Local dev: set NEXT_PUBLIC_API_URL=http://localhost:9090
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.dead-drop.xyz',
   },
 };
 
