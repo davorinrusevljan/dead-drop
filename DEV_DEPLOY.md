@@ -7,9 +7,9 @@
 cd /workspaces/dead-drop/apps/core
 pnpm dev:api
 
-# Terminal 2: Start Frontend
+# Terminal 2: Start Frontend (with local API URL)
 cd /workspaces/dead-drop/apps/core
-pnpm dev
+NEXT_PUBLIC_API_URL=http://localhost:9090 pnpm dev
 ```
 
 - **API**: http://localhost:9090
