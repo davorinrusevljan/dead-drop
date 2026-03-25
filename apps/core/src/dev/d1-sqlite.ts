@@ -34,7 +34,7 @@ class D1PreparedStatement {
     this.db = db;
   }
 
-  bind(...values: unknown[]): D1PreparedStatement {
+  bind(..._values: unknown[]): D1PreparedStatement {
     // Return a new prepared statement with bound values
     // In better-sqlite3, we bind at run time
     return new D1PreparedStatement(this.stmt, this.db);
