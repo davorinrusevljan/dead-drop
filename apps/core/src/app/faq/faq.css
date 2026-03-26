@@ -34,7 +34,6 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 8px;
-  overflow: hidden;
   transition: all 0.3s ease;
 }
 
@@ -53,10 +52,10 @@
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  font-family: 'Syne', sans-serif;
-  font-size: 1.0625rem;
-  font-weight: 600;
-  line-height: 1.5;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
   color: var(--fg);
   list-style: none;
   transition: color 0.2s ease;
