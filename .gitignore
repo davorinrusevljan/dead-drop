@@ -46,3 +46,6 @@ core.*
 # Temporary files
 *.tmp
 *.temp
+
+# Core dumps
+core.*
