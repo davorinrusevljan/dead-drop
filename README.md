@@ -121,10 +121,21 @@ wrangler secret put UPGRADE_TOKEN --name dead-drop-core
 | `pnpm dev:api` | Start local API server (port 9090) |
 | `pnpm build` | Build all packages |
 | `pnpm test` | Run unit tests |
-| `pnpm test:coverage` | Run tests with coverage |
+| `pnpm test:coverage` | Run tests with coverage (all packages) |
+| `pnpm --filter @dead-drop/engine test:coverage` | Run coverage for engine package only |
+| `pnpm --filter @dead-drop/core test:coverage` | Run coverage for core package only |
 | `pnpm lint` | Lint all code |
 | `pnpm deploy:api` | Deploy API to Cloudflare Workers |
 | `pnpm deploy:pages` | Deploy frontend to Cloudflare Pages |
+
+### Test Coverage
+
+The project requires 100% test coverage. Coverage reports are generated in `./coverage/`:
+
+```bash
+# View HTML coverage report after running tests
+open coverage/index.html
+```
 
 ## Architecture
 
