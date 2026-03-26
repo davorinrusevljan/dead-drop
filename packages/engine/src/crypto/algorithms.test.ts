@@ -129,10 +129,41 @@ describe('algorithms', () => {
       expect(validateParams('xchacha20-poly1305-v1', {})).toEqual({ valid: true });
     });
 
+    it('should reject invalid xchacha20-poly1305-v1 params', () => {
+      // Unknown params are stripped by Zod, so empty objects remain valid
+      expect(validateParams('xchacha20-poly1305-v1', { unknown: 'param' })).toEqual({
+        valid: true,
+      });
+      // _reserved with z.never() should fail if a value is provided
+      expect(validateParams('xchacha20-poly1305-v1', { _reserved: 'value' })).toEqual({
+        valid: false,
+        error: 'Invalid XChaCha20-Poly1305 parameters',
+      });
+    });
+
     it('should validate argon2id-xchacha20-v1 params', () => {
       expect(validateParams('argon2id-xchacha20-v1', {})).toEqual({ valid: true });
       expect(validateParams('argon2id-xchacha20-v1', { memory: 65536 })).toEqual({
         valid: true,
+      });
+    });
+
+    it('should reject invalid argon2id-xchacha20-v1 params', () => {
+      expect(validateParams('argon2id-xchacha20-v1', { memory: 0 })).toEqual({
+        valid: false,
+        error: 'Invalid Argon2id-XChaCha20 parameters',
+      });
+      expect(validateParams('argon2id-xchacha20-v1', { time: -1 })).toEqual({
+        valid: false,
+        error: 'Invalid Argon2id-XChaCha20 parameters',
+      });
+    });
+
+    it('should return invalid for unknown algorithm (default case)', () => {
+      // Force TypeScript to accept an invalid value to test the default case
+      expect(validateParams('unknown-algo' as EncryptionAlgorithm, {})).toEqual({
+        valid: false,
+        error: 'Unknown algorithm: unknown-algo',
       });
     });
   });
@@ -148,6 +179,11 @@ describe('algorithms', () => {
 
     it('should return 24 for argon2id-xchacha20-v1', () => {
       expect(getIVLength('argon2id-xchacha20-v1')).toBe(24);
+    });
+
+    it('should return 12 for unknown algorithm (default case)', () => {
+      // Force TypeScript to accept an invalid value to test the default case
+      expect(getIVLength('unknown-algo' as EncryptionAlgorithm)).toBe(12);
     });
   });
 

@@ -30,6 +30,8 @@ export default defineConfig({
         '**/node_modules/**',
         // Database schema (tested via integration tests)
         '**/db/schema.ts',
+        // Dev utilities (local development only)
+        '**/src/dev/**',
       ],
     },
   },

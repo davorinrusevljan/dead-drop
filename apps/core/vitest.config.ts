@@ -43,6 +43,8 @@ export default defineConfig({
         '**/worker.ts',
         // Config
         '**/lib/config.ts',
+        // Dev utilities (local development only)
+        '**/dev/**',
       ],
     },
   },

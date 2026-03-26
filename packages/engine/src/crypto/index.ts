@@ -33,7 +33,7 @@ export {
 // Provider interface and registry
 export { type CryptoProvider, cryptoRegistry } from './provider.js';
 
-// Legacy API (backward compatible)
+// Legacy API (backward compatible) - export from original implementation
 export {
   generateRandomBytes,
   bytesToHex,
@@ -47,7 +47,7 @@ export {
   computePrivateAdminHash,
   computePublicAdminHash,
   computeDropId,
-} from './legacy.js';
+} from '../crypto.js';
 
 // Provider implementations
 export {
@@ -59,6 +59,4 @@ export {
 import { cryptoRegistry } from './provider.js';
 import { createPbkdf2Aes256GcmProvider } from './providers/pbkdf2-aes256-gcm.js';
 
-if (!cryptoRegistry.has('pbkdf2-aes256-gcm-v1')) {
-  cryptoRegistry.register(createPbkdf2Aes256GcmProvider());
-}
+cryptoRegistry.register(createPbkdf2Aes256GcmProvider());

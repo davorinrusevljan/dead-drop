@@ -94,6 +94,27 @@ describe('Pbkdf2Aes256GcmProvider', () => {
       const key = await provider.deriveKey('password', salt, { iterations: 50000 });
       expect(key).toBeInstanceOf(CryptoKey);
     });
+
+    it('should use default iterations when empty object params provided', async () => {
+      const salt = provider.generateSalt();
+      // Pass empty object - should use default iterations (nullish coalescing branch)
+      const key = await provider.deriveKey('password', salt, {});
+      expect(key).toBeInstanceOf(CryptoKey);
+    });
+
+    it('should fall back to default iterations for invalid params', async () => {
+      const salt = provider.generateSalt();
+      // Pass invalid params - should fall back to default iterations
+      const key = await provider.deriveKey('password', salt, { iterations: 0 });
+      expect(key).toBeInstanceOf(CryptoKey);
+    });
+
+    it('should fall back to default iterations for non-integer params', async () => {
+      const salt = provider.generateSalt();
+      // Pass invalid params type - should fall back to default iterations
+      const key = await provider.deriveKey('password', salt, { iterations: 1.5 });
+      expect(key).toBeInstanceOf(CryptoKey);
+    });
   });
 
   describe('encrypt and decrypt', () => {
