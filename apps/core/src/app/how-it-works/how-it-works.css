@@ -32,6 +32,7 @@
   font-family: 'Syne', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.4;
   color: var(--fg);
   margin-bottom: 1.5rem;
   display: flex;
@@ -59,7 +60,6 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
   transition: all 0.3s ease;
 }
 
@@ -79,12 +79,14 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 1.25rem;
   font-weight: 700;
+  line-height: 1.4;
   color: var(--accent);
 }
 
 .crypto-label {
   display: block;
   font-size: 0.75rem;
+  line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--fg-muted);
@@ -159,6 +161,7 @@
   font-family: 'Syne', sans-serif;
   font-size: 1.125rem;
   font-weight: 600;
+  line-height: 1.4;
   color: var(--fg);
   margin-bottom: 0.5rem;
 }
