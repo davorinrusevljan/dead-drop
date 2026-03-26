@@ -1,0 +1,132 @@
+.glossary-container {
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.glossary-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.glossary-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.03em;
+}
+
+.glossary-subtitle {
+  color: var(--fg-muted);
+  font-size: 1.125rem;
+  opacity: 0.8;
+}
+
+.glossary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.glossary-section {
+  position: relative;
+}
+
+.glossary-section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--fg-muted);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.glossary-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.glossary-item {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.glossary-item:hover {
+  border-color: var(--border-focus);
+  transform: translateX(4px);
+}
+
+.glossary-term {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.glossary-item:hover .glossary-term {
+  color: var(--accent);
+}
+
+.glossary-definition {
+  color: var(--fg);
+  opacity: 0.75;
+  line-height: 1.7;
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+/* Footer navigation */
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-nav a {
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+  color: var(--accent);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .glossary-item {
+    padding: 1rem;
+  }
+
+  .glossary-term {
+    font-size: 1rem;
+  }
+
+  .glossary-definition {
+    font-size: 0.875rem;
+  }
+
+  .footer-nav {
+    gap: 1.5rem;
+  }
+}
+
+/* Two-column layout for larger screens */
+@media (min-width: 768px) {
+  .glossary-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}

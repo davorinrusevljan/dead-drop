@@ -626,6 +626,26 @@ h1, h2, h3 {
   opacity: 0.8;
 }
 
+/* Footer navigation */
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.footer-nav a {
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+  color: var(--accent);
+}
+
 /* ═══════════════════════════════════════════════════════════
    PAGE HEADER
    ═══════════════════════════════════════════════════════════ */
@@ -1289,5 +1309,9 @@ h1, h2, h3 {
   .btn-group .action-btn,
   .btn-group .secondary-btn {
     max-width: none;
+  }
+
+  .footer-nav {
+    gap: 1.5rem;
   }
 }

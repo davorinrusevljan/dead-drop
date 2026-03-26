@@ -464,7 +464,31 @@ export default function HomePage() {
             <div className="hero" style={{ marginBottom: '2rem' }}>
               <h1 className="hero-title">dead-drop.xyz</h1>
               <p className="hero-subtitle">
-                Share encrypted secrets that self-destruct after 7 days.
+                <strong>Dead simple. Zero knowledge.</strong>
+                <br />
+                <span style={{ opacity: 0.85, display: 'inline-block', marginTop: '0.5rem' }}>
+                  Share snippets or encrypted secrets without an account.{' '}
+                  <a
+                    href="https://github.com/davorinrusevljan/dead-drop"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+                  >
+                    Open-source
+                  </a>
+                  , ephemeral, truly private. Gone in 7 days.
+                </span>
+                <br />
+                <span
+                  style={{
+                    opacity: 0.6,
+                    fontSize: '0.875rem',
+                    display: 'inline-block',
+                    marginTop: '0.75rem',
+                  }}
+                >
+                  Coming: REST API for machine access.
+                </span>
               </p>
             </div>
 
@@ -713,15 +737,22 @@ export default function HomePage() {
             </div>
           </div>
           <footer className="footer">
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
           </footer>
         </main>
       </>
@@ -818,15 +849,22 @@ export default function HomePage() {
             </div>
           </div>
           <footer className="footer">
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
           </footer>
         </main>
       </>
@@ -904,15 +942,22 @@ export default function HomePage() {
             </div>
           </div>
           <footer className="footer">
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
           </footer>
         </main>
       </>
@@ -993,15 +1038,22 @@ export default function HomePage() {
             </div>
           </div>
           <footer className="footer">
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
           </footer>
         </main>
       </>
@@ -1104,15 +1156,22 @@ export default function HomePage() {
             </div>
           </div>
           <footer className="footer">
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
           </footer>
         </main>
       </>
@@ -1212,15 +1271,22 @@ export default function HomePage() {
             </div>
           </div>
           <footer className="footer">
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
           </footer>
         </main>
       </>
