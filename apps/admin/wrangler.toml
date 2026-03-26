@@ -1,0 +1,21 @@
+name = "dead-drop-admin"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# Admin database (separate from core for security isolation)
+[[d1_databases]]
+binding = "ADMIN_DB"
+database_name = "dead-drop-admin"
+database_id = "placeholder-admin-db-id"
+
+# Core database (read-only for stats)
+[[d1_databases]]
+binding = "CORE_DB"
+database_name = "dead-drop-core"
+database_id = "d7b160c6-078a-40db-a51c-29eb73bc8eb2"
+
+[dev]
+port = 8788
+ip = "127.0.0.1"
+local_protocol = "http"
