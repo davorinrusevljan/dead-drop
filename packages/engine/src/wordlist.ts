@@ -18,13 +18,24 @@ function secureRandomInt(max: number): number {
 }
 
 /**
+ * Words that contain hyphens - excluded from name generation to avoid
+ * ambiguity when splitting kebab-case names
+ */
+const HYPHENATED_WORDS = new Set(['drop-down', 'felt-tip', 't-shirt', 'yo-yo']);
+
+/**
+ * Filtered wordlist without hyphenated words for drop name generation
+ */
+const WORDS_FOR_NAMES = WORDS.filter((w) => !HYPHENATED_WORDS.has(w));
+
+/**
  * Generate a random drop name from the EFF Diceware wordlist
  * @param wordCount - Number of words to include (default 4)
  * @returns A kebab-case name like "abacus-abide-ablaze-able"
  */
 export function generateRandomDropName(wordCount: number = 4): string {
   const words: string[] = [];
-  const availableWords = [...WORDS];
+  const availableWords = [...WORDS_FOR_NAMES];
 
   for (let i = 0; i < wordCount && availableWords.length > 0; i++) {
     const index = secureRandomInt(availableWords.length);
