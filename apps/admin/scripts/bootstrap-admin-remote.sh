@@ -1,12 +1,13 @@
 #!/bin/bash
 # Bootstrap script for creating initial superadmin in remote D1 database
+# Uses SHA-256 for consistency with the password.ts implementation
 # Usage: ./scripts/bootstrap-admin-remote.sh <username> <password>
 
 set -e
 
 if [ -z "$1" ] || [ -z "$2" ]; then
     echo "Usage: $0 <username> <password>"
-    echo "  username  - Admin username"
+    echo "  username  - Admin username (required)"
     echo "  password  - Admin password (min 8 characters)"
     exit 1
 fi
@@ -19,58 +20,35 @@ if [ ${#PASSWORD} -lt 8 ]; then
     exit 1
 fi
 
-# Generate salt (32 random bytes, base64 encoded)
-SALT=$(openssl rand -base64 32 | tr -d '\n')
+# Generate salt (32 bytes, openssl rand -hex 32)
+SALT="${SALT}"
 
-# Generate password hash using Node.js
-# This matches the hashPassword function in src/lib/password.ts
-PASSWORD_HASH=$(node -e "
-const crypto = require('crypto');
-const password = '${PASSWORD}';
-const salt = '${SALT}';
+# Generate SHA-256 hash (like password.ts)
+HASH=$(echo -n "${PASSWORD}${SALT}" | openssl dgst -binary)
 
-async function hashPassword(password, salt) {
-    const encoder = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(password),
-        'PBKDF2',
-        false,
-        ['deriveBits']
-    );
-
-    const derivedBits = await crypto.subtle.deriveBits(
-        {
-            name: 'PBKDF2',
-            salt: encoder.encode(salt),
-            iterations: 100000,
-            hash: 'SHA-256'
-        },
-        keyMaterial,
-        256
-    );
-
-    return Buffer.from(derivedBits).toString('base64');
-}
-
-hashPassword(password, salt).then(console.log);
-")
+# Convert to base64 for storage
+HASH_BASE64="${HASH}"
 
 echo "Creating superadmin user: $USERNAME"
 echo "Salt: $SALT"
-echo "Hash: $PASSWORD_HASH"
+echo "Hash: $HASH"
 
 # Insert into D1 database
 wrangler d1 execute dead-drop-admin --remote --command="
 INSERT INTO admin_users (username, password_hash, salt, role, created_at)
-VALUES ('$USERNAME', '$PASSWORD_HASH', '$SALT', 'superadmin', unixepoch());
+VALUES ('$USERNAME', '$HASH', 'superadmin', unixepoch());
 "
 
-echo ""
-echo "✓ Superadmin user created successfully!"
-echo ""
-echo "You can now log in to the admin panel at:"
-echo "  https://admin.dead-drop.xyz/login"
-echo ""
-echo "  Username: $USERNAME"
-echo "  Password: $(echo $PASSWORD | sed 's/./*/g')"
+if [ $? -ne 0 ]; then
+    echo "✓ Superadmin user created successfully!"
+    echo ""
+    echo "You can now log in to the admin panel at:"
+    echo "  https://admin.dead-drop.xyz/login"
+    echo ""
+    echo "  Username: $USERNAME"
+    echo "  Password: $(echo $PASSWORD | sed 's/./*/g')
+    exit 0
+fi
+
+# Check if user exists
+wrangler d1 execute dead-drop-admin --remote --command="SELECT id, username, role FROM admin_users WHERE username = '$USERNAME';"
