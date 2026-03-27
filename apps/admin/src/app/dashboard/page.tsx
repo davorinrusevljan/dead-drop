@@ -1,18 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Legend,
-} from 'recharts';
 import { API_BASE_URL } from '@/lib/api-config';
 
 interface OverviewStats {
@@ -60,7 +48,7 @@ type TimePeriod = 'hour' | 'day' | 'threeDays' | 'week' | 'month' | 'year';
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
   hour: 'Last Hour',
-  day: 'Last 24 Hours',
+  day: 'Last 24 hours',
   threeDays: 'Last 3 Days',
   week: 'Last Week',
   month: 'Last Month',
@@ -89,6 +77,18 @@ export default function DashboardPage() {
       ]);
 
       if (overviewRes.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (periodRes.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (distRes.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (activityRes.status === 401) {
         window.location.href = '/login';
         return;
       }
@@ -127,17 +127,6 @@ export default function DashboardPage() {
       });
   }, [fetchData]);
 
-  useEffect(() => {
-    if (user) {
-      fetch(`${API_BASE_URL}/api/stats/activity?period=${selectedPeriod}`, {
-        credentials: 'include',
-      })
-        .then((res) => res.json())
-        .then((data: unknown) => setActivity(data as ActivityData))
-        .catch(() => {});
-    }
-  }, [selectedPeriod, user]);
-
   const handleLogout = async () => {
     await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     window.location.href = '/login';
@@ -150,31 +139,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const tierData = distribution
-    ? [
-        { name: 'Free', value: distribution.byTier.free },
-        { name: 'Deep', value: distribution.byTier.deep },
-      ]
-    : [];
-
-  const visibilityData = distribution
-    ? [
-        { name: 'Public', value: distribution.byVisibility.public },
-        { name: 'Private', value: distribution.byVisibility.private },
-      ]
-    : [];
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    if (selectedPeriod === 'hour') {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    }
-    if (selectedPeriod === 'day' || selectedPeriod === 'threeDays') {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    }
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -261,94 +225,45 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Activity Timeline */}
-          <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
-            <h2 className="text-lg font-medium text-zinc-200 mb-4">Activity Timeline</h2>
-            <div className="h-64">
-              {activity && activity.buckets.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={activity.buckets}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis
-                      dataKey="date"
-                      tickFormatter={formatDate}
-                      stroke="#71717a"
-                      fontSize={12}
-                    />
-                    <YAxis stroke="#71717a" fontSize={12} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#18181b',
-                        border: '1px solid #27272a',
-                        borderRadius: '4px',
-                      }}
-                      labelFormatter={formatDate}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="created"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="edited"
-                      stroke="#f59e0b"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="deleted"
-                      stroke="#ef4444"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-zinc-500">
-                  No activity data
+        {/* Distribution Stats (Text-based) */}
+        {distribution && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
+              <h2 className="text-lg font-medium text-zinc-200 mb-4">By Tier</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-[#22c55e]">
+                    {distribution.byTier.free}
+                  </div>
+                  <div className="text-sm text-zinc-400">Free</div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Distribution Charts */}
-          <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
-            <h2 className="text-lg font-medium text-zinc-200 mb-4">Distribution</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm text-zinc-400 mb-2">By Tier</h3>
-                <div className="h-40">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={tierData}>
-                      <Bar dataKey="value" fill="#22c55e" />
-                      <XAxis dataKey="name" stroke="#71717a" fontSize={10} />
-                      <YAxis stroke="#71717a" fontSize={10} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-[#3b82f6]">
+                    {distribution.byTier.deep}
+                  </div>
+                  <div className="text-sm text-zinc-400">Deep</div>
                 </div>
               </div>
-              <div>
-                <h3 className="text-sm text-zinc-400 mb-2">By Visibility</h3>
-                <div className="h-40">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={visibilityData}>
-                      <Bar dataKey="value" fill="#3b82f6" />
-                      <XAxis dataKey="name" stroke="#71717a" fontSize={10} />
-                      <YAxis stroke="#71717a" fontSize={10} />
-                    </BarChart>
-                  </ResponsiveContainer>
+            </div>
+            <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
+              <h2 className="text-lg font-medium text-zinc-200 mb-4">By Visibility</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-zinc-200">
+                    {distribution.byVisibility.public}
+                  </div>
+                  <div className="text-sm text-zinc-400">Public</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-zinc-200">
+                    {distribution.byVisibility.private}
+                  </div>
+                  <div className="text-sm text-zinc-400">Private</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Recent Activity */}
         <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
@@ -363,11 +278,11 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {activity?.recent?.map((item, i) => (
+                {activity?.recent?.slice(0, 20).map((item, i) => (
                   <tr key={i} className="border-b border-[#27272a]/50">
-                    <td className="py-2">
+                    <td className="py-2 text-sm">
                       <span
-                        className={`px-2 py-1 text-xs rounded ${
+                        className={`px-2 py-1 rounded ${
                           item.action === 'created'
                             ? 'bg-green-500/10 text-green-400'
                             : item.action === 'edited'
@@ -381,7 +296,7 @@ export default function DashboardPage() {
                     <td className="py-2 text-sm text-zinc-400 font-mono">
                       {item.dropId.slice(0, 16)}...
                     </td>
-                    <td className="py-2 text-sm text-zinc-500">
+                    <td className="py-2 text-sm text-zinc-400">
                       {new Date(item.createdAt).toLocaleString()}
                     </td>
                   </tr>

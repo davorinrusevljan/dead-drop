@@ -7,7 +7,7 @@ pages_build_output_dir = ".vercel/output/static"
 [[d1_databases]]
 binding = "ADMIN_DB"
 database_name = "dead-drop-admin"
-database_id = "placeholder-admin-db-id"
+database_id = "002a7e33-34a7-4928-aaf0-315dc588c9ad"
 
 # Core database (read-only for stats)
 [[d1_databases]]

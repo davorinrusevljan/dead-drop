@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/lib/api-config';
-import { API_BASE_URL } from '@/lib/api-config';
 
 interface User {
   id: number;

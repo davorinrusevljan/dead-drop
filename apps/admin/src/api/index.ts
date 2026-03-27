@@ -6,6 +6,33 @@ import { statsRoutes } from './routes/stats.js';
 import { usersRoutes } from './routes/users.js';
 
 /**
+ * Allowed CORS origins for production
+ * When credentials: true, we must use specific origins, not '*'
+ */
+const PRODUCTION_ORIGINS = [
+  'https://admin.dead-drop.xyz',
+  'https://dead-drop-admin.pages.dev',
+  'https://dead-drop-admin.bytesmith.pages.dev',
+  // Add any other preview URLs as needed
+];
+
+/**
+ * CORS origin resolver
+ */
+const corsOriginResolver = (origin: string | undefined) => {
+  // Allow requests with no origin (like mobile apps, curl)
+  if (!origin) return origin;
+  // Allow whitelisted origins
+  if (PRODUCTION_ORIGINS.includes(origin)) return origin;
+  // For development, allow localhost
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    return origin;
+  }
+  // Reject other origins by returning the first allowed origin
+  return PRODUCTION_ORIGINS[0];
+};
+
+/**
  * Environment bindings for the Admin API
  */
 export type Env = {
@@ -47,9 +74,10 @@ export function createAdminApiApp(): Hono<AppEnv> {
   app.use(
     '*',
     cors({
-      origin: '*', // Configure appropriately for production
+      origin: corsOriginResolver,
       allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization'],
+      allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+      exposeHeaders: ['Set-Cookie'],
       credentials: true,
     })
   );

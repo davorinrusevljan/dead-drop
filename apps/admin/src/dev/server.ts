@@ -234,7 +234,7 @@ async function localAuthMiddleware(c: Context, next: Next) {
   c.set('user', {
     id: user.id,
     username: user.username,
-    role: user.role,
+    role: user.role as 'admin' | 'superadmin',
   });
 
   return next();
@@ -507,7 +507,8 @@ app.delete('/api/users/:id', localAuthMiddleware, async (c) => {
     return c.json({ error: { code: 'FORBIDDEN', message: 'Superadmin access required' } }, 403);
   }
 
-  const id = parseInt(c.req.param('id'), 10);
+  const idParam = c.req.param('id');
+  const id = parseInt(idParam ?? '', 10);
   if (isNaN(id)) {
     return c.json({ error: { code: 'INVALID_INPUT', message: 'Invalid user ID' } }, 400);
   }
@@ -530,7 +531,8 @@ app.put('/api/users/:id/password', localAuthMiddleware, async (c) => {
     return c.json({ error: { code: 'FORBIDDEN', message: 'Superadmin access required' } }, 403);
   }
 
-  const id = parseInt(c.req.param('id'), 10);
+  const idParam = c.req.param('id');
+  const id = parseInt(idParam ?? '', 10);
   if (isNaN(id)) {
     return c.json({ error: { code: 'INVALID_INPUT', message: 'Invalid user ID' } }, 400);
   }
