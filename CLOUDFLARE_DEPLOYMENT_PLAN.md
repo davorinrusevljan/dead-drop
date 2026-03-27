@@ -2,12 +2,25 @@
 
 ## Overview
 
-This document outlines the complete deployment process for dead-drop on Cloudflare, including:
-- D1 Databases (Core + Admin)
-- Workers (Core API + Admin API)
-- Pages (Core Frontend + Admin Frontend)
-- Secrets and Environment Variables
-- Initial Admin User Creation
+This document outlines the deployment process for the **Admin Panel** on Cloudflare.
+
+> **Note:** Core API and Frontend are already deployed. This guide focuses only on the Admin Panel components.
+
+## Already Deployed (Do Not Recreate)
+
+| Component | Name | Status |
+|-----------|------|--------|
+| Core D1 Database | `dead-drop-core` | ✅ Already exists |
+| Core API Worker | `dead-drop-core` | ✅ Already deployed |
+| Core Frontend (Pages) | `dead-drop` | ✅ Already deployed |
+
+## What We Need to Deploy
+
+| Component | Name | Description |
+|-----------|------|-------------|
+| Admin D1 Database | `dead-drop-admin` | Stores admin users |
+| Admin API Worker | `dead-drop-admin-api` | Handles authentication & stats |
+| Admin Frontend (Pages) | `dead-drop-admin` | Admin panel UI |
 
 ## Architecture
 
@@ -17,24 +30,25 @@ This document outlines the complete deployment process for dead-drop on Cloudfla
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────┐     ┌─────────────────┐                               │
-│  │  Core Frontend  │     │  Admin Frontend │                               │
-│  │  (Pages)        │     │  (Pages)        │                               │
+│  │  Core Frontend  │     │  Admin Frontend │  ← TO DEPLOY                  │
+│  │  (Pages) ✅      │     │  (Pages)        │                               │
 │  │  dead-drop.xyz  │     │  admin.dead-    │                               │
 │  │                 │     │  drop.xyz       │                               │
 │  └────────┬────────┘     └────────┬────────┘                               │
 │           │                       │                                         │
 │           ▼                       ▼                                         │
 │  ┌─────────────────┐     ┌─────────────────┐                               │
-│  │   Core API      │     │   Admin API     │                               │
-│  │   (Worker)      │     │   (Worker)      │                               │
+│  │   Core API      │     │   Admin API     │  ← TO DEPLOY                  │
+│  │   (Worker) ✅    │     │   (Worker)      │                               │
 │  │ api.dead-       │     │ admin-api.dead- │                               │
 │  │ drop.xyz        │     │ drop.xyz        │                               │
 │  └────────┬────────┘     └────────┬────────┘                               │
 │           │                       │                                         │
 │           ▼                       ▼                                         │
 │  ┌─────────────────┐     ┌─────────────────┐                               │
-│  │   Core D1 DB    │     │   Admin D1 DB   │                               │
+│  │   Core D1 DB    │     │   Admin D1 DB   │  ← TO CREATE                  │
 │  │   (drops, etc)  │◄────│   (users)      │                               │
+│  │      ✅          │     │                 │                               │
 │  └─────────────────┘     └─────────────────┘                               │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -53,41 +67,22 @@ This document outlines the complete deployment process for dead-drop on Cloudfla
    wrangler whoami  # Verify authentication
    ```
 
-3. **Domain configured** in Cloudflare (optional but recommended):
-   - `dead-drop.xyz` - Core frontend
-   - `api.dead-drop.xyz` - Core API
-   - `admin.dead-drop.xyz` - Admin frontend
-   - `admin-api.dead-drop.xyz` - Admin API
+3. **Domain configured** in Cloudflare:
+   - `dead-drop.xyz` - Core frontend ✅
+   - `api.dead-drop.xyz` - Core API ✅
+   - `admin.dead-drop.xyz` - Admin frontend (to configure)
+   - `admin-api.dead-drop.xyz` - Admin API (to configure)
 
 ---
 
-## Phase 1: Create D1 Databases
-
-### Step 1.1: Create Core Database
-
-```bash
-# Create the core database
-wrangler d1 create dead-drop-core
-
-# Note the database_id from the output!
-# Example output:
-# ✅ Successfully created DB 'dead-drop-core'
-# database_id = "abc12345-1234-5678-9012-abcdef123456"
-
-# Apply the schema
-wrangler d1 execute dead-drop-core --remote --file=apps/core/schema.sql
-
-# Verify tables were created
-wrangler d1 execute dead-drop-core --remote --command="SELECT name FROM sqlite_master WHERE type='table';"
-```
-
-### Step 1.2: Create Admin Database
+## Phase 1: Create Admin D1 Database
 
 ```bash
 # Create the admin database
 wrangler d1 create dead-drop-admin
 
 # Note the database_id from the output!
+# Example: database_id = "abc12345-1234-5678-9012-abcdef123456"
 
 # Apply the schema
 wrangler d1 execute dead-drop-admin --remote --file=apps/admin/schema.sql
@@ -96,72 +91,29 @@ wrangler d1 execute dead-drop-admin --remote --file=apps/admin/schema.sql
 wrangler d1 execute dead-drop-admin --remote --command="SELECT name FROM sqlite_master WHERE type='table';"
 ```
 
-### Step 1.3: Update wrangler.toml Files
+### Update wrangler.toml Files
 
-Update the `database_id` values in the following files with the actual IDs from Step 1.1 and 1.2:
+Update `apps/admin/wrangler.api.toml` with the new database ID:
 
-**apps/core/wrangler.api.toml:**
 ```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "dead-drop-core"
-database_id = "YOUR-CORE-DB-ID"  # <-- Update this
-```
-
-**apps/core/wrangler.toml:**
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "dead-drop-core"
-database_id = "YOUR-CORE-DB-ID"  # <-- Update this
-```
-
-**apps/admin/wrangler.api.toml:**
-```toml
+# Admin database (separate from core for security isolation)
 [[d1_databases]]
 binding = "ADMIN_DB"
 database_name = "dead-drop-admin"
-database_id = "YOUR-ADMIN-DB-ID"  # <-- Update this
+database_id = "YOUR-NEW-ADMIN-DB-ID"  # <-- Update this
 
+# Core database (read-only for stats) - already exists
 [[d1_databases]]
 binding = "CORE_DB"
 database_name = "dead-drop-core"
-database_id = "YOUR-CORE-DB-ID"  # <-- Update this
+database_id = "d7b160c6-078a-40db-a51c-29eb73bc8eb2"  # Keep existing
 ```
 
-**apps/admin/wrangler.toml:**
-```toml
-[[d1_databases]]
-binding = "ADMIN_DB"
-database_name = "dead-drop-admin"
-database_id = "YOUR-ADMIN-DB-ID"  # <-- Update this
-
-[[d1_databases]]
-binding = "CORE_DB"
-database_name = "dead-drop-core"
-database_id = "YOUR-CORE-DB-ID"  # <-- Update this
-```
+Also update `apps/admin/wrangler.toml` with the same bindings.
 
 ---
 
-## Phase 2: Configure Secrets
-
-### Step 2.1: Core API Secrets
-
-```bash
-# Generate secure random values
-ADMIN_PEPPER=$(openssl rand -base64 32)
-UPGRADE_TOKEN=$(openssl rand -hex 32)
-
-# Set secrets for Core API Worker
-wrangler secret put ADMIN_HASH_PEPPER --name dead-drop-core
-# Paste: $ADMIN_PEPPER
-
-wrangler secret put UPGRADE_TOKEN --name dead-drop-core
-# Paste: $UPGRADE_TOKEN
-```
-
-### Step 2.2: Admin API Secrets
+## Phase 2: Configure Admin API Secrets
 
 ```bash
 # Generate secure JWT secret (min 32 characters)
@@ -179,27 +131,7 @@ echo "JWT_SECRET: $JWT_SECRET" | tee -a .secrets.txt
 
 ---
 
-## Phase 3: Deploy API Workers
-
-### Step 3.1: Deploy Core API
-
-```bash
-cd apps/core
-
-# Build the engine package first (if not already built)
-cd ../..
-pnpm build
-
-# Deploy Core API Worker
-cd apps/core
-pnpm deploy:api
-# or: wrangler deploy -c wrangler.api.toml
-
-# Verify deployment
-curl https://dead-drop-core.YOUR-SUBDOMAIN.workers.dev/api/health
-```
-
-### Step 3.2: Deploy Admin API
+## Phase 3: Deploy Admin API Worker
 
 ```bash
 cd apps/admin
@@ -277,27 +209,7 @@ SELECT id, username, role, created_at FROM admin_users;
 
 ---
 
-## Phase 5: Deploy Frontends (Pages)
-
-### Step 5.1: Build and Deploy Core Frontend
-
-```bash
-cd apps/core
-
-# Set environment variable for API URL
-export NEXT_PUBLIC_API_URL=https://api.dead-drop.xyz
-
-# Build for Cloudflare Pages
-pnpm build:pages
-
-# Deploy to Pages
-wrangler pages deploy .vercel/output/static --project-name=dead-drop
-
-# Or using the npm script:
-# pnpm deploy:pages
-```
-
-### Step 5.2: Build and Deploy Admin Frontend
+## Phase 5: Deploy Admin Frontend (Pages)
 
 ```bash
 cd apps/admin
@@ -315,17 +227,8 @@ wrangler pages deploy .vercel/output/static --project-name=dead-drop-admin
 # pnpm deploy:pages
 ```
 
-### Step 5.3: Configure Pages Environment Variables
+### Configure Pages Environment Variables
 
-For each Pages project, set environment variables:
-
-**Core Frontend (dead-drop):**
-```bash
-wrangler pages secret put NEXT_PUBLIC_API_URL --project-name=dead-drop
-# Value: https://api.dead-drop.xyz
-```
-
-**Admin Frontend (dead-drop-admin):**
 ```bash
 wrangler pages secret put NEXT_PUBLIC_API_URL --project-name=dead-drop-admin
 # Value: https://admin-api.dead-drop.xyz
@@ -335,39 +238,17 @@ wrangler pages secret put NEXT_PUBLIC_API_URL --project-name=dead-drop-admin
 
 ## Phase 6: Configure Custom Domains (Optional)
 
-### Step 6.1: Core Frontend Domain
-
-```bash
-# Add custom domain to Core Frontend
-wrangler pages domain create dead-drop dead-drop.xyz
-
-# Or via Cloudflare Dashboard:
-# Pages > dead-drop > Custom domains > Add domain
-```
-
-### Step 6.2: Core API Domain
-
-```bash
-# Add custom domain to Core API Worker
-wrangler workers routes publish --name dead-drop-core
-
-# In wrangler.api.toml, add:
-# routes = [
-#   { pattern = "api.dead-drop.xyz/*", zone_name = "dead-drop.xyz" }
-# ]
-```
-
-### Step 6.3: Admin Frontend Domain
+### Admin Frontend Domain
 
 ```bash
 # Add custom domain to Admin Frontend
 wrangler pages domain create dead-drop-admin admin.dead-drop.xyz
 ```
 
-### Step 6.4: Admin API Domain
+### Admin API Domain
 
 ```bash
-# Add custom domain to Admin API Worker
+# Add custom route to Admin API Worker
 # In apps/admin/wrangler.api.toml, add:
 # routes = [
 #   { pattern = "admin-api.dead-drop.xyz/*", zone_name = "dead-drop.xyz" }
@@ -399,22 +280,16 @@ cd apps/admin && pnpm deploy:api
 
 ## Deployment Checklist
 
-- [ ] **Phase 1: Databases**
-  - [ ] Create `dead-drop-core` D1 database
-  - [ ] Apply core schema
+- [ ] **Phase 1: Admin Database**
   - [ ] Create `dead-drop-admin` D1 database
   - [ ] Apply admin schema
-  - [ ] Update all `wrangler*.toml` with database IDs
+  - [ ] Update `apps/admin/wrangler*.toml` with database ID
 
-- [ ] **Phase 2: Secrets**
-  - [ ] Set `ADMIN_HASH_PEPPER` for Core API
-  - [ ] Set `UPGRADE_TOKEN` for Core API
-  - [ ] Set `JWT_SECRET` for Admin API
-  - [ ] Store secrets securely
+- [ ] **Phase 2: Admin API Secrets**
+  - [ ] Set `JWT_SECRET` for Admin API Worker
+  - [ ] Store secret securely
 
-- [ ] **Phase 3: API Workers**
-  - [ ] Deploy Core API Worker
-  - [ ] Verify Core API health
+- [ ] **Phase 3: Admin API Worker**
   - [ ] Deploy Admin API Worker
   - [ ] Verify Admin API health
 
@@ -422,14 +297,11 @@ cd apps/admin && pnpm deploy:api
   - [ ] Create initial superadmin user
   - [ ] Test login via API
 
-- [ ] **Phase 5: Frontends**
-  - [ ] Build and deploy Core Frontend
-  - [ ] Build and deploy Admin Frontend
+- [ ] **Phase 5: Admin Frontend**
+  - [ ] Build and deploy Admin Frontend to Pages
   - [ ] Set environment variables
 
 - [ ] **Phase 6: Domains (Optional)**
-  - [ ] Configure `dead-drop.xyz`
-  - [ ] Configure `api.dead-drop.xyz`
   - [ ] Configure `admin.dead-drop.xyz`
   - [ ] Configure `admin-api.dead-drop.xyz`
 
@@ -443,26 +315,21 @@ cd apps/admin && pnpm deploy:api
 ## Quick Deployment Commands (Summary)
 
 ```bash
-# === PHASE 1: Databases ===
-wrangler d1 create dead-drop-core
+# === PHASE 1: Admin Database ===
 wrangler d1 create dead-drop-admin
-wrangler d1 execute dead-drop-core --remote --file=apps/core/schema.sql
 wrangler d1 execute dead-drop-admin --remote --file=apps/admin/schema.sql
+# Update database_id in apps/admin/wrangler*.toml
 
-# === PHASE 2: Secrets ===
-wrangler secret put ADMIN_HASH_PEPPER --name dead-drop-core
-wrangler secret put UPGRADE_TOKEN --name dead-drop-core
+# === PHASE 2: Admin Secrets ===
 wrangler secret put JWT_SECRET --name dead-drop-admin-api
 
-# === PHASE 3: Deploy APIs ===
-cd apps/core && pnpm deploy:api
+# === PHASE 3: Deploy Admin API ===
 cd apps/admin && pnpm deploy:api
 
-# === PHASE 4: Create Admin ===
-# (See Phase 4 details above)
+# === PHASE 4: Create Admin User ===
+cd apps/admin && ./scripts/bootstrap-admin-remote.sh superadmin "YOUR-PASSWORD"
 
-# === PHASE 5: Deploy Frontends ===
-cd apps/core && NEXT_PUBLIC_API_URL=https://api.dead-drop.xyz pnpm deploy:pages
+# === PHASE 5: Deploy Admin Frontend ===
 cd apps/admin && NEXT_PUBLIC_API_URL=https://admin-api.dead-drop.xyz pnpm deploy:pages
 ```
 
@@ -473,15 +340,12 @@ cd apps/admin && NEXT_PUBLIC_API_URL=https://admin-api.dead-drop.xyz pnpm deploy
 If something goes wrong:
 
 ```bash
-# Rollback Core API to previous version
-wrangler rollback dead-drop-core
-
 # Rollback Admin API to previous version
 wrangler rollback dead-drop-admin-api
 
-# Rollback Pages deployment
-wrangler pages deployment list --project-name=dead-drop
-wrangler pages deployment rollback --project-name=dead-drop --deployment-id=<DEPLOYMENT_ID>
+# Rollback Admin Pages deployment
+wrangler pages deployment list --project-name=dead-drop-admin
+wrangler pages deployment rollback --project-name=dead-drop-admin --deployment-id=<DEPLOYMENT_ID>
 ```
 
 ---
@@ -489,12 +353,9 @@ wrangler pages deployment rollback --project-name=dead-drop --deployment-id=<DEP
 ## Monitoring & Logs
 
 ```bash
-# Tail Core API logs
-wrangler tail dead-drop-core
-
 # Tail Admin API logs
 wrangler tail dead-drop-admin-api
 
-# View Pages deployment logs
-wrangler pages deployment tail --project-name=dead-drop
+# View Admin Pages deployment logs
+wrangler pages deployment tail --project-name=dead-drop-admin
 ```
