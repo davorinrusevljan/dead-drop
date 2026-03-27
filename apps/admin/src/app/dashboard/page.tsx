@@ -13,6 +13,7 @@ import {
   Bar,
   Legend,
 } from 'recharts';
+import { API_BASE_URL } from '@/lib/api-config';
 
 interface OverviewStats {
   totalDrops: number;
@@ -79,10 +80,12 @@ export default function DashboardPage() {
   const fetchData = useCallback(async () => {
     try {
       const [overviewRes, periodRes, distRes, activityRes] = await Promise.all([
-        fetch('/api/stats/overview', { credentials: 'include' }),
-        fetch('/api/stats/by-period', { credentials: 'include' }),
-        fetch('/api/stats/distribution', { credentials: 'include' }),
-        fetch(`/api/stats/activity?period=${selectedPeriod}`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/stats/overview`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/stats/by-period`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/stats/distribution`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/api/stats/activity?period=${selectedPeriod}`, {
+          credentials: 'include',
+        }),
       ]);
 
       if (overviewRes.status === 401) {
@@ -108,7 +111,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check auth
-    fetch('/api/auth/me', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data: unknown) => {
         const meData = data as MeResponse;
@@ -126,7 +129,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      fetch(`/api/stats/activity?period=${selectedPeriod}`, { credentials: 'include' })
+      fetch(`${API_BASE_URL}/api/stats/activity?period=${selectedPeriod}`, {
+        credentials: 'include',
+      })
         .then((res) => res.json())
         .then((data: unknown) => setActivity(data as ActivityData))
         .catch(() => {});
@@ -134,7 +139,7 @@ export default function DashboardPage() {
   }, [selectedPeriod, user]);
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     window.location.href = '/login';
   };
 

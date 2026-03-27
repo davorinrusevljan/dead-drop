@@ -1,6 +1,38 @@
 # dead-drop Development & Deployment Guide
 
-## Quick Start
+## Quick Start (Recommended)
+
+### Using the Server Management Script
+
+```bash
+# Start all servers at once
+/workspaces/dead-drop/scripts/servers.sh start all
+
+# Check server status
+/workspaces/dead-drop/scripts/servers.sh status
+
+# Create admin user (if needed)
+/workspaces/dead-drop/scripts/servers.sh bootstrap
+
+# Stop all servers
+/workspaces/dead-drop/scripts/servers.sh stop all
+```
+
+**Server Ports:**
+| Service | Port | URL |
+|---------|------|-----|
+| Core API | 9090 | http://localhost:9090 |
+| Admin API | 9091 | http://localhost:9091 |
+| Core Web | 3010 | http://localhost:3010 |
+| Admin Web | 3011 | http://localhost:3011 |
+
+**Default login:** `admin` / `admin123`
+
+---
+
+## Manual Start (Alternative)
+
+### Core App
 
 ```bash
 # Terminal 1: Start API server
@@ -12,39 +44,80 @@ cd /workspaces/dead-drop/apps/core
 NEXT_PUBLIC_API_URL=http://localhost:9090 pnpm dev
 ```
 
-- **API**: http://localhost:9090
-- **Frontend**: http://localhost:3010
+### Admin Panel
+
+```bash
+# Terminal 1: Start Admin API server
+cd /workspaces/dead-drop/apps/admin
+JWT_SECRET=dev-secret-key-min-32-chars pnpm dev:api
+
+# Terminal 2: Start Admin Frontend
+cd /workspaces/dead-drop/apps/admin
+pnpm dev
+```
 
 ---
 
-## How to PROPERLY Stop the API Server
+## Stopping Servers
 
-When you start `pnpm dev:api`, it spawns multiple processes. To properly stop it:
-
-### Option 1: Press Ctrl+C in the terminal where you started it
-This sends SIGINT to all child processes.
-
-### Option 2: Kill all tsx server processes
+### Using the Script (Recommended)
 ```bash
-# Run this to find and kill the server processes
-for dir in /proc/[0-9]*; do
-  pid=$(basename $dir)
-  cmdline=$(cat "$dir/cmdline" 2>/dev/null | tr '\0' ' ')
-  if echo "$cmdline" | grep -q "tsx.*server.ts"; then
-    kill -9 $pid 2>/dev/null
-  fi
-done
+# Stop all servers
+/workspaces/dead-drop/scripts/servers.sh stop all
+
+# Stop specific server
+/workspaces/dead-drop/scripts/servers.sh stop core-api
+/workspaces/dead-drop/scripts/servers.sh stop admin-api
+/workspaces/dead-drop/scripts/servers.sh stop core-web
+/workspaces/dead-drop/scripts/servers.sh stop admin-web
 ```
 
-### Verify port is free:
+### Manual Kill (if needed)
 ```bash
-node -e "
-const net = require('net');
-const s = net.createServer();
-s.listen(9090, () => { console.log('Port 9090 is FREE'); s.close(() => process.exit(0)); });
-s.on('error', (e) => console.log('Port in use:', e.code));
-"
+# Kill processes on specific ports
+pkill -f "tsx.*core.*server.ts"  # Core API
+pkill -f "tsx.*admin.*server.ts" # Admin API
+pkill -f "next dev.*3010"        # Core Web
+pkill -f "next dev.*3011"        # Admin Web
 ```
+
+### Verify ports are free:
+```bash
+/workspaces/dead-drop/scripts/servers.sh status
+```
+
+---
+
+## Admin Panel Specifics
+
+### Architecture
+```
+┌──────────────────┐         ┌──────────────────┐
+│   Admin Frontend │  HTTP   │   Admin API      │
+│   Next.js        │ ──────► │   Hono + SQLite  │
+│   port 3011      │         │   port 9091      │
+└──────────────────┘         └────────┬─────────┘
+                                      │
+                            ┌─────────┴─────────┐
+                            │                   │
+                     ┌──────▼──────┐    ┌───────▼──────┐
+                     │  Admin DB   │    │   Core DB    │
+                     │ (users)     │    │  (stats)     │
+                     └─────────────┘    └──────────────┘
+```
+
+### Create Admin User
+```bash
+cd /workspaces/dead-drop/apps/admin
+JWT_SECRET=dev-secret-key-min-32-chars pnpm bootstrap-admin --username admin --password admin123
+```
+
+### Admin Scripts
+| Script | Description |
+|--------|-------------|
+| `pnpm dev:api` | Start admin API server (port 9091) |
+| `pnpm dev` | Start admin frontend (port 3011) |
+| `pnpm bootstrap-admin` | Create first superadmin user |
 
 ---
 
@@ -104,17 +177,15 @@ LOCAL DEVELOPMENT
 
 ## Troubleshooting
 
-### Port 9090 already in use
+### Port already in use
 The server wasn't stopped properly. Kill remaining processes:
 ```bash
-# Kill tsx server processes
-for dir in /proc/[0-9]*; do
-  pid=$(basename $dir)
-  cmdline=$(cat "$dir/cmdline" 2>/dev/null | tr '\0' ' ')
-  if echo "$cmdline" | grep -q "tsx.*server.ts"; then
-    kill -9 $pid 2>/dev/null
-  fi
-done
+# Use the script to stop all servers
+/workspaces/dead-drop/scripts/servers.sh stop all
+
+# Or kill by port
+pkill -f "tsx.*server.ts"   # API servers
+pkill -f "next dev"          # Web frontends
 ```
 
 ### Frontend can't connect to API
@@ -127,6 +198,16 @@ done
 rm -rf apps/core/.wrangler/state
 pnpm dev:api  # Recreates database on startup
 ```
+
+### Admin login returns "Network Error"
+1. Make sure Admin API is running on port 9091:
+   ```bash
+   curl http://localhost:9091/api/health
+   ```
+2. If not running, start it:
+   ```bash
+   /workspaces/dead-drop/scripts/servers.sh start admin-api
+   ```
 
 ---
 

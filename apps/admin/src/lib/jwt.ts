@@ -80,14 +80,16 @@ export function extractJwtFromCookie(cookieHeader: string | undefined): string |
 
 /**
  * Create cookie options for auth token
+ * Note: Secure flag removed for local development (HTTP)
+ * In production, add Secure flag for HTTPS
  */
 export function getAuthCookieOptions(): string {
-  return `HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${24 * 60 * 60}`;
+  return `HttpOnly; SameSite=Lax; Path=/; Max-Age=${24 * 60 * 60}`;
 }
 
 /**
  * Create clear cookie options
  */
 export function getClearCookieOptions(): string {
-  return 'HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0';
+  return 'HttpOnly; SameSite=Lax; Path=/; Max-Age=0';
 }

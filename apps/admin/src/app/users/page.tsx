@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/lib/api-config';
+import { API_BASE_URL } from '@/lib/api-config';
 
 interface User {
   id: number;
@@ -50,7 +52,7 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/users', { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/users`, { credentials: 'include' });
       if (res.status === 401) {
         window.location.href = '/login';
         return;
@@ -69,7 +71,7 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data: unknown) => {
         const meData = data as MeResponse;
@@ -104,7 +106,7 @@ export default function UsersPage() {
     }
 
     try {
-      const res = await fetch('/api/users', {
+      const res = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -141,7 +143,7 @@ export default function UsersPage() {
     clearMessages();
 
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -170,7 +172,7 @@ export default function UsersPage() {
     }
 
     try {
-      const res = await fetch(`/api/users/${editingUserId}/password`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${editingUserId}/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -193,7 +195,7 @@ export default function UsersPage() {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     window.location.href = '/login';
   };
 

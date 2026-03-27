@@ -168,12 +168,30 @@ const app = new Hono();
 
 // Middleware
 app.use('*', logger());
+
+// CORS configuration for credentials (cookies)
+// When credentials: true, origin must be specific, not '*'
+const ALLOWED_ORIGINS = [
+  'http://localhost:3011', // Admin frontend
+  'http://127.0.0.1:3011',
+  'http://localhost:3010', // Core frontend (if needed)
+  'http://127.0.0.1:3010',
+];
+
 app.use(
   '*',
   cors({
-    origin: '*',
+    origin: (origin) => {
+      // Allow requests with no origin (like curl, mobile apps)
+      if (!origin) return origin;
+      // Allow whitelisted origins
+      if (ALLOWED_ORIGINS.includes(origin)) return origin;
+      // Fallback for development
+      return ALLOWED_ORIGINS[0];
+    },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposeHeaders: ['Set-Cookie'],
     credentials: true,
   })
 );
