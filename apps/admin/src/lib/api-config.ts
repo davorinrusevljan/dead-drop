@@ -1,9 +1,9 @@
 /**
  * API base URL configuration
- * In production, API is on the same domain (via Cloudflare routing)
- * In development, API runs on a different port
+ * In production, use environment variable NEXT_PUBLIC_API_URL
+ * In development, default to localhost
  */
-export const API_BASE_URL = 'http://localhost:9091';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9091';
 
 /**
  * Helper to make authenticated API requests
