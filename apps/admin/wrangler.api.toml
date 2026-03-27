@@ -6,6 +6,11 @@ main = "src/worker.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Custom domain for admin API
+[[routes]]
+pattern = "admin-api.dead-drop.xyz/*"
+zone_name = "dead-drop.xyz"
+
 # Admin database (separate from core for security isolation)
 [[d1_databases]]
 binding = "ADMIN_DB"

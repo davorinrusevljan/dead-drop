@@ -108,7 +108,7 @@ describe('JWT Utilities', () => {
       const options = getAuthCookieOptions();
       expect(options).toContain('HttpOnly');
       expect(options).toContain('Secure');
-      expect(options).toContain('SameSite=Strict');
+      expect(options).toContain('SameSite=None');
       expect(options).toContain('Path=/');
       expect(options).toContain('Max-Age=');
     });
@@ -117,7 +117,7 @@ describe('JWT Utilities', () => {
       const options = getClearCookieOptions();
       expect(options).toContain('HttpOnly');
       expect(options).toContain('Secure');
-      expect(options).toContain('SameSite=Strict');
+      expect(options).toContain('SameSite=None');
       expect(options).toContain('Path=/');
       expect(options).toContain('Max-Age=0');
     });

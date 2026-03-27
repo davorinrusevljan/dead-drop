@@ -13,6 +13,7 @@ const PRODUCTION_ORIGINS = [
   'https://admin.dead-drop.xyz',
   'https://dead-drop-admin.pages.dev',
   'https://dead-drop-admin.bytesmith.pages.dev',
+  'https://989448d5.dead-drop-admin.pages.dev',
   // Add any other preview URLs as needed
 ];
 
@@ -26,6 +27,10 @@ const corsOriginResolver = (origin: string | undefined) => {
   if (PRODUCTION_ORIGINS.includes(origin)) return origin;
   // For development, allow localhost
   if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    return origin;
+  }
+  // Allow any dead-drop-admin pages.dev preview URL
+  if (origin.match(/^https:\/\/[a-z0-9-]+\.dead-drop-admin\.pages\.dev$/)) {
     return origin;
   }
   // Reject other origins by returning the first allowed origin

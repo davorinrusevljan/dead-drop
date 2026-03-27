@@ -77,7 +77,8 @@ describe('Password Utilities', () => {
       const hash = await simpleHash('password', 'salt');
       expect(hash).toBeDefined();
       expect(typeof hash).toBe('string');
-      expect(hash).toHaveLength(64); // SHA-256 produces 64 hex chars
+      // PBKDF2 with 256 bits produces 44 base64 chars
+      expect(hash).toHaveLength(44);
     });
 
     it('should be deterministic', async () => {
