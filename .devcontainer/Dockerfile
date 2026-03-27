@@ -7,6 +7,8 @@ FROM node:22-bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
+    procps \
+    lsof \
     # Playwright/Chromium dependencies for screenshots
     libglib2.0-0 \
     libnss3 \
