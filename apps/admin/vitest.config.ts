@@ -15,6 +15,36 @@ export default defineConfig({
         lines: 100,
         statements: 100,
       },
+      exclude: [
+        // Config files
+        '**/*.config.{ts,js,mjs}',
+        // Type definition files
+        '**/*.d.ts',
+        // Test files themselves
+        '**/*.{test,spec}.{ts,tsx}',
+        // Build outputs
+        '**/dist/**',
+        '.next/**',
+        '.wrangler/**',
+        '.vercel/**',
+        '**/coverage/**',
+        // Node modules
+        '**/node_modules/**',
+        // Database schema (tested via integration tests)
+        '**/db/schema.ts',
+        // Dev utilities (local development only)
+        '**/src/dev/**',
+        // Setup scripts
+        'scripts/**',
+        // Next.js API routes (tested via integration/e2e tests)
+        '**/src/api/**',
+        // Next.js app routes/pages (tested via integration/e2e tests)
+        '**/src/app/**',
+        // Edge worker (tested via integration tests)
+        'src/worker.ts',
+        // API configuration (no business logic)
+        'src/lib/api-config.ts',
+      ],
     },
   },
 });
