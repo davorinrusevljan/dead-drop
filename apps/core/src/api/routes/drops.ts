@@ -27,6 +27,48 @@ import {
 const drops = new Hono<AppEnv>();
 
 /**
+ * GET /api/drops/check/:id - Check if a drop name is available
+ * Returns 200 with { available: boolean } instead of 404 for missing drops
+ */
+drops.get('/api/drops/check/:id', async (c) => {
+  const { id } = c.req.param();
+  const db = c.env.DB;
+
+  const drop = await getDropById(db, id);
+
+  if (!drop) {
+    return c.json(
+      {
+        id,
+        available: true,
+      },
+      200
+    );
+  }
+
+  // Check if expired
+  if (new Date() > drop.expiresAt) {
+    // Trigger async deletion (fire and forget)
+    c.executionCtx?.waitUntil?.(deleteDropFromDb(db, id));
+    return c.json(
+      {
+        id,
+        available: true,
+      },
+      200
+    );
+  }
+
+  return c.json(
+    {
+      id,
+      available: false,
+    },
+    200
+  );
+});
+
+/**
  * GET /api/drops/:id - Retrieve a drop
  */
 drops.get('/api/drops/:id', async (c) => {

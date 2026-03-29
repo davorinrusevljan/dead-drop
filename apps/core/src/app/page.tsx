@@ -108,8 +108,13 @@ export default function HomePage() {
     const timeoutId = setTimeout(async () => {
       try {
         const dropId = await computeDropId(normalizedName);
-        const response = await fetch(`${API_URL}/api/drops/${dropId}`);
-        setCreateAvailable(!response.ok); // Available if NOT found
+        const response = await fetch(`${API_URL}/api/drops/check/${dropId}`);
+        if (response.ok) {
+          const data = (await response.json()) as { available: boolean };
+          setCreateAvailable(data.available);
+        } else {
+          setCreateAvailable(null);
+        }
       } catch {
         setCreateAvailable(null);
       } finally {
@@ -135,8 +140,13 @@ export default function HomePage() {
     const timeoutId = setTimeout(async () => {
       try {
         const dropId = await computeDropId(normalizedName);
-        const response = await fetch(`${API_URL}/api/drops/${dropId}`);
-        setViewExists(response.ok);
+        const response = await fetch(`${API_URL}/api/drops/check/${dropId}`);
+        if (response.ok) {
+          const data = (await response.json()) as { available: boolean };
+          setViewExists(!data.available); // Exists if NOT available
+        } else {
+          setViewExists(null);
+        }
       } catch {
         setViewExists(null);
       } finally {

@@ -103,6 +103,73 @@ describe('API App', () => {
     });
   });
 
+  describe('GET /api/drops/check/:id', () => {
+    // Mock DB that always returns null (drop doesn't exist)
+    // Using a simplified mock that satisfies Drizzle's D1 adapter requirements
+    const mockDb = {
+      prepare: vi.fn(() => ({
+        bind: vi.fn(() => ({
+          raw: vi.fn(() => []),
+          first: vi.fn(() => Promise.resolve(null)),
+          all: vi.fn(() => Promise.resolve([])),
+          run: vi.fn(() => Promise.resolve({ meta: { duration: 0 }, success: true })),
+        })),
+        raw: vi.fn(() => []),
+      })),
+      batch: vi.fn(() => Promise.resolve([])),
+      exec: vi.fn(() => Promise.resolve()),
+    } as unknown as D1Database;
+
+    const testEnv = {
+      DB: mockDb,
+      ADMIN_HASH_PEPPER: 'test-pepper',
+      UPGRADE_TOKEN: 'test-token',
+    };
+
+    it('should return 200 with available=true for non-existent drop', async () => {
+      const testId = 'nonexistent00000000000000000000000000000000000000000000000000000000000000000';
+      const res = await app.request(`/api/drops/check/${testId}`, {}, testEnv);
+      expect(res.status).toBe(200);
+
+      const data = (await res.json()) as { id: string; available: boolean };
+      expect(data).toHaveProperty('id', testId);
+      expect(data).toHaveProperty('available', true);
+    });
+
+    it('should return 200 status with valid JSON structure', async () => {
+      const res = await app.request('/api/drops/check/test-id-123', {}, testEnv);
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(typeof data).toBe('object');
+      expect(data).toHaveProperty('id');
+      expect(data).toHaveProperty('available');
+      expect(typeof data.id).toBe('string');
+      expect(typeof data.available).toBe('boolean');
+    });
+
+    it('should handle 64-character hex drop IDs', async () => {
+      const hexId = 'a'.repeat(64); // 64 hex chars
+      const res = await app.request(`/api/drops/check/${hexId}`, {}, testEnv);
+      expect(res.status).toBe(200);
+
+      const data = (await res.json()) as { id: string; available: boolean };
+      expect(data.id).toBe(hexId);
+      expect(data.available).toBe(true);
+    });
+
+    it('should include CORS headers on check endpoint', async () => {
+      const res = await app.request(
+        '/api/drops/check/test-id',
+        {
+          headers: { Origin: 'https://example.com' },
+        },
+        testEnv
+      );
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    });
+  });
+
   describe('CORS', () => {
     it('should allow all origins', async () => {
       const res = await app.request('/api/health', {
