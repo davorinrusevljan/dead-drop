@@ -38,6 +38,14 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": false,
+      "upgradePackages": true,
+      "username": "node",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    }
   }
 }
