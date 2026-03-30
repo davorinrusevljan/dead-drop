@@ -74,6 +74,11 @@ export type AppEnv = {
 export function createAdminApiApp(): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
 
+  // robots.txt - block all search engines
+  app.get('/robots.txt', (c) => {
+    return c.text('User-agent: *\nDisallow: /');
+  });
+
   // Middleware
   app.use('*', logger());
   app.use(

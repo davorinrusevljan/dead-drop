@@ -30,6 +30,11 @@ const openApiConfig = {
 export function createApiApp(): OpenAPIHono<AppEnv> {
   const app = new OpenAPIHono<AppEnv>();
 
+  // robots.txt - block all search engines
+  app.get('/robots.txt', (c) => {
+    return c.text('User-agent: *\nDisallow: /');
+  });
+
   // Middleware
   app.use('*', logger());
   app.use(
