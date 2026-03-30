@@ -76,7 +76,7 @@ jobs:
       - name: Run Tests with Coverage
         run: cd apps/core && pnpm test:coverage
         env:
-          VITEST_CONFIG_FILE: ./vitest.config.ts
+          VITEST_CONFIG_FILE: /workspaces/dead-drop/apps/core/vitest.config.ts
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
