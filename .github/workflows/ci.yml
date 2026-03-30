@@ -74,13 +74,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Tests with Coverage
-        run: pnpm test:coverage
+        run: cd apps/core && pnpm test:coverage
+        env:
+          VITEST_CONFIG_FILE: ./vitest.config.ts
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage/
+          path: apps/core/coverage/
           retention-days: 7
 
   build:
