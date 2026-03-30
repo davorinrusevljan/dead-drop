@@ -140,10 +140,7 @@ describe('API App', () => {
       const res = await app.request('/api/drops/check/test-id-123', {}, testEnv);
       expect(res.status).toBe(200);
 
-      const data = await res.json();
-      expect(typeof data).toBe('object');
-      expect(data).toHaveProperty('id');
-      expect(data).toHaveProperty('available');
+      const data = (await res.json()) as { id: string; available: boolean };
       expect(typeof data.id).toBe('string');
       expect(typeof data.available).toBe('boolean');
     });
