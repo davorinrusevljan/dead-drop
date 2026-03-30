@@ -1,0 +1,18 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" fill="#030305"/>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&amp;display=swap');
+    .d-letter {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 20px;
+    }
+  </style>
+
+  <!-- First d (green) - top-left -->
+  <text x="7" y="21" class="d-letter" fill="#00ffa3">d</text>
+
+  <!-- Second d (amber) - bottom-right, overlapping slightly -->
+  <text x="11" y="24" class="d-letter" fill="#ffc832" opacity="0.85">d</text>
+</svg>

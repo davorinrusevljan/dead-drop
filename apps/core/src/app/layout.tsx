@@ -7,6 +7,9 @@ export const metadata: Metadata = {
     'Privacy-focused, ephemeral data sharing. End-to-end encrypted drops that self-destruct.',
   keywords: ['privacy', 'encryption', 'ephemeral', 'secure', 'sharing', 'dead drop'],
   authors: [{ name: 'ghostgrammer.xyz' }],
+  icons: {
+    icon: '/favicon.svg',
+  },
   openGraph: {
     title: 'dead-drop.xyz',
     description: 'Share secrets. Leave no trace.',
