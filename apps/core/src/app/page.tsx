@@ -14,7 +14,15 @@ import {
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
 
-type AppState = 'landing' | 'checking' | 'notfound' | 'unlock' | 'view' | 'edit' | 'delete';
+type AppState =
+  | 'landing'
+  | 'checking'
+  | 'notfound'
+  | 'unlock'
+  | 'view'
+  | 'view-terms'
+  | 'edit'
+  | 'delete';
 
 interface DropData {
   id: string;
@@ -78,6 +86,7 @@ export default function HomePage() {
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
   const [contentHash, setContentHash] = useState<string | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
+  const [agreedToViewTerms, setAgreedToViewTerms] = useState(false);
 
   // Initialize
   useEffect(() => {
@@ -202,7 +211,8 @@ export default function HomePage() {
             setHasFragment(false);
             return;
           }
-          setState('view');
+          setAgreedToViewTerms(false);
+          setState('view-terms');
         } else {
           setState('unlock');
         }
@@ -239,7 +249,8 @@ export default function HomePage() {
         const hash = await sha256(contentJson);
         setContentHash(hash);
         setDecryptedContent(parsed.content);
-        setState('view');
+        setAgreedToViewTerms(false);
+        setState('view-terms');
       } catch {
         setError('Invalid password');
       } finally {
@@ -979,6 +990,142 @@ export default function HomePage() {
   }
 
   // ═══════════════════════════════════════════════════════════
+  // VIEW TERMS STATE
+  // ═══════════════════════════════════════════════════════════
+  if (state === 'view-terms' && dropData && decryptedContent) {
+    return (
+      <>
+        <div className="construction-banner">
+          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
+          <a
+            href="https://github.com/davorinrusevljan/dead-drop"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on GitHub
+          </a>
+        </div>
+        <header className="page-header amber">
+          <a href="/">dead-drop.xyz</a>
+        </header>
+        <main className="main-container">
+          <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
+            <div className="terminal-container view-mode">
+              <div style={{ marginBottom: '1rem' }}>
+                <span
+                  className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : 'tag-amber'}`}
+                >
+                  {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
+                  {dropData.visibility.toUpperCase()}
+                </span>
+                <p
+                  style={{
+                    color: 'var(--amber)',
+                    fontSize: '1rem',
+                    marginTop: '0.5rem',
+                    fontFamily: 'JetBrains Mono',
+                  }}
+                >
+                  {currentDropName}
+                </p>
+              </div>
+
+              <p
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--fg-muted)',
+                  marginBottom: '1rem',
+                }}
+              >
+                Expires {new Date(dropData.expiresAt).toLocaleDateString()}
+              </p>
+
+              <div className="terms-checkbox">
+                <label
+                  className="terms-checkbox-label"
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    color: 'var(--fg)',
+                    opacity: 0.85,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={agreedToViewTerms}
+                    onChange={(e) => setAgreedToViewTerms(e.target.checked)}
+                    style={{
+                      cursor: 'pointer',
+                      width: '1rem',
+                      height: '1rem',
+                      accentColor: 'var(--accent)',
+                    }}
+                  />
+                  <span style={{ cursor: 'pointer' }}>
+                    By viewing content of this drop I agree with the{' '}
+                    <Link
+                      href="/terms"
+                      style={{
+                        color: 'var(--accent)',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '2px',
+                      }}
+                    >
+                      Terms of Service
+                    </Link>
+                  </span>
+                </label>
+              </div>
+
+              <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                <button
+                  onClick={() => agreedToViewTerms && setState('view')}
+                  disabled={!agreedToViewTerms}
+                  className="action-btn"
+                >
+                  VIEW
+                </button>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    setHasFragment(false);
+                    setState('landing');
+                  }}
+                  className="secondary-btn"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+          <footer className="footer">
+            <nav className="footer-nav">
+              <a href="/how-it-works">How It Works</a>
+              <a href="/glossary">Glossary</a>
+              <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
+            </nav>
+            <span style={{ opacity: 0.7 }}>
+              ©{' '}
+              <a
+                href="https://ghostgrammer.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                ghostgrammer.xyz
+              </a>
+            </span>
+          </footer>
+        </main>
+      </>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // VIEW STATE
   // ═══════════════════════════════════════════════════════════
   if (state === 'view' && dropData && decryptedContent) {
@@ -1030,27 +1177,6 @@ export default function HomePage() {
               </p>
 
               <div className="content-viewer">{decryptedContent}</div>
-
-              <p
-                style={{
-                  fontSize: '0.75rem',
-                  color: 'var(--fg-muted)',
-                  marginTop: '1rem',
-                  opacity: 0.7,
-                }}
-              >
-                By reading content of this drop you agree with the{' '}
-                <Link
-                  href="/terms"
-                  style={{
-                    color: 'var(--accent)',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '2px',
-                  }}
-                >
-                  Terms of Service
-                </Link>
-              </p>
 
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
                 <button
