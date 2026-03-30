@@ -1,0 +1,130 @@
+.terms-container {
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.terms-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.terms-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.terms-subtitle {
+  color: var(--fg-muted);
+  font-size: 1rem;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.terms-intro {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.terms-intro p {
+  color: var(--fg);
+  opacity: 0.85;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+.terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.terms-item {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+.terms-item:hover {
+  border-color: var(--border-focus);
+}
+
+.terms-item-title {
+  padding: 1.25rem 1.5rem 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.terms-item-content {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.terms-item-content p {
+  color: var(--fg);
+  opacity: 0.85;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+.terms-item-content a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.terms-item-content a:hover {
+  opacity: 0.8;
+}
+
+/* Footer navigation */
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-nav a {
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+  color: var(--accent);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .terms-title {
+    font-size: 2rem;
+  }
+
+  .terms-item-title {
+    font-size: 0.9375rem;
+    padding: 1rem 1.25rem 0.5rem;
+  }
+
+  .terms-item-content {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .terms-intro {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .footer-nav {
+    gap: 1.5rem;
+  }
+}

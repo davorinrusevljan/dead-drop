@@ -49,7 +49,7 @@ const glossaryItems: GlossaryItem[] = [
   {
     term: 'Ephemeral',
     definition:
-      'Designed to be temporary. Standard drops have a 7-day lifespan and are permanently deleted upon expiration. In the future, we may introduce longer-lasting drop types.',
+      'Designed to be temporary. Standard drops have a 7-day lifespan. Deletion is not necessarily immediate and may occur later. In the future, we may introduce longer-lasting drop types.',
     category: 'security',
   },
   // Tier Terms
@@ -157,6 +157,7 @@ export default function GlossaryPage() {
           <Link href="/how-it-works">How It Works</Link>
           <Link href="/glossary">Glossary</Link>
           <Link href="/faq">F.A.Q.</Link>
+          <Link href="/terms">Terms of Service</Link>
         </nav>
         <p style={{ marginTop: '1rem', opacity: 0.7 }}>
           ©{' '}

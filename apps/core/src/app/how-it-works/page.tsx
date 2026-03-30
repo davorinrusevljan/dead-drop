@@ -266,8 +266,8 @@ export default function HowItWorksPage() {
               <div className="privacy-feature">
                 <h3>Auto-Expiring Drops</h3>
                 <p>
-                  Standard drops automatically expire after 7 days and are permanently deleted.
-                  Deletion is final and cannot be undone.
+                  Standard drops automatically expire after 7 days. Deletion is not necessarily
+                  immediate and may occur later. Deletion is final and cannot be undone.
                 </p>
               </div>
             </div>
@@ -301,6 +301,7 @@ export default function HowItWorksPage() {
           <Link href="/how-it-works">How It Works</Link>
           <Link href="/glossary">Glossary</Link>
           <Link href="/faq">F.A.Q.</Link>
+          <Link href="/terms">Terms of Service</Link>
         </nav>
         <p style={{ marginTop: '1rem', opacity: 0.7 }}>
           ©{' '}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   normalizeDropName,
   validateDropName,
@@ -32,6 +33,7 @@ export default function CreatePage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [content, setContent] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
@@ -275,10 +277,52 @@ export default function CreatePage() {
 
               {error && <p className="error-message">{error}</p>}
 
+              <div className="terms-checkbox">
+                <label
+                  className="terms-checkbox-label"
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    color: 'var(--fg)',
+                    opacity: 0.85,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    style={{
+                      cursor: 'pointer',
+                      width: '1rem',
+                      height: '1rem',
+                      accentColor: 'var(--accent)',
+                    }}
+                  />
+                  <span style={{ cursor: 'pointer' }}>
+                    I agree with the{' '}
+                    <Link
+                      href="/terms"
+                      style={{
+                        color: 'var(--accent)',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '2px',
+                      }}
+                    >
+                      Terms of Service
+                    </Link>
+                  </span>
+                </label>
+              </div>
+
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
                 <button
                   onClick={handleCreate}
-                  disabled={isLoading || !password || !confirmPassword || !content}
+                  disabled={
+                    isLoading || !password || !confirmPassword || !content || !agreedToTerms
+                  }
                   className="action-btn"
                 >
                   {isLoading ? 'CREATING...' : 'CREATE DROP'}

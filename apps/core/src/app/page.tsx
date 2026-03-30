@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import {
   normalizeDropName,
   validateDropName,
@@ -751,6 +752,7 @@ export default function HomePage() {
               <a href="/how-it-works">How It Works</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -863,6 +865,7 @@ export default function HomePage() {
               <a href="/how-it-works">How It Works</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -956,6 +959,7 @@ export default function HomePage() {
               <a href="/how-it-works">How It Works</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -1027,6 +1031,27 @@ export default function HomePage() {
 
               <div className="content-viewer">{decryptedContent}</div>
 
+              <p
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--fg-muted)',
+                  marginTop: '1rem',
+                  opacity: 0.7,
+                }}
+              >
+                By reading content of this drop you agree with the{' '}
+                <Link
+                  href="/terms"
+                  style={{
+                    color: 'var(--accent)',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '2px',
+                  }}
+                >
+                  Terms of Service
+                </Link>
+              </p>
+
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
                 <button
                   onClick={() => navigator.clipboard.writeText(decryptedContent)}
@@ -1052,6 +1077,7 @@ export default function HomePage() {
               <a href="/how-it-works">How It Works</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -1170,6 +1196,7 @@ export default function HomePage() {
               <a href="/how-it-works">How It Works</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -1285,6 +1312,7 @@ export default function HomePage() {
               <a href="/how-it-works">How It Works</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/terms">Terms of Service</a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}

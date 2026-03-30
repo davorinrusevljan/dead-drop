@@ -30,7 +30,7 @@ const faqItems: FAQItem[] = [
   {
     question: 'How long do drops last?',
     answer:
-      'Standard drops automatically expire after 7 days. Once expired, they are permanently deleted from our servers.',
+      'Standard drops automatically expire after 7 days. Deletion is not necessarily immediate and may occur later. Once deleted, data cannot be recovered.',
   },
   {
     question: 'How secure is the encryption?',
@@ -143,6 +143,7 @@ export default function FAQPage() {
           <Link href="/how-it-works">How It Works</Link>
           <Link href="/glossary">Glossary</Link>
           <Link href="/faq">F.A.Q.</Link>
+          <Link href="/terms">Terms of Service</Link>
         </nav>
         <p style={{ marginTop: '1rem', opacity: 0.7 }}>
           ©{' '}
