@@ -1,0 +1,13 @@
+# Security Headers for admin.dead-drop.xyz
+# Admin panel - stricter security than public site
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), clipboard-write=()
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://admin-api.dead-drop.xyz; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri https://admin-api.dead-drop.xyz/api/csp-report
+  Strict-Transport-Security: max-age=86400
