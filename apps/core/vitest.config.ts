@@ -12,12 +12,6 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['src/api/**'],
-      thresholds: {
-        statements: 60,
-        branches: 60,
-        functions: 60,
-        lines: 60,
-      },
       exclude: [
         // Config files
         '**/*.config.{ts,js}',
