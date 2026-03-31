@@ -1,11 +1,10 @@
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
 
 export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['**/*.{test,spec}.{ts,tsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
@@ -33,6 +32,10 @@ export default defineConfig({
         '**/db/schema.ts',
         // Dev utilities (local development only)
         '**/src/dev/**',
+        // Setup scripts
+        'scripts/**',
+        // API configuration (no business logic)
+        'src/lib/api-config.ts',
       ],
     },
   },
