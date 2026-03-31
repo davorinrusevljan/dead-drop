@@ -9,5 +9,5 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), clipboard-write=()
   Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://admin-api.dead-drop.xyz; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri https://admin-api.dead-drop.xyz/api/csp-report
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://admin-api.dead-drop.xyz; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri https://admin-api.dead-drop.xyz/api/csp-report
   Strict-Transport-Security: max-age=86400
