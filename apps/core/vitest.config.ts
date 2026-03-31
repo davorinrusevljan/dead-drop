@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   test: {
@@ -41,7 +42,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@dead-drop/engine': resolve(__dirname, '../../packages/engine/src'),
+      '@dead-drop/engine': resolve(__dirname, '../../packages/engine/dist'),
       '@dead-drop/ui': resolve(__dirname, '../../packages/ui/src'),
     },
   },
