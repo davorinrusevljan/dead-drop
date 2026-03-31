@@ -73,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build engine package
+        run: pnpm --filter @dead-drop/engine build
+
       - name: Run Tests with Coverage
         run: cd apps/core && pnpm test:coverage
         env:
