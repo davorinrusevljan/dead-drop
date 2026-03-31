@@ -9,27 +9,22 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./crypto": {
       "types": "./dist/crypto.d.ts",
-      "development": "./src/crypto.ts",
       "import": "./dist/crypto.js"
     },
     "./validation": {
       "types": "./dist/validation.d.ts",
-      "development": "./src/validation.ts",
       "import": "./dist/validation.js"
     },
     "./db": {
       "types": "./dist/db/index.d.ts",
-      "development": "./src/db/index.ts",
       "import": "./dist/db/index.js"
     },
     "./types": {
       "types": "./dist/types.d.ts",
-      "development": "./src/types.ts",
       "import": "./dist/types.js"
     }
   },

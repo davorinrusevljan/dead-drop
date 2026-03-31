@@ -14,15 +14,7 @@ import {
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
 
-type AppState =
-  | 'landing'
-  | 'checking'
-  | 'notfound'
-  | 'unlock'
-  | 'view'
-  | 'view-terms'
-  | 'edit'
-  | 'delete';
+type AppState = 'landing' | 'checking' | 'notfound' | 'unlock' | 'view' | 'edit' | 'delete';
 
 interface DropData {
   id: string;
@@ -212,7 +204,7 @@ export default function HomePage() {
             return;
           }
           setAgreedToViewTerms(false);
-          setState('view-terms');
+          setState('unlock');
         } else {
           setState('unlock');
         }
@@ -250,7 +242,7 @@ export default function HomePage() {
         setContentHash(hash);
         setDecryptedContent(parsed.content);
         setAgreedToViewTerms(false);
-        setState('view-terms');
+        setState('view');
       } catch {
         setError('Invalid password');
       } finally {
@@ -896,9 +888,11 @@ export default function HomePage() {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // UNLOCK STATE (private drop)
+  // UNLOCK STATE
   // ═══════════════════════════════════════════════════════════
   if (state === 'unlock' && dropData) {
+    const isPublic = dropData.visibility === 'public';
+
     return (
       <>
         <div className="construction-banner">
@@ -918,110 +912,13 @@ export default function HomePage() {
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container view-mode">
               <div style={{ marginBottom: '1rem' }}>
-                <span className="tag tag-amber">🔒 ENCRYPTED</span>
-                <p
-                  style={{
-                    color: 'var(--amber)',
-                    fontSize: '1.125rem',
-                    marginTop: '0.5rem',
-                    fontFamily: 'JetBrains Mono',
-                  }}
-                >
-                  {currentDropName}
-                </p>
-              </div>
-
-              <p style={{ color: 'var(--fg-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
-                This drop is encrypted. Enter the password to unlock and view the content.
-              </p>
-
-              <div className="form-group">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  value={unlockPassword}
-                  onChange={(e) => setUnlockPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleUnlock(unlockPassword);
-                    }
-                  }}
-                  className="form-input"
-                  placeholder="enter password"
-                  autoFocus
-                />
-              </div>
-
-              {error && <p className="error-message">{error}</p>}
-
-              <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                <button
-                  onClick={() => handleUnlock(unlockPassword)}
-                  disabled={isLoading || !unlockPassword}
-                  className="action-btn amber"
-                >
-                  {isLoading ? 'DECRYPTING...' : 'UNLOCK'}
-                </button>
-              </div>
-            </div>
-          </div>
-          <footer className="footer">
-            <nav className="footer-nav">
-              <a href="/how-it-works">How It Works</a>
-              <a href="/glossary">Glossary</a>
-              <a href="/faq">F.A.Q.</a>
-              <a href="/terms">Terms of Service</a>
-            </nav>
-            <span style={{ opacity: 0.7 }}>
-              ©{' '}
-              <a
-                href="https://ghostgrammer.xyz"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'inherit' }}
-              >
-                ghostgrammer.xyz
-              </a>
-            </span>
-          </footer>
-        </main>
-      </>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // VIEW TERMS STATE
-  // ═══════════════════════════════════════════════════════════
-  if (state === 'view-terms' && dropData && decryptedContent) {
-    return (
-      <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
-        <header className="page-header amber">
-          <a href="/">dead-drop.xyz</a>
-        </header>
-        <main className="main-container">
-          <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
-            <div className="terminal-container view-mode">
-              <div style={{ marginBottom: '1rem' }}>
-                <span
-                  className={`tag ${dropData.visibility === 'public' ? 'tag-danger' : 'tag-amber'}`}
-                >
-                  {dropData.visibility === 'private' ? '🔒' : '👁'}{' '}
-                  {dropData.visibility.toUpperCase()}
+                <span className={`tag ${isPublic ? 'tag-danger' : 'tag-amber'}`}>
+                  {isPublic ? '👁 PUBLIC' : '🔒 ENCRYPTED'}
                 </span>
                 <p
                   style={{
                     color: 'var(--amber)',
-                    fontSize: '1rem',
+                    fontSize: '1.125rem',
                     marginTop: '0.5rem',
                     fontFamily: 'JetBrains Mono',
                   }}
@@ -1039,6 +936,39 @@ export default function HomePage() {
               >
                 Expires {new Date(dropData.expiresAt).toLocaleDateString()}
               </p>
+
+              {!isPublic && (
+                <p
+                  style={{ color: 'var(--fg-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}
+                >
+                  This drop is encrypted. Enter the password to unlock and view the content.
+                </p>
+              )}
+
+              {!isPublic && (
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    value={unlockPassword}
+                    onChange={(e) => setUnlockPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && agreedToViewTerms) {
+                        if (isPublic) {
+                          setState('view');
+                        } else {
+                          handleUnlock(unlockPassword);
+                        }
+                      }
+                    }}
+                    className="form-input"
+                    placeholder="enter password"
+                    autoFocus
+                  />
+                </div>
+              )}
+
+              {error && <p className="error-message">{error}</p>}
 
               <div className="terms-checkbox">
                 <label
@@ -1061,7 +991,7 @@ export default function HomePage() {
                       cursor: 'pointer',
                       width: '1rem',
                       height: '1rem',
-                      accentColor: 'var(--accent)',
+                      accentColor: 'var(--amber)',
                     }}
                   />
                   <span style={{ cursor: 'pointer' }}>
@@ -1069,7 +999,7 @@ export default function HomePage() {
                     <Link
                       href="/terms"
                       style={{
-                        color: 'var(--accent)',
+                        color: 'var(--amber)',
                         textDecoration: 'underline',
                         textUnderlineOffset: '2px',
                       }}
@@ -1082,21 +1012,17 @@ export default function HomePage() {
 
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
                 <button
-                  onClick={() => agreedToViewTerms && setState('view')}
-                  disabled={!agreedToViewTerms}
-                  className="action-btn"
-                >
-                  VIEW
-                </button>
-                <button
                   onClick={() => {
-                    setError(null);
-                    setHasFragment(false);
-                    setState('landing');
+                    if (isPublic) {
+                      setState('view');
+                    } else {
+                      handleUnlock(unlockPassword);
+                    }
                   }}
-                  className="secondary-btn"
+                  disabled={isLoading || !agreedToViewTerms || (!isPublic && !unlockPassword)}
+                  className="action-btn amber"
                 >
-                  Cancel
+                  {isLoading ? 'DECRYPTING...' : isPublic ? 'VIEW' : 'UNLOCK'}
                 </button>
               </div>
             </div>
