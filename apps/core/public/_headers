@@ -6,13 +6,4 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
-  Content-Security-Policy:
-    default-src 'self';
-    script-src 'self';
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' data: https://*.githubusercontent.com https://avatars.githubusercontent.com;
-    connect-src 'self' https://api.dead-drop.xyz https://dead-drop.xyz;
-    frame-ancestors 'none';
-    base-uri 'self';
-    form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.githubusercontent.com https://avatars.githubusercontent.com; connect-src 'self' https://api.dead-drop.xyz https://dead-drop.xyz; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
