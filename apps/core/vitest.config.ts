@@ -11,6 +11,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
+      include: ['src/api/**'],
       thresholds: {
         statements: 90,
         branches: 90,
@@ -29,14 +30,8 @@ export default defineConfig({
         '**/.next/**',
         // Node modules
         '**/node_modules/**',
-        // UI pages (not tested)
-        '**/src/app/**',
-        // Client-side utilities (not tested)
-        '**/src/lib/**',
-        // Dev utilities (local development only)
-        '**/src/dev/**',
-        // Setup scripts
-        'scripts/**',
+        // API types (no business logic)
+        'src/api/types.ts',
       ],
     },
   },
