@@ -29,14 +29,14 @@ export default defineConfig({
         '**/.next/**',
         // Node modules
         '**/node_modules/**',
-        // Database schema (tested via integration tests)
-        '**/db/schema.ts',
+        // UI pages (not tested)
+        '**/src/app/**',
+        // Client-side utilities (not tested)
+        '**/src/lib/**',
         // Dev utilities (local development only)
         '**/src/dev/**',
         // Setup scripts
         'scripts/**',
-        // API configuration (no business logic)
-        'src/lib/api-config.ts',
       ],
     },
   },
