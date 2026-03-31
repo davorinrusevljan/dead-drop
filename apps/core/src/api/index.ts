@@ -9,6 +9,7 @@ import { dropRoutes } from './routes/drops.js';
 import { historyRoutes } from './routes/history.js';
 import { upgradeRoutes } from './routes/upgrade.js';
 import { generateNameRoute, generateNameHandler } from './routes/generate-name.js';
+import { securityHeaders } from './middleware.js';
 
 /**
  * OpenAPI document configuration
@@ -36,6 +37,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
   });
 
   // Middleware
+  app.use('*', securityHeaders);
   app.use('*', logger());
   app.use(
     '*',

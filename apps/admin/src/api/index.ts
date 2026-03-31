@@ -4,6 +4,7 @@ import { logger } from 'hono/logger';
 import { authRoutes } from './routes/auth.js';
 import { statsRoutes } from './routes/stats.js';
 import { usersRoutes } from './routes/users.js';
+import { securityHeaders } from './middleware-security.js';
 
 /**
  * Allowed CORS origins for production
@@ -80,6 +81,7 @@ export function createAdminApiApp(): Hono<AppEnv> {
   });
 
   // Middleware
+  app.use('*', securityHeaders);
   app.use('*', logger());
   app.use(
     '*',
