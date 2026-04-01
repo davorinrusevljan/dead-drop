@@ -135,16 +135,6 @@ export default function CreatePage() {
   if (!mounted) {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -161,16 +151,6 @@ export default function CreatePage() {
   if (!dropName || !validation.valid) {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -191,16 +171,6 @@ export default function CreatePage() {
 
   return (
     <>
-      <div className="construction-banner">
-        ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-        <a
-          href="https://github.com/davorinrusevljan/dead-drop"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View on GitHub
-        </a>
-      </div>
       <header className="page-header">
         <a href="/">dead-drop.xyz</a>
       </header>
@@ -373,15 +343,31 @@ export default function CreatePage() {
         )}
 
         <footer className="footer">
-          ©{' '}
-          <a
-            href="https://ghostgrammer.xyz"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'inherit' }}
-          >
-            ghostgrammer.xyz
-          </a>
+          <nav className="footer-nav">
+            <a href="/">Home</a>
+            <a href="/how-it-works">How It Works</a>
+            <a href="/glossary">Glossary</a>
+            <a href="/faq">F.A.Q.</a>
+            <a href="/terms">Terms of Service</a>
+            <a
+              href="https://github.com/davorinrusevljan/dead-drop"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </nav>
+          <p style={{ marginTop: '1rem', opacity: 0.7 }}>
+            ©{' '}
+            <a
+              href="https://ghostgrammer.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'inherit' }}
+            >
+              ghostgrammer.xyz
+            </a>
+          </p>
         </footer>
       </main>
     </>

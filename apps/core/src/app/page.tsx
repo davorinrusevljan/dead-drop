@@ -434,16 +434,6 @@ export default function HomePage() {
   if (!mounted) {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -463,16 +453,6 @@ export default function HomePage() {
   if (!hasFragment && state === 'landing') {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <main className="main-container" style={{ paddingTop: '4rem' }}>
           <div className="animate-fade-in-up" style={{ width: '100%' }}>
             <div className="hero" style={{ marginBottom: '2rem' }}>
@@ -756,6 +736,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://github.com/davorinrusevljan/dead-drop"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -780,16 +767,6 @@ export default function HomePage() {
   if (state === 'checking') {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header amber">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -809,16 +786,6 @@ export default function HomePage() {
   if (state === 'notfound') {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header amber">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -869,6 +836,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://github.com/davorinrusevljan/dead-drop"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -895,16 +869,6 @@ export default function HomePage() {
 
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header amber">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -1033,6 +997,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://github.com/davorinrusevljan/dead-drop"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -1057,16 +1028,6 @@ export default function HomePage() {
   if (state === 'view' && dropData && decryptedContent) {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header amber">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -1130,6 +1091,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://github.com/davorinrusevljan/dead-drop"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -1154,16 +1122,6 @@ export default function HomePage() {
   if (state === 'edit' && dropData && decryptedContent) {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header amber">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -1249,6 +1207,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://github.com/davorinrusevljan/dead-drop"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}
@@ -1273,16 +1238,6 @@ export default function HomePage() {
   if (state === 'delete' && dropData) {
     return (
       <>
-        <div className="construction-banner">
-          ⚠️ Under Construction — Dragons be here, drops may be lost.{' '}
-          <a
-            href="https://github.com/davorinrusevljan/dead-drop"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </div>
         <header className="page-header amber">
           <a href="/">dead-drop.xyz</a>
         </header>
@@ -1365,6 +1320,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://github.com/davorinrusevljan/dead-drop"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </nav>
             <span style={{ opacity: 0.7 }}>
               ©{' '}

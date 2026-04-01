@@ -116,37 +116,6 @@ h1, h2, h3 {
    COMPONENTS
    ═══════════════════════════════════════════════════════════ */
 
-/* Construction Banner */
-.construction-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(90deg, var(--accent-dim) 0%, rgba(255, 200, 0, 0.1) 50%, var(--accent-dim) 100%);
-  border-bottom: 1px solid var(--accent);
-  padding: 0.625rem 1rem;
-  text-align: center;
-  font-size: 1rem;
-  color: var(--accent);
-  z-index: 1000;
-  animation: construction-pulse 2s ease-in-out infinite;
-}
-
-.construction-banner a {
-  color: var(--fg);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.construction-banner a:hover {
-  color: var(--accent);
-}
-
-@keyframes construction-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
 /* Main container */
 .main-container {
   min-height: 100vh;
