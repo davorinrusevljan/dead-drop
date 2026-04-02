@@ -72,7 +72,7 @@ describe('API App', () => {
       expect(res.headers.get('content-type')).toContain('application/json');
 
       const spec = (await res.json()) as OpenAPISpec;
-      expect(spec).toHaveProperty('openapi', '3.0.0');
+      expect(spec).toHaveProperty('openapi', '3.1.0');
       expect(spec).toHaveProperty('info');
       expect(spec.info).toHaveProperty('title', 'dead-drop API');
       expect(spec.info).toHaveProperty('version', '1.0.0');

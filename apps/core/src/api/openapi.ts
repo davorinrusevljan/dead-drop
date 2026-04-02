@@ -27,7 +27,7 @@ export const healthResponseSchema = z.object({
  */
 export const dropVisibilitySchema = z.enum(['private', 'public']).openapi({
   example: 'private',
-  description: 'Drop visibility type',
+  description: 'Drop visibility type. Private drops are encrypted, public drops are plaintext.',
 });
 
 /**
@@ -35,8 +35,36 @@ export const dropVisibilitySchema = z.enum(['private', 'public']).openapi({
  */
 export const dropTierSchema = z.enum(['free', 'deep']).openapi({
   example: 'free',
-  description: 'Drop tier',
+  description: 'Drop tier. Free: 10KB, 7 days. Deep: 4MB, 90 days.',
 });
+
+/**
+ * Encryption algorithm schema
+ */
+export const encryptionAlgoSchema = z.enum(['aes-256-gcm', 'none']).openapi({
+  example: 'aes-256-gcm',
+  description: 'Encryption algorithm used for the drop',
+});
+
+/**
+ * MIME type schema
+ */
+export const mimeTypeSchema = z.enum(['text/plain', 'application/json']).openapi({
+  example: 'text/plain',
+  description: 'MIME type of the drop content',
+});
+
+/**
+ * Encryption params schema
+ */
+export const encryptionParamsSchema = z
+  .object({
+    rounds: z.number().int().optional(),
+  })
+  .optional()
+  .openapi({
+    description: 'Additional encryption parameters',
+  });
 
 /**
  * Drop response schema
@@ -51,53 +79,56 @@ export const dropResponseSchema = z.object({
     .string()
     .nullable()
     .openapi({ description: 'Hex-encoded IV (12 bytes), null for public drops' }),
+  encryptionAlgo: encryptionAlgoSchema.nullable().openapi({
+    description: 'Encryption algorithm used, null for public drops',
+  }),
+  encryptionParams: encryptionParamsSchema.nullable().openapi({
+    description: 'Encryption parameters',
+  }),
+  mimeType: mimeTypeSchema.openapi({
+    description: 'MIME type of the drop content',
+  }),
   expiresAt: z.string().openapi({ description: 'ISO 8601 timestamp' }),
 });
 
 /**
- * Create drop request schema (private)
+ * Check availability response schema
  */
-export const createPrivateDropSchema = z.object({
+export const checkAvailabilityResponseSchema = z.object({
+  id: z.string().openapi({ description: 'Drop ID' }),
+  available: z.boolean().openapi({ description: 'Whether drop name is available' }),
+});
+
+/**
+ * Create drop request schema
+ */
+export const createDropRequestSchema = z.object({
   id: z.string().openapi({ description: 'SHA-256 hash of normalized drop name' }),
   nameLength: z
     .number()
     .int()
     .min(3)
     .openapi({ description: 'Length of normalized name for validation' }),
-  tier: dropTierSchema,
-  visibility: z.literal('private'),
-  payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded)' }),
+  tier: dropTierSchema.optional().openapi({ description: 'Drop tier, defaults to free' }),
+  visibility: dropVisibilitySchema.openapi({ description: 'Drop visibility type' }),
+  payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops' }),
   salt: z.string().openapi({ description: 'Hex-encoded salt (16 bytes)' }),
-  iv: z.string().openapi({ description: 'Hex-encoded IV (12 bytes)' }),
-  contentHash: z.string().openapi({ description: 'SHA-256 hash of content payload JSON' }),
+  iv: z.string().optional().openapi({ description: 'Hex-encoded IV (12 bytes), required for private drops' }),
+  encryptionAlgo: encryptionAlgoSchema.optional().openapi({
+    description: 'Encryption algorithm, defaults to aes-256-gcm for private drops',
+  }),
+  encryptionParams: encryptionParamsSchema.optional().openapi({
+    description: 'Encryption parameters',
+  }),
+  mimeType: mimeTypeSchema.optional().openapi({ description: 'MIME type, defaults to text/plain' }),
+  contentHash: z.string().optional().openapi({
+    description: 'SHA-256 hash of content payload JSON, required for private drops',
+  }),
+  adminHash: z.string().optional().openapi({
+    description: 'SHA-256(adminPassword + salt), required for public drops',
+  }),
   upgradeToken: z.string().optional().openapi({ description: 'Token for upgrading to Deep tier' }),
 });
-
-/**
- * Create drop request schema (public)
- */
-export const createPublicDropSchema = z.object({
-  id: z.string().openapi({ description: 'SHA-256 hash of normalized drop name' }),
-  nameLength: z
-    .number()
-    .int()
-    .min(3)
-    .openapi({ description: 'Length of normalized name for validation' }),
-  tier: dropTierSchema,
-  visibility: z.literal('public'),
-  payload: z.string().openapi({ description: 'Plaintext data' }),
-  salt: z.string().openapi({ description: 'Hex-encoded salt (16 bytes)' }),
-  adminHash: z.string().openapi({ description: 'SHA-256(adminPassword + salt)' }),
-  upgradeToken: z.string().optional().openapi({ description: 'Token for upgrading to Deep tier' }),
-});
-
-/**
- * Create drop request union
- */
-export const createDropSchema = z.discriminatedUnion('visibility', [
-  createPrivateDropSchema,
-  createPublicDropSchema,
-]);
 
 /**
  * Create drop response schema
@@ -109,20 +140,21 @@ export const createDropResponseSchema = z.object({
 });
 
 /**
- * Update drop request schema (private)
+ * Update drop request schema
  */
-export const updatePrivateDropSchema = z.object({
-  payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded)' }),
-  iv: z.string().openapi({ description: 'Hex-encoded IV (12 bytes)' }),
-  contentHash: z.string().openapi({ description: 'SHA-256 hash of content payload JSON' }),
-});
-
-/**
- * Update drop request schema (public)
- */
-export const updatePublicDropSchema = z.object({
-  payload: z.string().openapi({ description: 'Plaintext data' }),
-  adminPassword: z.string().openapi({ description: 'Admin password for authentication' }),
+export const updateDropRequestSchema = z.object({
+  payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops' }),
+  iv: z.string().optional().openapi({ description: 'Hex-encoded IV (12 bytes), required for private drops' }),
+  mimeType: mimeTypeSchema.optional().openapi({ description: 'MIME type' }),
+  contentHash: z.string().optional().openapi({
+    description: 'SHA-256 hash of OLD content payload JSON, required for private drops',
+  }),
+  newContentHash: z.string().optional().openapi({
+    description: 'SHA-256 hash of NEW content payload JSON, required for private drops',
+  }),
+  adminPassword: z.string().optional().openapi({
+    description: 'Admin password for authentication, required for public drops',
+  }),
 });
 
 /**
@@ -130,35 +162,36 @@ export const updatePublicDropSchema = z.object({
  */
 export const updateDropResponseSchema = z.object({
   success: z.literal(true),
+  version: z.number().int().positive().openapi({ description: 'New version number' }),
+});
+
+/**
+ * Delete drop request schema
+ */
+export const deleteDropRequestSchema = z.object({
+  contentHash: z.string().optional().openapi({
+    description: 'SHA-256 hash of content payload JSON, required for private drops',
+  }),
+  adminPassword: z.string().optional().openapi({
+    description: 'Admin password for authentication, required for public drops',
+  }),
+});
+
+/**
+ * History version item schema
+ */
+export const historyVersionItemSchema = z.object({
   version: z.number().int().positive(),
-});
-
-/**
- * Delete drop request schema (private)
- */
-export const deletePrivateDropSchema = z.object({
-  contentHash: z.string().openapi({ description: 'SHA-256 hash of content payload JSON' }),
-});
-
-/**
- * Delete drop request schema (public)
- */
-export const deletePublicDropSchema = z.object({
-  adminPassword: z.string().openapi({ description: 'Admin password for authentication' }),
+  createdAt: z.string().openapi({ description: 'ISO 8601 timestamp' }),
 });
 
 /**
  * History list response schema
  */
 export const historyListResponseSchema = z.object({
-  versions: z.array(
-    z.object({
-      version: z.number().int().positive(),
-      createdAt: z.string(),
-    })
-  ),
-  current: z.number().int().positive(),
-  maxVersions: z.number().int().positive(),
+  versions: z.array(historyVersionItemSchema).openapi({ description: 'List of drop versions' }),
+  current: z.number().int().positive().openapi({ description: 'Current version number' }),
+  maxVersions: z.number().int().positive().openapi({ description: 'Maximum number of versions allowed' }),
 });
 
 /**
@@ -166,16 +199,16 @@ export const historyListResponseSchema = z.object({
  */
 export const historyVersionResponseSchema = z.object({
   version: z.number().int().positive(),
-  payload: z.string(),
-  iv: z.string().nullable(),
-  createdAt: z.string(),
+  payload: z.string().openapi({ description: 'Encrypted or plaintext data' }),
+  iv: z.string().nullable().openapi({ description: 'Hex-encoded IV (12 bytes), null for public drops' }),
+  createdAt: z.string().openapi({ description: 'ISO 8601 timestamp' }),
 });
 
 /**
  * Upgrade drop request schema
  */
-export const upgradeDropSchema = z.object({
-  token: z.string().openapi({ description: 'Upgrade token' }),
+export const upgradeDropRequestSchema = z.object({
+  token: z.string().openapi({ description: 'Upgrade token for Deep tier' }),
 });
 
 /**
@@ -184,5 +217,15 @@ export const upgradeDropSchema = z.object({
 export const upgradeDropResponseSchema = z.object({
   success: z.literal(true),
   tier: z.literal('deep'),
-  expiresAt: z.string(),
+  expiresAt: z.string().openapi({ description: 'ISO 8601 timestamp' }),
+});
+
+/**
+ * Generate name response schema
+ */
+export const generateNameResponseSchema = z.object({
+  name: z
+    .string()
+    .openapi({ example: 'abacus-abide-ablaze-able', description: 'Generated drop name' }),
+  id: z.string().openapi({ example: 'abc123...', description: 'SHA-256 hash of the name' }),
 });
