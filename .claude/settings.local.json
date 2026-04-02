@@ -39,7 +39,21 @@
       "Bash(find /workspaces/dead-drop -name tailwind* -o -name postcss*)",
       "Bash(npm search:*)",
       "Bash(npm view:*)",
-      "Bash(gh run:*)"
+      "Bash(gh run:*)",
+      "Bash(xargs kill:*)",
+      "Bash(netstat -tuln)",
+      "Bash(/workspaces/dead-drop/scripts/servers.sh stop:*)",
+      "Bash(/workspaces/dead-drop/scripts/servers.sh status:*)",
+      "Bash(rm -f /workspaces/dead-drop/apps/core/.next/server.pid)",
+      "Bash(rm -f /workspaces/dead-drop/apps/admin/.next/server.pid)",
+      "Bash(/workspaces/dead-drop/scripts/servers.sh start:*)",
+      "Read(//tmp/**)",
+      "Bash(grep -n D1Database /workspaces/dead-drop/node_modules/.pnpm/drizzle-orm+*/node_modules/drizzle-orm/d1/index.d.ts)",
+      "Bash(find /workspaces/dead-drop/node_modules/.pnpm/drizzle-orm+d1 -name *.d.ts)",
+      "Bash(fuser -k 3010/tcp)",
+      "Bash(npx eslint:*)",
+      "Bash(xxd)",
+      "Bash(grep:*)"
     ]
   }
 }

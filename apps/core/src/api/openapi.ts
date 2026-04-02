@@ -41,10 +41,13 @@ export const dropTierSchema = z.enum(['free', 'deep']).openapi({
 /**
  * Encryption algorithm schema
  */
-export const encryptionAlgoSchema = z.enum(['aes-256-gcm', 'none']).openapi({
-  example: 'aes-256-gcm',
-  description: 'Encryption algorithm used for the drop',
-});
+export const encryptionAlgoSchema = z
+  .enum(['pbkdf2-aes256-gcm-v1', 'xchacha20-poly1305-v1', 'argon2id-xchacha20-v1'])
+  .openapi({
+    example: 'pbkdf2-aes256-gcm-v1',
+    description:
+      'Encryption algorithm used for private drops. Current: pbkdf2-aes256-gcm-v1 (PBKDF2 + AES-256-GCM)',
+  });
 
 /**
  * MIME type schema
@@ -111,9 +114,17 @@ export const createDropRequestSchema = z.object({
     .openapi({ description: 'Length of normalized name for validation' }),
   tier: dropTierSchema.optional().openapi({ description: 'Drop tier, defaults to free' }),
   visibility: dropVisibilitySchema.openapi({ description: 'Drop visibility type' }),
-  payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops' }),
+  payload: z
+    .string()
+    .openapi({
+      description:
+        'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
+    }),
   salt: z.string().openapi({ description: 'Hex-encoded salt (16 bytes)' }),
-  iv: z.string().optional().openapi({ description: 'Hex-encoded IV (12 bytes), required for private drops' }),
+  iv: z
+    .string()
+    .optional()
+    .openapi({ description: 'Hex-encoded IV (12 bytes), required for private drops' }),
   encryptionAlgo: encryptionAlgoSchema.optional().openapi({
     description: 'Encryption algorithm, defaults to aes-256-gcm for private drops',
   }),
@@ -143,8 +154,16 @@ export const createDropResponseSchema = z.object({
  * Update drop request schema
  */
 export const updateDropRequestSchema = z.object({
-  payload: z.string().openapi({ description: 'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops' }),
-  iv: z.string().optional().openapi({ description: 'Hex-encoded IV (12 bytes), required for private drops' }),
+  payload: z
+    .string()
+    .openapi({
+      description:
+        'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
+    }),
+  iv: z
+    .string()
+    .optional()
+    .openapi({ description: 'Hex-encoded IV (12 bytes), required for private drops' }),
   mimeType: mimeTypeSchema.optional().openapi({ description: 'MIME type' }),
   contentHash: z.string().optional().openapi({
     description: 'SHA-256 hash of OLD content payload JSON, required for private drops',
@@ -191,7 +210,11 @@ export const historyVersionItemSchema = z.object({
 export const historyListResponseSchema = z.object({
   versions: z.array(historyVersionItemSchema).openapi({ description: 'List of drop versions' }),
   current: z.number().int().positive().openapi({ description: 'Current version number' }),
-  maxVersions: z.number().int().positive().openapi({ description: 'Maximum number of versions allowed' }),
+  maxVersions: z
+    .number()
+    .int()
+    .positive()
+    .openapi({ description: 'Maximum number of versions allowed' }),
 });
 
 /**
@@ -200,7 +223,10 @@ export const historyListResponseSchema = z.object({
 export const historyVersionResponseSchema = z.object({
   version: z.number().int().positive(),
   payload: z.string().openapi({ description: 'Encrypted or plaintext data' }),
-  iv: z.string().nullable().openapi({ description: 'Hex-encoded IV (12 bytes), null for public drops' }),
+  iv: z
+    .string()
+    .nullable()
+    .openapi({ description: 'Hex-encoded IV (12 bytes), null for public drops' }),
   createdAt: z.string().openapi({ description: 'ISO 8601 timestamp' }),
 });
 

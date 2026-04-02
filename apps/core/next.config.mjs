@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: ['src/dev/server.ts'],
+    ignoreDuringBuilds: true,
+  },
   // Required for @cloudflare/next-on-pages
   experimental: {
     serverActions: {

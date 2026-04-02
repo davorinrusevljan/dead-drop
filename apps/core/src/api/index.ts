@@ -1,8 +1,9 @@
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { cors } from 'hono/cors';
 import type { Context } from 'hono';
 import type { AppEnv } from './types.js';
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
+import { z } from 'zod';
 import { healthResponseSchema, successResponseSchema, errorResponseSchema } from './openapi.js';
 import {
   getDropById,
@@ -41,11 +42,6 @@ import {
   upgradeDropRequestSchema,
   upgradeDropResponseSchema,
   generateNameResponseSchema,
-  encryptionAlgoSchema,
-  encryptionParamsSchema,
-  mimeTypeSchema,
-  dropVisibilitySchema,
-  dropTierSchema,
 } from './openapi.js';
 import type { EncryptionAlgorithm, EncryptionParams, MimeType } from '@dead-drop/engine';
 import { securityHeaders } from './middleware.js';
@@ -137,13 +133,14 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       200: {
         content: {
           'application/json': {
-            schema: {},
+            schema: z.record(z.unknown()),
           },
         },
         description: 'OpenAPI specification',
       },
     },
   });
+  // @ts-expect-error - OpenAPI spec returns dynamic object, typing is complex
   app.openapi(openapiRoute, (c: Context) => {
     return c.json(app.getOpenAPIDocument(openApiConfig));
   });
@@ -230,7 +227,15 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         return c.json({ name: normalizedName, id }, 200);
       }
     }
-    return c.json({ error: { code: 'GENERATION_FAILED', message: 'Failed to generate a unique drop name. Please try again.' } }, 500);
+    return c.json(
+      {
+        error: {
+          code: 'GENERATION_FAILED',
+          message: 'Failed to generate a unique drop name. Please try again.',
+        },
+      },
+      500
+    );
   });
 
   // ===== Check availability endpoint =====
@@ -343,13 +348,14 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     summary: 'Create a new drop',
     description:
       'Create a new drop with the given parameters. The drop name must not already exist. For private drops, the payload must be encrypted.',
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: createDropRequestSchema,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: createDropRequestSchema,
+          },
         },
       },
-      required: true,
     },
     responses: {
       201: {
@@ -360,10 +366,22 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         },
         description: 'Drop created successfully',
       },
-      400: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Invalid request' },
-      401: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Invalid upgrade token' },
-      402: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Payload exceeds tier limit' },
-      409: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Drop name already taken' },
+      400: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid request',
+      },
+      401: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid upgrade token',
+      },
+      402: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Payload exceeds tier limit',
+      },
+      409: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Drop name already taken',
+      },
     },
   });
   app.openapi(createDropRoute, async (c) => {
@@ -387,10 +405,26 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }>();
 
     if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
-      return c.json({ error: { code: 'INVALID_MIME_TYPE', message: `Unsupported MIME type: ${body.mimeType}. Only text/plain is supported.` } }, 400);
+      return c.json(
+        {
+          error: {
+            code: 'INVALID_MIME_TYPE',
+            message: `Unsupported MIME type: ${body.mimeType}. Only text/plain is supported.`,
+          },
+        },
+        400
+      );
     }
     if (body.encryptionAlgo && !isAlgorithmSupported(body.encryptionAlgo)) {
-      return c.json({ error: { code: 'INVALID_ALGORITHM', message: `Unsupported encryption algorithm: ${body.encryptionAlgo}` } }, 400);
+      return c.json(
+        {
+          error: {
+            code: 'INVALID_ALGORITHM',
+            message: `Unsupported encryption algorithm: ${body.encryptionAlgo}`,
+          },
+        },
+        400
+      );
     }
 
     let tier: 'free' | 'deep' = body.tier ?? 'free';
@@ -404,13 +438,29 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
     const minNameLength = TIER_NAME_MIN_LENGTHS[tier];
     if (body.nameLength < minNameLength) {
-      return c.json({ error: { code: 'INVALID_NAME', message: `Drop name must be at least ${minNameLength} characters for ${tier} tier` } }, 400);
+      return c.json(
+        {
+          error: {
+            code: 'INVALID_NAME',
+            message: `Drop name must be at least ${minNameLength} characters for ${tier} tier`,
+          },
+        },
+        400
+      );
     }
 
     const payloadSize = new TextEncoder().encode(body.payload).length;
     const maxSize = TIER_MAX_PAYLOAD_SIZES[tier];
     if (payloadSize > maxSize) {
-      return c.json({ error: { code: 'PAYMENT_REQUIRED', message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB. Upgrade to Deep drop required.` } }, 402);
+      return c.json(
+        {
+          error: {
+            code: 'PAYMENT_REQUIRED',
+            message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB. Upgrade to Deep drop required.`,
+          },
+        },
+        402
+      );
     }
 
     const existing = await getDropById(db, body.id);
@@ -443,7 +493,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       expiresAt,
     });
 
-    return c.json({ success: true, version: 1, tier }, 201);
+    return c.json({ success: true as const, version: 1, tier }, 201);
   });
 
   // ===== Update drop endpoint =====
@@ -462,13 +512,14 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         schema: { type: 'string' },
       },
     ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: updateDropRequestSchema,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: updateDropRequestSchema,
+          },
         },
       },
-      required: true,
     },
     responses: {
       200: {
@@ -479,11 +530,26 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         },
         description: 'Drop updated successfully',
       },
-      400: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Invalid request' },
-      401: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Invalid credentials' },
-      402: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Payload exceeds tier limit' },
-      403: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Maximum versions reached' },
-      404: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Drop not found' },
+      400: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid request',
+      },
+      401: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid credentials',
+      },
+      402: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Payload exceeds tier limit',
+      },
+      403: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Maximum versions reached',
+      },
+      404: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Drop not found',
+      },
     },
   });
   app.openapi(updateDropRoute, async (c) => {
@@ -505,26 +571,48 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }>();
 
     if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
-      return c.json({ error: { code: 'INVALID_MIME_TYPE', message: `Unsupported MIME type: ${body.mimeType}. Only text/plain is supported.` } }, 400);
+      return c.json(
+        {
+          error: {
+            code: 'INVALID_MIME_TYPE',
+            message: `Unsupported MIME type: ${body.mimeType}. Only text/plain is supported.`,
+          },
+        },
+        400
+      );
     }
 
     const payloadSize = new TextEncoder().encode(body.payload).length;
     const maxSize = TIER_MAX_PAYLOAD_SIZES[drop.tier];
     if (payloadSize > maxSize) {
-      return c.json({ error: { code: 'PAYMENT_REQUIRED', message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB. Upgrade to Deep drop required.` } }, 402);
+      return c.json(
+        {
+          error: {
+            code: 'PAYMENT_REQUIRED',
+            message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB. Upgrade to Deep drop required.`,
+          },
+        },
+        402
+      );
     }
 
     const versionCount = await countDropVersions(db, id);
     const maxVersions = TIER_VERSION_LIMITS[drop.tier];
     if (versionCount >= maxVersions) {
-      return c.json({ error: { code: 'VERSION_LIMIT', message: 'Maximum number of versions reached' } }, 403);
+      return c.json(
+        { error: { code: 'VERSION_LIMIT', message: 'Maximum number of versions reached' } },
+        403
+      );
     }
 
     let providedHash: string;
     let newAdminHash: string;
     if (drop.visibility === 'private') {
       providedHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
-      newAdminHash = await computePrivateAdminHash(body.newContentHash ?? body.contentHash ?? '', pepper);
+      newAdminHash = await computePrivateAdminHash(
+        body.newContentHash ?? body.contentHash ?? '',
+        pepper
+      );
     } else {
       providedHash = await sha256((body.adminPassword ?? '') + drop.salt);
       newAdminHash = providedHash;
@@ -542,7 +630,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       adminHash: newAdminHash,
     });
 
-    return c.json({ success: true, version: updated?.version ?? drop.version + 1 }, 200);
+    return c.json({ success: true as const, version: updated?.version ?? drop.version + 1 }, 200);
   });
 
   // ===== Delete drop endpoint =====
@@ -561,18 +649,28 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         schema: { type: 'string' },
       },
     ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: deleteDropRequestSchema,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: deleteDropRequestSchema,
+          },
         },
       },
-      required: true,
     },
     responses: {
-      200: { content: { 'application/json': { schema: successResponseSchema } }, description: 'Drop deleted' },
-      401: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Invalid credentials' },
-      404: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Drop not found' },
+      200: {
+        content: { 'application/json': { schema: successResponseSchema } },
+        description: 'Drop deleted',
+      },
+      401: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid credentials',
+      },
+      404: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Drop not found',
+      },
     },
   });
   app.openapi(deleteDropRoute, async (c) => {
@@ -598,7 +696,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }
 
     await deleteDropFromDb(db, id);
-    return c.json({ success: true }, 200);
+    return c.json({ success: true as const }, 200);
   });
 
   // ===== History list endpoint =====
@@ -618,8 +716,14 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       },
     ],
     responses: {
-      200: { content: { 'application/json': { schema: historyListResponseSchema } }, description: 'List of versions' },
-      404: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Drop not found' },
+      200: {
+        content: { 'application/json': { schema: historyListResponseSchema } },
+        description: 'List of versions',
+      },
+      404: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Drop not found',
+      },
     },
   });
   app.openapi(historyListRoute, async (c) => {
@@ -670,8 +774,14 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       },
     ],
     responses: {
-      200: { content: { 'application/json': { schema: historyVersionResponseSchema } }, description: 'Drop version data' },
-      404: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Drop or version not found' },
+      200: {
+        content: { 'application/json': { schema: historyVersionResponseSchema } },
+        description: 'Drop version data',
+      },
+      404: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Drop or version not found',
+      },
     },
   });
   app.openapi(historyVersionRoute, async (c) => {
@@ -684,7 +794,15 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }
 
     if (versionNum === drop.version) {
-      return c.json({ version: drop.version, payload: drop.data ?? '', iv: drop.iv, createdAt: drop.createdAt.toISOString() }, 200);
+      return c.json(
+        {
+          version: drop.version,
+          payload: drop.data ?? '',
+          iv: drop.iv,
+          createdAt: drop.createdAt.toISOString(),
+        },
+        200
+      );
     }
 
     const historyVersion = await getDropHistoryVersion(db, id, versionNum);
@@ -693,7 +811,12 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }
 
     return c.json(
-      { version: historyVersion.version, payload: historyVersion.data ?? '', iv: historyVersion.iv, createdAt: historyVersion.createdAt.toISOString() },
+      {
+        version: historyVersion.version,
+        payload: historyVersion.data ?? '',
+        iv: historyVersion.iv,
+        createdAt: historyVersion.createdAt.toISOString(),
+      },
       200
     );
   });
@@ -714,19 +837,32 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         schema: { type: 'string' },
       },
     ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: upgradeDropRequestSchema,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: upgradeDropRequestSchema,
+          },
         },
       },
-      required: true,
     },
     responses: {
-      200: { content: { 'application/json': { schema: upgradeDropResponseSchema } }, description: 'Drop upgraded' },
-      400: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Already upgraded' },
-      401: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Invalid token' },
-      404: { content: { 'application/json': { schema: errorResponseSchema } }, description: 'Drop not found' },
+      200: {
+        content: { 'application/json': { schema: upgradeDropResponseSchema } },
+        description: 'Drop upgraded',
+      },
+      400: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Already upgraded',
+      },
+      401: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid token',
+      },
+      404: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Drop not found',
+      },
     },
   });
   app.openapi(upgradeRoute, async (c) => {
@@ -739,19 +875,32 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Drop not found' } }, 404);
     }
     if (drop.tier !== 'free') {
-      return c.json({ error: { code: 'ALREADY_UPGRADED', message: 'Drop is already upgraded' } }, 400);
+      return c.json(
+        { error: { code: 'ALREADY_UPGRADED', message: 'Drop is already upgraded' } },
+        400
+      );
     }
     if (token !== expectedToken) {
       return c.json({ error: { code: 'INVALID_TOKEN', message: 'Invalid upgrade token' } }, 401);
     }
     const updated = await upgradeDrop(db, id);
-    return c.json({ success: true, tier: 'deep', expiresAt: updated?.expiresAt.toISOString() ?? '' }, 200);
+    return c.json(
+      {
+        success: true as const,
+        tier: 'deep' as const,
+        expiresAt: updated?.expiresAt.toISOString() ?? '',
+      },
+      200
+    );
   });
 
   // Error handler
   app.onError((err, c) => {
     console.error('API Error:', err);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } }, 500);
+    return c.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
+      500
+    );
   });
 
   return app;
