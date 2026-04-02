@@ -114,12 +114,10 @@ export const createDropRequestSchema = z.object({
     .openapi({ description: 'Length of normalized name for validation' }),
   tier: dropTierSchema.optional().openapi({ description: 'Drop tier, defaults to free' }),
   visibility: dropVisibilitySchema.openapi({ description: 'Drop visibility type' }),
-  payload: z
-    .string()
-    .openapi({
-      description:
-        'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
-    }),
+  payload: z.string().openapi({
+    description:
+      'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
+  }),
   salt: z.string().openapi({ description: 'Hex-encoded salt (16 bytes)' }),
   iv: z
     .string()
@@ -154,12 +152,10 @@ export const createDropResponseSchema = z.object({
  * Update drop request schema
  */
 export const updateDropRequestSchema = z.object({
-  payload: z
-    .string()
-    .openapi({
-      description:
-        'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
-    }),
+  payload: z.string().openapi({
+    description:
+      'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
+  }),
   iv: z
     .string()
     .optional()
