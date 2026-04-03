@@ -200,60 +200,80 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="text-zinc-400">Loading...</div>
+      <div className="admin-container" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div className="admin-loader">
+          <div className="admin-loader-spinner" />
+          Loading...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Header */}
-      <header className="bg-[#18181b] border-b border-[#27272a] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-[#22c55e]">dead-drop</h1>
-            <span className="text-zinc-500">|</span>
-            <span className="text-zinc-400">User Management</span>
+    <div className="admin-container">
+      <header className="admin-header">
+        <div>
+          <a href="/dashboard" className="admin-header-logo">
+            dead-drop
+          </a>
+        </div>
+        <nav className="admin-header-nav">
+          <a href="/dashboard" className="admin-header-link">
+            Dashboard
+          </a>
+          <a href="/users" className="admin-header-link active">
+            Users
+          </a>
+        </nav>
+        <div className="admin-header-user">
+          <div className="admin-header-user-info">
+            {currentUser?.username} <span>({currentUser?.role})</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-400">
-              {currentUser?.username} <span className="text-zinc-500">({currentUser?.role})</span>
-            </span>
-            <a
-              href="/dashboard"
-              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-            >
-              Dashboard
-            </a>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
+          <button onClick={handleLogout} className="admin-header-btn">
+            Sign Out
+          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="admin-main">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-md px-4 py-2 text-sm text-red-400 mb-6">
-            {error}
+          <div className="admin-alert admin-alert-error">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-500/10 border border-green-500/50 rounded-md px-4 py-2 text-sm text-green-400 mb-6">
-            {success}
+          <div className="admin-alert admin-alert-success">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>{success}</span>
           </div>
         )}
 
         {/* Create User Button */}
-        <div className="mb-6">
+        <div style={{ marginBottom: '1.5rem' }}>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-4 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-white font-medium rounded-md transition-colors"
+            className="admin-btn admin-btn-primary"
           >
             {showCreateForm ? 'Cancel' : 'Create New User'}
           </button>
@@ -261,17 +281,23 @@ export default function UsersPage() {
 
         {/* Create User Form */}
         {showCreateForm && (
-          <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-medium text-zinc-200 mb-4">Create New User</h2>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-1">Username</label>
+          <div className="admin-card" style={{ marginBottom: '2rem' }}>
+            <h2 className="admin-card-title">Create New User</h2>
+            <form onSubmit={handleCreateUser}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '1rem',
+                }}
+              >
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Username</label>
                   <input
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#27272a] rounded-md text-zinc-200 focus:outline-none focus:border-[#22c55e]"
+                    className="admin-form-input"
                     placeholder="username"
                     required
                     minLength={3}
@@ -279,95 +305,97 @@ export default function UsersPage() {
                     title="Alphanumeric, underscore, or hyphen only"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-1">Password</label>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Password</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#27272a] rounded-md text-zinc-200 focus:outline-none focus:border-[#22c55e]"
+                    className="admin-form-input"
                     placeholder="min 8 chars"
                     required
                     minLength={8}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-1">Role</label>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Role</label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as 'admin' | 'superadmin')}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#27272a] rounded-md text-zinc-200 focus:outline-none focus:border-[#22c55e]"
+                    className="admin-form-select"
                   >
                     <option value="admin">Admin</option>
                     <option value="superadmin">Superadmin</option>
                   </select>
                 </div>
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-white font-medium rounded-md transition-colors"
-              >
-                Create User
-              </button>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button type="submit" className="admin-btn admin-btn-primary">
+                  Create User
+                </button>
+              </div>
             </form>
           </div>
         )}
 
         {/* Users Table */}
-        <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
-          <h2 className="text-lg font-medium text-zinc-200 mb-4">Users</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+        <div className="admin-card">
+          <h2 className="admin-card-title">Users</h2>
+          <div className="admin-table-container">
+            <table className="admin-table">
               <thead>
-                <tr className="border-b border-[#27272a]">
-                  <th className="text-left text-sm text-zinc-400 pb-3">Username</th>
-                  <th className="text-left text-sm text-zinc-400 pb-3">Role</th>
-                  <th className="text-left text-sm text-zinc-400 pb-3">Created</th>
-                  <th className="text-left text-sm text-zinc-400 pb-3">Last Login</th>
-                  <th className="text-left text-sm text-zinc-400 pb-3">Actions</th>
+                <tr>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                  <th>Last Login</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-[#27272a]/50">
-                    <td className="py-3 text-zinc-200">
-                      {user.username}
+                  <tr key={user.id}>
+                    <td>
+                      <span style={{ fontWeight: 500 }}>{user.username}</span>
                       {currentUser?.id === user.id && (
-                        <span className="ml-2 text-xs text-zinc-500">(you)</span>
+                        <span
+                          className="admin-badge admin-badge-admin"
+                          style={{ marginLeft: '0.5rem' }}
+                        >
+                          you
+                        </span>
                       )}
                     </td>
-                    <td className="py-3">
-                      <span
-                        className={`px-2 py-1 text-xs rounded ${
-                          user.role === 'superadmin'
-                            ? 'bg-purple-500/10 text-purple-400'
-                            : 'bg-blue-500/10 text-blue-400'
-                        }`}
-                      >
-                        {user.role}
-                      </span>
+                    <td>
+                      {user.role === 'superadmin' ? (
+                        <span className="admin-badge admin-badge-superadmin">Superadmin</span>
+                      ) : (
+                        <span className="admin-badge admin-badge-admin">Admin</span>
+                      )}
                     </td>
-                    <td className="py-3 text-sm text-zinc-400">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 text-sm text-zinc-400">
+                    <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td>
                       {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never'}
                     </td>
-                    <td className="py-3">
+                    <td>
                       {editingUserId === user.id ? (
-                        <form onSubmit={handleUpdatePassword} className="flex gap-2">
+                        <form
+                          onSubmit={handleUpdatePassword}
+                          style={{ display: 'flex', gap: '0.5rem' }}
+                        >
                           <input
                             type="password"
                             value={editPassword}
                             onChange={(e) => setEditPassword(e.target.value)}
-                            className="px-2 py-1 text-sm bg-[#0a0a0f] border border-[#27272a] rounded text-zinc-200 focus:outline-none focus:border-[#22c55e]"
+                            className="admin-form-input admin-form-input-sm"
                             placeholder="New password"
                             minLength={8}
                             required
+                            style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
                           />
                           <button
                             type="submit"
-                            className="px-2 py-1 text-sm bg-[#22c55e] hover:bg-[#16a34a] text-white rounded"
+                            className="admin-btn admin-btn-primary admin-btn-sm"
                           >
                             Save
                           </button>
@@ -377,23 +405,23 @@ export default function UsersPage() {
                               setEditingUserId(null);
                               setEditPassword('');
                             }}
-                            className="px-2 py-1 text-sm bg-zinc-600 hover:bg-zinc-500 text-white rounded"
+                            className="admin-btn admin-btn-secondary admin-btn-sm"
                           >
                             Cancel
                           </button>
                         </form>
                       ) : (
-                        <div className="flex gap-2">
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button
                             onClick={() => setEditingUserId(user.id)}
-                            className="px-2 py-1 text-sm bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded"
+                            className="admin-btn admin-btn-secondary admin-btn-sm"
                           >
                             Change Password
                           </button>
                           {currentUser?.id !== user.id && (
                             <button
                               onClick={() => handleDeleteUser(user.id, user.username)}
-                              className="px-2 py-1 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded"
+                              className="admin-btn admin-btn-danger admin-btn-sm"
                             >
                               Delete
                             </button>
@@ -405,8 +433,11 @@ export default function UsersPage() {
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-4 text-center text-zinc-500">
-                      No users found
+                    <td colSpan={5}>
+                      <div className="admin-empty">
+                        <div className="admin-empty-icon">👥</div>
+                        No users found
+                      </div>
                     </td>
                   </tr>
                 )}

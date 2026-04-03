@@ -48,7 +48,7 @@ type TimePeriod = 'hour' | 'day' | 'threeDays' | 'week' | 'month' | 'year';
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
   hour: 'Last Hour',
-  day: 'Last 24 hours',
+  day: 'Last 24 Hours',
   threeDays: 'Last 3 Days',
   week: 'Last Week',
   month: 'Last Month',
@@ -110,7 +110,6 @@ export default function DashboardPage() {
   }, [selectedPeriod]);
 
   useEffect(() => {
-    // Check auth
     fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data: unknown) => {
@@ -134,177 +133,181 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="text-zinc-400">Loading...</div>
+      <div className="admin-container" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div className="admin-loader">
+          <div className="admin-loader-spinner" />
+          Loading...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Header */}
-      <header className="bg-[#18181b] border-b border-[#27272a] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-[#22c55e]">dead-drop</h1>
-            <span className="text-zinc-500">|</span>
-            <span className="text-zinc-400">Admin Dashboard</span>
+    <div className="admin-container">
+      <header className="admin-header">
+        <div>
+          <a href="/dashboard" className="admin-header-logo">
+            dead-drop
+          </a>
+        </div>
+        <nav className="admin-header-nav">
+          <a href="/dashboard" className="admin-header-link active">
+            Dashboard
+          </a>
+          {user?.role === 'superadmin' && (
+            <a href="/users" className="admin-header-link">
+              Users
+            </a>
+          )}
+        </nav>
+        <div className="admin-header-user">
+          <div className="admin-header-user-info">
+            {user?.username} <span>({user?.role})</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-400">
-              {user?.username} <span className="text-zinc-500">({user?.role})</span>
-            </span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-            >
-              Sign Out
-            </button>
-            {user?.role === 'superadmin' && (
-              <a
-                href="/users"
-                className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-              >
-                Users
-              </a>
-            )}
-          </div>
+          <button onClick={handleLogout} className="admin-header-btn">
+            Sign Out
+          </button>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="admin-main">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-md px-4 py-2 text-sm text-red-400 mb-6">
-            {error}
+          <div className="admin-alert admin-alert-error">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard title="Total Drops" value={overview?.totalDrops ?? 0} />
-          <StatCard title="Active Drops" value={overview?.activeDrops ?? 0} />
-          <StatCard title="Created Today" value={periodCounts?.day?.created ?? 0} />
-          <StatCard title="Created This Week" value={periodCounts?.week?.created ?? 0} />
+        {/* Overview Stats */}
+        <div className="admin-stats-grid">
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Total Drops</div>
+            <div className="admin-stat-value accent">{overview?.totalDrops ?? 0}</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Active Drops</div>
+            <div className="admin-stat-value success">{overview?.activeDrops ?? 0}</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Created Today</div>
+            <div className="admin-stat-value">{periodCounts?.day?.created ?? 0}</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Created This Week</div>
+            <div className="admin-stat-value">{periodCounts?.week?.created ?? 0}</div>
+          </div>
         </div>
 
         {/* Period Selector */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="admin-period-selector">
           {(Object.keys(PERIOD_LABELS) as TimePeriod[]).map((period) => (
             <button
               key={period}
               onClick={() => setSelectedPeriod(period)}
-              className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                selectedPeriod === period
-                  ? 'bg-[#22c55e] text-white'
-                  : 'bg-[#18181b] text-zinc-400 hover:text-zinc-200 border border-[#27272a]'
-              }`}
+              className={`admin-period-btn ${selectedPeriod === period ? 'active' : ''}`}
             >
               {PERIOD_LABELS[period]}
             </button>
           ))}
         </div>
 
-        {/* Events for Selected Period */}
+        {/* Period Events */}
         {periodCounts && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <StatCard
-              title="Created"
-              value={periodCounts[selectedPeriod]?.created ?? 0}
-              color="text-green-400"
-            />
-            <StatCard
-              title="Edited"
-              value={periodCounts[selectedPeriod]?.edited ?? 0}
-              color="text-yellow-400"
-            />
-            <StatCard
-              title="Deleted"
-              value={periodCounts[selectedPeriod]?.deleted ?? 0}
-              color="text-red-400"
-            />
+          <div className="admin-stats-grid" style={{ marginBottom: '2rem' }}>
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Created</div>
+              <div className="admin-stat-value success">
+                {periodCounts[selectedPeriod]?.created ?? 0}
+              </div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Edited</div>
+              <div className="admin-stat-value warning">
+                {periodCounts[selectedPeriod]?.edited ?? 0}
+              </div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Deleted</div>
+              <div className="admin-stat-value danger">
+                {periodCounts[selectedPeriod]?.deleted ?? 0}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Distribution Stats (Text-based) */}
+        {/* Distribution Stats */}
         {distribution && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
-              <h2 className="text-lg font-medium text-zinc-200 mb-4">By Tier</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#22c55e]">
-                    {distribution.byTier.free}
-                  </div>
-                  <div className="text-sm text-zinc-400">Free</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#3b82f6]">
-                    {distribution.byTier.deep}
-                  </div>
-                  <div className="text-sm text-zinc-400">Deep</div>
-                </div>
-              </div>
+          <div className="admin-distribution-grid">
+            <div className="admin-distribution-item">
+              <div className="admin-distribution-label">Free Drops</div>
+              <div className="admin-distribution-value">{distribution.byTier.free}</div>
             </div>
-            <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
-              <h2 className="text-lg font-medium text-zinc-200 mb-4">By Visibility</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-zinc-200">
-                    {distribution.byVisibility.public}
-                  </div>
-                  <div className="text-sm text-zinc-400">Public</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-zinc-200">
-                    {distribution.byVisibility.private}
-                  </div>
-                  <div className="text-sm text-zinc-400">Private</div>
-                </div>
-              </div>
+            <div className="admin-distribution-item">
+              <div className="admin-distribution-label">Deep Drops</div>
+              <div className="admin-distribution-value">{distribution.byTier.deep}</div>
+            </div>
+            <div className="admin-distribution-item">
+              <div className="admin-distribution-label">Public</div>
+              <div className="admin-distribution-value">{distribution.byVisibility.public}</div>
+            </div>
+            <div className="admin-distribution-item">
+              <div className="admin-distribution-label">Private</div>
+              <div className="admin-distribution-value">{distribution.byVisibility.private}</div>
             </div>
           </div>
         )}
 
         {/* Recent Activity */}
-        <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-6">
-          <h2 className="text-lg font-medium text-zinc-200 mb-4">Recent Activity</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+        <div className="admin-card">
+          <h2 className="admin-card-title">Recent Activity</h2>
+          <div className="admin-table-container">
+            <table className="admin-table">
               <thead>
-                <tr className="border-b border-[#27272a]">
-                  <th className="text-left text-sm text-zinc-400 pb-3">Action</th>
-                  <th className="text-left text-sm text-zinc-400 pb-3">Drop ID</th>
-                  <th className="text-left text-sm text-zinc-400 pb-3">Time</th>
+                <tr>
+                  <th>Action</th>
+                  <th>Drop ID</th>
+                  <th>Time</th>
                 </tr>
               </thead>
               <tbody>
                 {activity?.recent?.slice(0, 20).map((item, i) => (
-                  <tr key={i} className="border-b border-[#27272a]/50">
-                    <td className="py-2 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded ${
-                          item.action === 'created'
-                            ? 'bg-green-500/10 text-green-400'
-                            : item.action === 'edited'
-                              ? 'bg-yellow-500/10 text-yellow-400'
-                              : 'bg-red-500/10 text-red-400'
-                        }`}
-                      >
-                        {item.action}
-                      </span>
+                  <tr key={i}>
+                    <td>
+                      {item.action === 'created' && (
+                        <span className="admin-badge admin-badge-success">Created</span>
+                      )}
+                      {item.action === 'edited' && (
+                        <span className="admin-badge admin-badge-warning">Edited</span>
+                      )}
+                      {item.action === 'deleted' && (
+                        <span className="admin-badge admin-badge-danger">Deleted</span>
+                      )}
                     </td>
-                    <td className="py-2 text-sm text-zinc-400 font-mono">
-                      {item.dropId.slice(0, 16)}...
+                    <td>
+                      <code style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8125rem' }}>
+                        {item.dropId.slice(0, 16)}...
+                      </code>
                     </td>
-                    <td className="py-2 text-sm text-zinc-400">
-                      {new Date(item.createdAt).toLocaleString()}
-                    </td>
+                    <td>{new Date(item.createdAt).toLocaleString()}</td>
                   </tr>
                 ))}
                 {(!activity?.recent || activity.recent.length === 0) && (
                   <tr>
-                    <td colSpan={3} className="py-4 text-center text-zinc-500">
-                      No recent activity
+                    <td colSpan={3}>
+                      <div className="admin-empty">
+                        <div className="admin-empty-icon">📭</div>
+                        No recent activity
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -313,23 +316,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-function StatCard({
-  title,
-  value,
-  color = 'text-zinc-200',
-}: {
-  title: string;
-  value: number;
-  color?: string;
-}) {
-  return (
-    <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-4">
-      <div className="text-sm text-zinc-400 mb-1">{title}</div>
-      <div className={`text-2xl font-bold ${color}`}>{value.toLocaleString()}</div>
     </div>
   );
 }
