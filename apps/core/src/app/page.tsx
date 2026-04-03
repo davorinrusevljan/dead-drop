@@ -473,16 +473,20 @@ export default function HomePage() {
                   , ephemeral, truly private. Gone in 7 days.
                 </span>
                 <br />
-                <span
+                <a
+                  href="https://api.dead-drop.xyz/api/docs"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     opacity: 0.6,
                     fontSize: '0.875rem',
                     display: 'inline-block',
                     marginTop: '0.75rem',
+                    color: 'var(--accent)',
                   }}
                 >
-                  Coming: REST API for machine access.
-                </span>
+                  API docs coming soon
+                </a>
               </p>
             </div>
 

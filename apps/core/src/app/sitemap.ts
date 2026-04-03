@@ -33,6 +33,12 @@ const staticPages = [
     changeFrequency: 'monthly' as const,
     priority: 0.6,
   },
+  {
+    url: `${BASE_URL}/terms`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
