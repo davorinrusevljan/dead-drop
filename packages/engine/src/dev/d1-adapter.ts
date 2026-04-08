@@ -23,24 +23,28 @@ interface D1Result<T> {
 }
 
 /**
+ * D1-style statement
+ */
+interface D1Statement {
+  bind(...values: unknown[]): D1Statement;
+  first<T = unknown>(): Promise<T | null>;
+  run(): Promise<D1StatementResult>;
+  all<T = unknown>(): Promise<D1Result<T>>;
+  raw<T = unknown>(): Promise<T[][]>;
+}
+
+/**
  * D1-style prepared statement result
  */
 interface D1StatementResult {
   success: boolean;
   meta: {
     duration: number;
+    changes: number;
+    last_row_id: number;
+    rows_read: number;
+    rows_written: number;
   };
-}
-
-/**
- * D1-style statement
- */
-interface D1Statement {
-  bind(...values: unknown[]): D1Statement;
-  first<T = unknown>(): Promise<T | null>;
-  run(): Promise<D1StatementResult & D1Result<unknown>>;
-  all<T = unknown>(): Promise<D1Result<T>>;
-  raw<T = unknown>(): Promise<T[][]>;
 }
 
 /**
@@ -49,11 +53,9 @@ interface D1Statement {
 class D1PreparedStatement implements D1Statement {
   private stmt: Database.Statement;
   private boundValues: unknown[] = [];
-  private db: D1DatabaseImpl;
 
-  constructor(stmt: Database.Statement, db: D1DatabaseImpl) {
+  constructor(stmt: Database.Statement) {
     this.stmt = stmt;
-    this.db = db;
   }
 
   bind(...values: unknown[]): D1Statement {
@@ -67,7 +69,7 @@ class D1PreparedStatement implements D1Statement {
     return result ?? null;
   }
 
-  async run(): Promise<D1StatementResult & D1Result<unknown>> {
+  async run(): Promise<D1StatementResult> {
     const start = Date.now();
     const info = this.stmt.run(...this.boundValues);
     this.boundValues = [];
@@ -145,22 +147,27 @@ class D1DatabaseImpl {
 
   prepare(sql: string): D1Statement {
     const stmt = this.db.prepare(sql);
-    return new D1PreparedStatement(stmt, this);
+    return new D1PreparedStatement(stmt);
   }
 
   async batch<T = unknown>(statements: D1Statement[]): Promise<D1BatchResult<T>> {
-    const results: D1Result<T>[] = [];
-    const transaction = this.db.transaction(() => {
-      for (const stmt of statements) {
-        if ('all' in stmt) {
-          results.push(stmt.all() as unknown as D1Result<T>);
-        } else if ('run' in stmt) {
-          results.push(stmt.run() as unknown as D1Result<T>);
-        }
+    // Batch expects already-bound statements
+    // Execute each statement and collect results
+    const results: (D1Result<T> | D1StatementResult)[] = [];
+
+    for (const stmt of statements) {
+      // Try calling all() first (for SELECT queries)
+      try {
+        const allResult = await stmt.all<T>();
+        results.push(allResult);
+      } catch {
+        // If all() fails, try run() (for INSERT/UPDATE/DELETE)
+        const runResult = await stmt.run();
+        results.push(runResult);
       }
-    });
-    transaction();
-    return { results };
+    }
+
+    return { results } as D1BatchResult<T>;
   }
 
   async exec(sql: string): Promise<D1Result<unknown>> {

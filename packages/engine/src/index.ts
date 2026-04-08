@@ -21,3 +21,7 @@ export * from './db/index.js';
 
 // Wordlist utilities
 export { generateRandomDropName, generateDropNameSuggestions, WORDS } from './wordlist.js';
+
+// Development utilities - use '@dead-drop/engine/dev/d1-adapter' for local development
+// Note: These are intentionally not exported from the main entry point to avoid
+// bundling Node.js-only dependencies (fs, path, better-sqlite3) into browser/edge builds

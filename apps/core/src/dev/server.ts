@@ -15,8 +15,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Import the API app with OpenAPI routes (shared with production)
 import { createApiApp } from '../api/index.js';
 
-// Import local D1-compatible database adapter
-import { createLocalD1Database } from './d1-adapter.js';
+// Import local D1-compatible database adapter from shared engine package
+import { createLocalD1Database } from '@dead-drop/engine/dev/d1-adapter';
 
 // Configuration - Use 9090 as default (8787 often blocked in containers)
 const DEFAULT_PORT = 9090;
@@ -80,7 +80,6 @@ const app = {
       body: request.body,
     });
     // Pass env as third argument to Hono's request() method
-    // @ts-expect-error - We're injecting local env, types expect Cloudflare env
     return apiApp.request(modifiedRequest, {}, mockEnv);
   },
 };
