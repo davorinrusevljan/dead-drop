@@ -1,6 +1,6 @@
 /**
  * Local development server for dead-drop API
- * Runs Hono API directly on Node.js with SQLite
+ * Runs the same Hono API as Cloudflare Workers but locally with SQLite
  */
 
 /* eslint-disable no-console -- CLI server requires console output */
@@ -12,16 +12,16 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Import the API app with OpenAPI routes
+// Import the API app with OpenAPI routes (shared with production)
 import { createApiApp } from '../api/index.js';
 
-// Import local database functions
-import { LocalDatabase } from './db-local.js';
+// Import local D1-compatible database adapter
+import { createLocalD1Database } from './d1-adapter.js';
 
 // Configuration - Use 9090 as default (8787 often blocked in containers)
 const DEFAULT_PORT = 9090;
 const PORT = parseInt(process.env.API_PORT || String(DEFAULT_PORT), 10);
-const DB_PATH = join(__dirname, '../../wrangler/state/local.db');
+const DB_PATH = join(__dirname, '../../.wrangler/state/local.db');
 const SCHEMA_PATH = join(__dirname, '../../schema.sql');
 
 // Load dev secrets
@@ -58,21 +58,20 @@ function loadDevVars(): { ADMIN_HASH_PEPPER: string; UPGRADE_TOKEN: string } {
 
 // Initialize database
 console.log('Initializing local database...');
-const db = new LocalDatabase(DB_PATH, SCHEMA_PATH);
+const db = createLocalD1Database(DB_PATH, SCHEMA_PATH);
 const devVars = loadDevVars();
 
-// Create the API app with all routes and OpenAPI support
+// Create the API app with all routes and OpenAPI support (shared code)
 const apiApp = createApiApp();
 
-// Override env for local dev with our DB and secrets
-// @ts-expect-error - LocalDatabase implements the same methods as D1Database
+// Override env for local dev with our local DB and secrets
 const mockEnv = {
-  DB: db as unknown,
+  DB: db,
   ADMIN_HASH_PEPPER: devVars.ADMIN_HASH_PEPPER,
   UPGRADE_TOKEN: devVars.UPGRADE_TOKEN,
 };
 
-// Wrapper to inject our mock env
+// Wrapper to inject our mock env into Hono's request
 const app = {
   fetch: (request: Request) => {
     const modifiedRequest = new Request(request.url, {
@@ -80,54 +79,11 @@ const app = {
       headers: request.headers,
       body: request.body,
     });
-    // @ts-expect-error - Injecting env into context
-    return apiApp.request(modifiedRequest, mockEnv);
+    // Pass env as third argument to Hono's request() method
+    // @ts-expect-error - We're injecting local env, types expect Cloudflare env
+    return apiApp.request(modifiedRequest, {}, mockEnv);
   },
 };
-
-// Override the robots.txt endpoint
-apiApp.get('/robots.txt', (c) => {
-  return c.text('User-agent: *\nDisallow: /');
-});
-
-// Root endpoint
-apiApp.get('/', (c) => {
-  return c.json({
-    name: 'dead-drop API',
-    version: '1.0.0',
-    status: 'running',
-    mode: 'local-development',
-  });
-});
-
-// Override the docs endpoint to use correct URL
-apiApp.get('/api/docs', (c) => {
-  const openapiUrl = new URL('/api/docs/openapi.json', c.req.url).href;
-  return c.html(`<!DOCTYPE html>
-<html>
-<head>
-  <title>dead-drop API Docs</title>
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
-</head>
-<body>
-  <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-  <script>
-    window.onload = function() {
-      SwaggerUIBundle({
-        url: "${openapiUrl}",
-        dom_id: '#swagger-ui',
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIBundle.SwaggerUIStandalonePreset
-        ],
-        layout: "BaseLayout"
-      });
-    }
-  </script>
-</body>
-</html>`);
-});
 
 console.log(`
 ┌───────────────────────────────────────────────────────────┐
