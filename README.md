@@ -27,12 +27,6 @@ code .
 
 # Install dependencies
 pnpm install
-
-# Start all servers (core + admin)
-/workspaces/dead-drop/scripts/servers.sh start all
-
-# Check status
-/workspaces/dead-drop/scripts/servers.sh status
 ```
 
 ### Server Ports
@@ -46,6 +40,13 @@ pnpm install
 
 ### Manual Start (Alternative)
 
+**⚠️ CRITICAL - ALWAYS check ports before starting servers:**
+- NEVER start any dev server without first checking if the port is in use
+- Check: `lsof -ti :<port>` - this shows which process is using each port
+- Kill if occupied: `lsof -ti :<port> | xargs -r kill -9`
+- Example (before starting core API): `lsof -ti :9090 | xargs -r kill -9`
+- If you skip this step, you'll cause port conflicts and "hung" processes
+
 **Core App:**
 ```bash
 # Terminal 1: API
@@ -58,17 +59,23 @@ cd apps/core && NEXT_PUBLIC_API_URL=http://localhost:9090 pnpm dev
 **Admin Panel:**
 ```bash
 # Terminal 1: API
-cd apps/admin && JWT_SECRET=dev-secret-key-min-32-chars pnpm dev:api
+cd apps/admin && pnpm dev:api
 
 # Terminal 2: Frontend
 cd apps/admin && pnpm dev
+```
+
+**Create `.dev.vars` for admin:**
+```bash
+# apps/admin/.dev.vars
+JWT_SECRET=dev-secret-key-min-32-chars
 ```
 
 ### Create Local Admin User
 
 ```bash
 cd apps/admin
-JWT_SECRET=dev-secret-key-min-32-chars pnpm bootstrap-admin --username admin --password admin123
+pnpm bootstrap-admin --username admin --password admin123
 ```
 
 Access admin panel at: http://localhost:3011/login
@@ -83,8 +90,8 @@ Access admin panel at: http://localhost:3011/login
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐       │
-│  │  Core Frontend  │     │  Admin Frontend │     │  (Future SaaS)  │       │
-│  │  (Pages)        │     │  (Pages)        │     │                 │       │
+│  │  Core Frontend  │     │  Admin Frontend │     │  SaaS Frontend  │       │
+│  │  (Pages)        │     │  (Pages)        │     │  (Pages)        │       │
 │  │  dead-drop.xyz  │     │  admin.dead-    │     │  saas.dead-     │       │
 │  │                 │     │  drop.xyz       │     │  drop.xyz       │       │
 │  └────────┬────────┘     └────────┬────────┘     └────────┬────────┘       │
@@ -99,11 +106,36 @@ Access admin panel at: http://localhost:3011/login
 │           │                       │                       │                 │
 │           ▼                       ▼                       ▼                 │
 │  ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐       │
-│  │   Core D1 DB    │◄────│   Admin D1 DB   │     │   SaaS D1 DB    │       │
+│  │   Core D1 DB    │     │   Admin D1 DB   │     │   SaaS D1 DB    │       │
 │  │   (drops)       │     │   (users)       │     │   (subscriptions)│      │
 │  └─────────────────┘     └─────────────────┘     └─────────────────┘       │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Shared Engine Package
+
+The `@dead-drop/engine` package contains shared logic used across all applications:
+
+- **Validation**: Zod schemas for drop phrases, payload types
+- **Crypto**: Web Crypto API wrappers (AES-GCM, PBKDF2, SHA-256)
+- **Database**: Drizzle ORM schemas and the D1-compatible local adapter
+- **Local Development**: `createLocalD1Database()` function for running locally with SQLite
+
+The D1-compatible adapter allows you to run the exact same API code locally and in production:
+- **Local**: Uses `better-sqlite3` wrapped in a D1-compatible interface
+- **Production**: Uses real Cloudflare D1 database
+
+```typescript
+import { createLocalD1Database } from '@dead-drop/engine';
+
+// Local dev
+const db = createLocalD1Database('./local.db', './schema.sql');
+
+// Production (via Cloudflare Workers binding)
+// Uses env.DB directly
 ```
 
 ---
@@ -119,17 +151,62 @@ Access admin panel at: http://localhost:3011/login
    wrangler whoami
    ```
 3. Domain configured in Cloudflare (`dead-drop.xyz`)
+4. Copy `wrangler.toml.example` and `wrangler.api.toml.example` to create your config files with your database IDs
+
+### Setup Wrangler Configuration
+
+For security, `wrangler.toml` files with database IDs are not tracked in git. You must create them from templates:
+
+**Core App:**
+```bash
+cd apps/core
+
+# Create config files from templates
+cp wrangler.toml.example wrangler.toml
+cp wrangler.api.toml.example wrangler.api.toml
+
+# Edit the files and replace <YOUR-DATABASE-ID> with your actual ID
+# To find your database ID:
+wrangler d1 info dead-drop-core
+```
+
+**Admin Panel:**
+```bash
+cd apps/admin
+
+# Create config files from templates
+cp wrangler.toml.example wrangler.toml
+cp wrangler.api.toml.example wrangler.api.toml
+
+# Edit the files and replace <YOUR-ADMIN-DB-ID> and <YOUR-CORE-DB-ID> with actual IDs
+# To find database IDs:
+wrangler d1 info dead-drop-admin
+wrangler d1 info dead-drop-core
+```
+
+**Important:** The actual `wrangler.toml` and `wrangler.api.toml` files are in `.gitignore` and will never be committed.
+4. Copy `wrangler.toml.example` and `wrangler.api.toml.example` to create your config files with your database IDs
 
 ### Cloudflare Resources
 
-| Resource | Name | ID |
-|----------|------|-----|
-| Core D1 Database | `dead-drop-core` | `d7b160c6-078a-40db-a51c-29eb73bc8eb2` |
-| Admin D1 Database | `dead-drop-admin` | `002a7e33-34a7-4928-aaf0-315dc588c9ad` |
-| Core API Worker | `dead-drop-core` | - |
-| Admin API Worker | `dead-drop-admin-api` | - |
-| Core Frontend (Pages) | `dead-drop` | - |
-| Admin Frontend (Pages) | `dead-drop-admin` | - |
+| Resource | Name |
+|----------|------|
+| Core D1 Database | `dead-drop-core` |
+| Admin D1 Database | `dead-drop-admin` |
+| Core API Worker | `dead-drop-core` |
+| Admin API Worker | `dead-drop-admin-api` |
+| Core Frontend (Pages) | `dead-drop` |
+| Admin Frontend (Pages) | `dead-drop-admin` |
+
+**To find database IDs:**
+```bash
+# List all D1 databases
+wrangler d1 list
+
+# Get specific database ID
+wrangler d1 info dead-drop-core
+wrangler d1 info dead-drop-admin
+```
 
 ### Deploy Core App
 
@@ -251,11 +328,19 @@ pnpm --filter @dead-drop/engine test:coverage
 
 ### Port already in use
 
-```bash
-# Stop all servers
-/workspaces/dead-drop/scripts/servers.sh stop all
+**⚠️ ALWAYS check ports before starting servers:**
 
-# Or kill specific processes
+```bash
+# Check what's using a port
+lsof -i :3010  # Core UI
+lsof -i :9090  # Core API
+lsof -i :3011  # Admin UI
+lsof -i :9091  # Admin API
+
+# Kill process on port
+lsof -ti :9090 | xargs -r kill -9
+
+# Or kill all dev processes
 pkill -f "tsx.*server.ts"   # API servers
 pkill -f "next dev"          # Frontends
 ```
@@ -279,6 +364,23 @@ pkill -f "next dev"          # Frontends
 rm -rf apps/core/.wrangler/state
 rm -rf apps/admin/.wrangler/state
 ```
+
+---
+
+## Pre-Commit Workflow
+
+The project uses lint-staged with Husky for automated code quality:
+
+- **Pre-commit hook**: `.husky/pre-commit` runs `npx lint-staged`
+- **lint-staged config**: `.lintstagedrc` runs `eslint --fix`, `prettier --write`, and `git add` on staged files
+- **Important**: After `prettier --write` modifies files, they are automatically re-staged before commit
+
+This means:
+1. Edit files and stage them with `git add`
+2. Pre-commit runs: `eslint --fix` → `prettier --write` → `git add` (automatic)
+3. Commit includes the fixed formatting ✅
+
+If you edit files and commit directly (bypassing pre-commit), the formatting won't be fixed.
 
 ---
 

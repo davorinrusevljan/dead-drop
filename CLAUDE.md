@@ -26,6 +26,12 @@ Privacy-focused, ephemeral data-sharing service running on Cloudflare Workers (E
 - Drizzle ORM, Zod validation
 - Vitest (100% coverage required)
 
+### Monorepo Packages
+
+**@dead-drop/core** - Community edition (free tier, D1 storage)
+**@dead-drop/admin** - Admin panel
+**@dead-drop/saas** - SaaS (future)
+
 ---
 
 ## Local Development
@@ -50,6 +56,31 @@ pnpm dev
 - Automatically connects to API at `http://localhost:9090`
 
 ### Stopping the Servers
+
+**⚠️ CRITICAL - ALWAYS check ports before starting servers:**
+- NEVER start any dev server without first checking if the port is in use
+- Check: `lsof -ti :<port>` - this shows which process is using each port
+- Kill if occupied: `lsof -ti :<port> | xargs -r kill -9`
+- Example (before starting core API): `lsof -ti :9090 | xargs -r kill -9`
+- If you skip this step, you'll cause port conflicts and "hung" processes
+
+**Stop API Server:**
+- Press `Ctrl+C` in the terminal running the server
+
+**Stop UI Server:**
+- Press `Ctrl+C` in the terminal running the server
+
+**Clean up hung processes:**
+```bash
+# Kill Next.js processes
+pkill -f "next-server"
+
+# Kill anything on specific ports
+lsof -ti :3010 | xargs -r kill -9  # UI
+lsof -ti :9090 | xargs -r kill -9  # Core API
+lsof -ti :9091 | xargs -r kill -9  # Admin API
+```
+
 
 **Stop API Server:**
 - Press `Ctrl+C` in the terminal running `pnpm dev:api`
@@ -91,13 +122,76 @@ The API code in `apps/core/src/api/index.ts` is **shared** between local dev and
 - **Local**: D1-compatible adapter using better-sqlite3
 - **Production**: Real Cloudflare D1 database
 
+### Admin Panel Development
+
+The admin panel has its own API with a similar architecture:
+
+**Terminal 3 - Start Admin API Server:**
+```bash
+cd /workspaces/dead-drop/apps/admin
+pnpm dev:api
+```
+- Runs on: `http://localhost:9091`
+- Uses two local SQLite databases:
+  - Admin DB: `apps/admin/.wrangler/state/admin.db` (for user management)
+  - Core DB: `apps/core/.wrangler/state/local.db` (shared with core API, for stats)
+- Schema: `apps/admin/schema.sql`
+- Secrets: `apps/admin/.dev.vars` (JWT_SECRET)
+
+**Terminal 4 - Start Admin UI Server:**
+```bash
+cd /workspaces/dead-drop/apps/admin
+pnpm dev
+```
+- Runs on: `http://localhost:3011`
+- Automatically connects to Admin API at `http://localhost:9091`
+
+**Testing Admin API:**
+```bash
+# Health check
+curl http://localhost:9091/api/health
+
+# Login (requires admin user to exist)
+curl -X POST http://localhost:9091/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password"}'
+```
+
+**Bootstrap Admin User:**
+```bash
+cd /workspaces/dead-drop/apps/admin
+pnpm bootstrap-admin
+```
+
 ---
 
 ## Deployment
 
 ### Production Environment
 
-Two separate deployments:
+#### Setup Wrangler Configuration
+
+For security, `wrangler.toml` files with database IDs are not tracked in git. You must create them from templates:
+
+**Core App:**
+```bash
+cd /workspaces/dead-drop/apps/core
+cp wrangler.toml.example wrangler.toml
+cp wrangler.api.toml.example wrangler.api.toml
+# Edit files and replace <YOUR-DATABASE-ID> with actual ID from: wrangler d1 info dead-drop-core
+```
+
+**Admin Panel:**
+```bash
+cd /workspaces/dead-drop/apps/admin
+cp wrangler.toml.example wrangler.toml
+cp wrangler.api.toml.example wrangler.api.toml
+# Edit files and replace <YOUR-ADMIN-DB-ID> and <YOUR-CORE-DB-ID> with actual IDs
+```
+
+**Important:** The actual `wrangler.toml` and `wrangler.api.toml` files are in `.gitignore` and will never be committed.
+
+#### Two Separate Deployments:
 
 | Service | URL | Command | Config |
 |---------|-----|---------|--------|
@@ -106,11 +200,23 @@ Two separate deployments:
 
 ### Cloudflare Resources
 
-| Resource | Name | ID |
-|----------|------|-----|
-| D1 Database | dead-drop-core | `d7b160c6-078a-40db-a51c-29eb73bc8eb2` |
-| API Worker | dead-drop-core | - |
-| Pages Project | dead-drop | - |
+| Resource | Name |
+|----------|------|
+| D1 Database | dead-drop-core |
+| D1 Database | dead-drop-admin |
+| API Worker | dead-drop-core |
+| API Worker | dead-drop-admin-api |
+| Pages Project | dead-drop |
+
+**To find database IDs:**
+```bash
+# List all D1 databases
+wrangler d1 list
+
+# Get specific database ID
+wrangler d1 info dead-drop-core
+wrangler d1 info dead-drop-admin
+```
 
 ### Deploy Frontend (Cloudflare Pages)
 
@@ -207,6 +313,34 @@ pnpm deploy:pages
 pnpm deploy:api
 ```
 
+### From apps/admin Directory
+
+```bash
+# Start API server (local)
+pnpm dev:api
+
+# Start UI server
+pnpm dev
+
+# Start Wrangler dev (production DB - NOT for local dev)
+pnpm dev:worker
+
+# Bootstrap initial admin user
+pnpm bootstrap-admin
+
+# Build frontend
+pnpm build
+
+# Build for Cloudflare Pages
+pnpm build:pages
+
+# Deploy to Cloudflare Pages
+pnpm deploy:pages
+
+# Deploy API to Cloudflare Workers
+pnpm deploy:api
+```
+
 ---
 
 ## Troubleshooting
@@ -263,13 +397,31 @@ All endpoints are documented at: `http://localhost:9090/api/docs`
 
 1. **Never use `wrangler dev` for local development** - it uses production database config. Always use `pnpm dev:api`.
 
-2. **Local API shares 100% of production API code** - The only difference is the database adapter (`d1-adapter.ts` for local, D1 for production).
+2. **Local APIs share 100% of production API code** - The only difference is the database adapter:
+   - Both `core` and `admin` use the same D1-compatible adapter from `@dead-drop/engine`
+   - Production uses real Cloudflare D1 database
 
 3. **Hash-based routing** - Drop access uses URL fragments (`/#drop-name`) for privacy - the fragment never reaches the server.
 
-4. **Database Schema** - Located at `apps/core/schema.sql` - uses `IF NOT EXISTS` so it can be run multiple times safely.
+4. **Database Schema** - Located at `apps/core/schema.sql` and `apps/admin/schema.sql` - uses `IF NOT EXISTS` so it can be run multiple times safely.
 
 5. **Environment Variables**:
    - `NEXT_PUBLIC_API_URL` - Override API URL for UI (default: `http://localhost:9090` in dev, `https://api.dead-drop.xyz` in prod)
    - `ADMIN_HASH_PEPPER` - Secret pepper for admin hash derivation
    - `UPGRADE_TOKEN` - Secret token for upgrading drops (mock payment)
+   - `JWT_SECRET` - Secret for admin panel authentication (in `.dev.vars`)
+
+## Pre-Commit Workflow
+
+The project uses lint-staged with Husky for automated code quality:
+
+- **Pre-commit hook**: `.husky/pre-commit` runs `npx lint-staged`
+- **lint-staged config**: `.lintstagedrc` runs `eslint --fix`, `prettier --write`, and `git add` on staged files
+- **Important**: After `prettier --write` modifies files, they are automatically re-staged before commit
+
+This means:
+1. Edit files and stage them with `git add`
+2. Pre-commit runs: `eslint --fix` → `prettier --write` → `git add` (automatic)
+3. Commit includes the fixed formatting ✅
+
+If you edit files and commit directly (bypassing pre-commit), the formatting won't be fixed.

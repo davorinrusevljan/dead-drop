@@ -4,16 +4,18 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 # Admin database (separate from core for security isolation)
+# To find your database ID: wrangler d1 info dead-drop-admin
 [[d1_databases]]
 binding = "ADMIN_DB"
 database_name = "dead-drop-admin"
-database_id = "002a7e33-34a7-4928-aaf0-315dc588c9ad"
+database_id = "<YOUR-ADMIN-DB-ID>"
 
 # Core database (read-only for stats)
+# To find your database ID: wrangler d1 info dead-drop-core
 [[d1_databases]]
 binding = "CORE_DB"
 database_name = "dead-drop-core"
-database_id = "d7b160c6-078a-40db-a51c-29eb73bc8eb2"
+database_id = "<YOUR-CORE-DB-ID>"
 
 [dev]
 port = 8788

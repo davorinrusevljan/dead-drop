@@ -46,6 +46,9 @@ core.*
 .wrangler/
 **/wrangler/
 .mf/
+# Wrangler config files with sensitive database IDs
+wrangler.toml
+wrangler.api.toml
 
 # Temporary files
 *.tmp

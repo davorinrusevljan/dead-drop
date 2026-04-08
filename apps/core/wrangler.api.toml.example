@@ -6,10 +6,12 @@ main = "src/worker.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# D1 Database for Core App
+# To find your database ID: wrangler d1 info dead-drop-core
 [[d1_databases]]
 binding = "DB"
 database_name = "dead-drop-core"
-database_id = "d7b160c6-078a-40db-a51c-29eb73bc8eb2"
+database_id = "<YOUR-DATABASE-ID>"
 
 [vars]
 ENVIRONMENT = "production"
