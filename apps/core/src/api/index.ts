@@ -407,8 +407,9 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }>();
 
     // Log validation attempt for debugging
-    console.debug(`[CREATE_DROP] Attempt: id=${body.id}, tier=${body.tier ?? 'free'}, visibility=${body.visibility}, nameLength=${body.nameLength}, payloadSize=${body.payload.length}`);
-    console.debug(`[CREATE_DROP] Attempt: id=${body.id}, tier=${body.tier ?? 'free'}, visibility=${body.visibility}, nameLength=${body.nameLength}, payloadSize=${body.payload.length}`);
+    console.debug(
+      `[CREATE_DROP] Attempt: id=${body.id}, tier=${body.tier ?? 'free'}, visibility=${body.visibility}, nameLength=${body.nameLength}, payloadSize=${body.payload.length}`
+    );
 
     if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
       console.debug(`[CREATE_DROP] Rejected: INVALID_MIME_TYPE - ${body.mimeType}`);
@@ -447,7 +448,9 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
     const minNameLength = TIER_NAME_MIN_LENGTHS[tier];
     if (body.nameLength < minNameLength) {
-      console.debug(`[CREATE_DROP] Rejected: INVALID_NAME - ${body.nameLength} < ${minNameLength} (${tier} tier)`);
+      console.debug(
+        `[CREATE_DROP] Rejected: INVALID_NAME - ${body.nameLength} < ${minNameLength} (${tier} tier)`
+      );
       return c.json(
         {
           error: {
@@ -462,7 +465,9 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     const payloadSize = new TextEncoder().encode(body.payload).length;
     const maxSize = TIER_MAX_PAYLOAD_SIZES[tier];
     if (payloadSize > maxSize) {
-      console.debug(`[CREATE_DROP] Rejected: PAYMENT_REQUIRED - ${payloadSize} > ${maxSize} (${tier} tier)`);
+      console.debug(
+        `[CREATE_DROP] Rejected: PAYMENT_REQUIRED - ${payloadSize} > ${maxSize} (${tier} tier)`
+      );
       return c.json(
         {
           error: {
@@ -505,7 +510,9 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       expiresAt,
     });
 
-    console.debug(`[CREATE_DROP] Success: id=${body.id}, tier=${tier}, expiresAt=${expiresAt.toISOString()}`);
+    console.debug(
+      `[CREATE_DROP] Success: id=${body.id}, tier=${tier}, expiresAt=${expiresAt.toISOString()}`
+    );
     return c.json({ success: true as const, version: 1, tier }, 201);
   });
 

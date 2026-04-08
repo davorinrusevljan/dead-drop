@@ -1,9 +1,11 @@
 {
   "*.{ts,tsx}": [
     "eslint --max-warnings=0 --no-warn-ignored --fix",
-    "prettier --write"
+    "prettier --write",
+    "git add"
   ],
   "*.{js,jsx,json,md}": [
-    "prettier --write"
+    "prettier --write",
+    "git add"
   ]
 }
