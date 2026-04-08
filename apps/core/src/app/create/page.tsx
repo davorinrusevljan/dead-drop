@@ -88,21 +88,28 @@ export default function CreatePage() {
         adminHash = await computePublicAdminHash(password, salt);
       }
 
+      // Build request body - only include fields that are needed
+      const requestBody: Record<string, unknown> = {
+        id: dropId,
+        nameLength: normalizedName.length,
+        tier: 'free',
+        visibility,
+        payload,
+        salt,
+        iv,
+        mimeType: 'text/plain',
+        contentHash: respContentHash,
+      };
+
+      // Only include adminHash for public drops (not for private drops)
+      if (visibility === 'public') {
+        requestBody.adminHash = adminHash;
+      }
+
       const response = await fetch(`${API_URL}/api/drops`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: dropId,
-          nameLength: normalizedName.length,
-          tier: 'free',
-          visibility,
-          payload,
-          salt,
-          iv,
-          mimeType: 'text/plain',
-          contentHash: respContentHash,
-          adminHash,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
