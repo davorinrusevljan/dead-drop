@@ -56,3 +56,8 @@ wrangler.api.toml
 
 # Core dumps
 core.*
+
+apps/admin/cookies.txt
+apps/admin/testuser*
+backup/
+
