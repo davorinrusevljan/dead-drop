@@ -13,6 +13,13 @@ import {
   type MimeType,
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
+import {
+  fetchVersionList,
+  fetchVersion,
+  type VersionListResponse,
+  type DropVersionInfo,
+  type VersionDataResponse,
+} from '../lib/drop-client';
 
 type AppState = 'landing' | 'checking' | 'notfound' | 'unlock' | 'view' | 'edit' | 'delete';
 
@@ -79,6 +86,14 @@ export default function HomePage() {
   const [contentHash, setContentHash] = useState<string | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [agreedToViewTerms, setAgreedToViewTerms] = useState(false);
+
+  // Version history state
+  const [versionList, setVersionList] = useState<VersionListResponse | null>(null);
+  const [versionsExpanded, setVersionsExpanded] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<VersionDataResponse | null>(null);
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
+  const [selectedVersionContent, setSelectedVersionContent] = useState<string | null>(null);
+  const [isFetchingVersion, setIsFetchingVersion] = useState(false);
 
   // Initialize
   useEffect(() => {
@@ -250,6 +265,66 @@ export default function HomePage() {
       }
     },
     [dropData]
+  );
+
+  // Fetch version list after unlock
+  const fetchVersions = useCallback(async (id: string) => {
+    try {
+      const versions = await fetchVersionList(id);
+      setVersionList(versions);
+    } catch {
+      // Silently fail - version history is optional
+      setVersionList(null);
+    }
+  }, []);
+
+  // Fetch versions when drop is unlocked
+  useEffect(() => {
+    if (state === 'view' && dropData) {
+      fetchVersions(dropData.id);
+    }
+  }, [state, dropData, fetchVersions]);
+
+  // Fetch and decrypt a specific version
+  const handleViewVersion = useCallback(
+    async (versionInfo: DropVersionInfo) => {
+      if (!dropData) return;
+      setIsFetchingVersion(true);
+      try {
+        const versionData = await fetchVersion(dropData.id, versionInfo.version);
+        setSelectedVersion(versionData);
+
+        let content: string;
+        if (dropData.visibility === 'private') {
+          if (!unlockPassword) {
+            setError('Password required to view versions');
+            return;
+          }
+          const provider = cryptoRegistry.get(dropData.encryptionAlgo);
+          const key = await provider.deriveKey(
+            unlockPassword,
+            dropData.salt,
+            dropData.encryptionParams ?? undefined
+          );
+          const contentJson = await provider.decrypt(versionData.payload, key, versionData.iv!);
+          const parsed = JSON.parse(contentJson) as DropContent;
+          content = parsed.content;
+        } else {
+          // Public drop - just decode
+          const contentJson = atob(versionData.payload);
+          const parsed = JSON.parse(contentJson) as DropContent;
+          content = parsed.content;
+        }
+
+        setSelectedVersionContent(content);
+        setShowVersionPopup(true);
+      } catch {
+        setError('Failed to load version');
+      } finally {
+        setIsFetchingVersion(false);
+      }
+    },
+    [dropData, unlockPassword]
   );
 
   const handleSaveEdit = useCallback(
@@ -1069,6 +1144,93 @@ export default function HomePage() {
 
               <div className="content-viewer">{decryptedContent}</div>
 
+              {/* Version History Section */}
+              {versionList && versionList.versions.length > 0 && (
+                <div style={{ marginTop: '2rem' }}>
+                  <button
+                    onClick={() => setVersionsExpanded(!versionsExpanded)}
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '0.5rem',
+                      padding: '0.5rem 0.75rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontSize: '0.875rem',
+                      color: 'var(--fg-muted)',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        transform: versionsExpanded ? 'rotate(90deg)' : 'none',
+                        transition: 'transform 0.2s',
+                      }}
+                    >
+                      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {versionList.versions.length} version
+                    {versionList.versions.length !== 1 ? 's' : ''} available
+                  </button>
+
+                  {versionsExpanded && (
+                    <div
+                      style={{
+                        marginTop: '0.5rem',
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '0.5rem',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {versionList.versions.map((v) => (
+                        <button
+                          key={v.version}
+                          onClick={() => handleViewVersion(v)}
+                          disabled={isFetchingVersion}
+                          style={{
+                            width: '100%',
+                            background: 'transparent',
+                            border: 'none',
+                            padding: '0.75rem 1rem',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '0.875rem',
+                            color: v.version === versionList.current ? 'var(--amber)' : 'var(--fg)',
+                            transition: 'background 0.2s',
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background = 'var(--bg-hover)')
+                          }
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <span>
+                            Version {v.version}
+                            {v.version === versionList.current && ' (current)'}
+                          </span>
+                          <span style={{ color: 'var(--fg-muted)', fontSize: '0.75rem' }}>
+                            {new Date(v.createdAt).toLocaleString()}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
                 <button
                   onClick={() => navigator.clipboard.writeText(decryptedContent)}
@@ -1116,6 +1278,136 @@ export default function HomePage() {
             </span>
           </footer>
         </main>
+
+        {/* Version Popup */}
+        {showVersionPopup && selectedVersion && selectedVersionContent && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '1rem',
+            }}
+            onClick={() => setShowVersionPopup(false)}
+          >
+            <div
+              style={{
+                background: 'var(--bg)',
+                border: '1px solid var(--border)',
+                borderRadius: '0.5rem',
+                maxWidth: '32rem',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '1rem',
+                  borderBottom: '1px solid var(--border)',
+                }}
+              >
+                <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--fg)' }}>
+                  Version {selectedVersion.version}
+                </h3>
+                <button
+                  onClick={() => setShowVersionPopup(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.25rem',
+                    color: 'var(--fg-muted)',
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    style={{ width: '20px', height: '20px' }}
+                  >
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div style={{ padding: '1rem' }}>
+                <p
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--fg-muted)',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  {new Date(selectedVersion.createdAt).toLocaleString()}
+                </p>
+                <div
+                  style={{
+                    background: 'var(--bg-secondary)',
+                    padding: '1rem',
+                    borderRadius: '0.25rem',
+                    fontFamily: 'JetBrains Mono',
+                    fontSize: '0.875rem',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    maxHeight: '50vh',
+                    overflow: 'auto',
+                  }}
+                >
+                  {selectedVersionContent}
+                </div>
+              </div>
+              <div
+                style={{
+                  padding: '1rem',
+                  borderTop: '1px solid var(--border)',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '0.5rem',
+                }}
+              >
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(selectedVersionContent);
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    color: 'var(--fg)',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Copy
+                </button>
+                <button
+                  onClick={() => setShowVersionPopup(false)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'var(--amber)',
+                    border: 'none',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    color: 'var(--bg)',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }

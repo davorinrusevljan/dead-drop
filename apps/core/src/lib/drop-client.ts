@@ -13,6 +13,7 @@ import {
   type EncryptionParams,
   type MimeType,
 } from '@dead-drop/engine';
+import { API_URL } from './config';
 
 /**
  * Drop content payload for client-side encryption
@@ -244,4 +245,53 @@ export function serializeContent(content: DropContentPayload): string {
  */
 export function parseContent(json: string): DropContentPayload {
   return JSON.parse(json) as DropContentPayload;
+}
+
+/**
+ * Version information for a drop
+ */
+export interface DropVersionInfo {
+  version: number;
+  createdAt: string;
+}
+
+/**
+ * Version list response from API
+ */
+export interface VersionListResponse {
+  versions: DropVersionInfo[];
+  current: number;
+  maxVersions: number;
+}
+
+/**
+ * Version data response from API
+ */
+export interface VersionDataResponse {
+  version: number;
+  payload: string;
+  iv: string | null;
+  createdAt: string;
+}
+
+/**
+ * Fetch the list of versions for a drop
+ */
+export async function fetchVersionList(dropId: string): Promise<VersionListResponse> {
+  const response = await fetch(`${API_URL}/api/drops/${dropId}/history`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch version list');
+  }
+  return response.json() as Promise<VersionListResponse>;
+}
+
+/**
+ * Fetch a specific version of a drop
+ */
+export async function fetchVersion(dropId: string, version: number): Promise<VersionDataResponse> {
+  const response = await fetch(`${API_URL}/api/drops/${dropId}/history/${version}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch version');
+  }
+  return response.json() as Promise<VersionDataResponse>;
 }
