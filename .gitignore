@@ -61,3 +61,4 @@ apps/admin/cookies.txt
 apps/admin/testuser*
 backup/
 
+.claude/settings.local.json
