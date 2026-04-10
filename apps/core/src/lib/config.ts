@@ -23,12 +23,7 @@ const getApiUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL;
   }
 
-  // Default based on environment
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:9090';
-  }
-
-  // Production default
+  // Default to production API
   return 'https://api.dead-drop.xyz';
 };
 
