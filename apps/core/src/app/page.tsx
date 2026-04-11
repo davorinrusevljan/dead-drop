@@ -362,19 +362,28 @@ export default function HomePage() {
           // Compute the NEW content hash for the server to store
           newReqContentHash = await sha256(contentJson);
         } else {
+          // Public drops - no encryption, just base64 encode
           payload = btoa(contentJson);
+        }
+
+        // Build request body
+        const requestBody: Record<string, unknown> = {
+          payload,
+        };
+
+        // Only include fields specific to visibility type
+        if (dropData.visibility === 'private') {
+          requestBody.iv = iv;
+          requestBody.contentHash = reqContentHash;
+          requestBody.newContentHash = newReqContentHash;
+        } else {
+          requestBody.adminPassword = editPwd;
         }
 
         const response = await fetch(`${API_URL}/api/drops/${dropData.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            payload,
-            iv,
-            contentHash: reqContentHash,
-            newContentHash: newReqContentHash,
-            adminPassword: dropData.visibility === 'public' ? editPwd : undefined,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (response.ok) {

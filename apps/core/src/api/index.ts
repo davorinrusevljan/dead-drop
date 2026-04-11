@@ -407,12 +407,10 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }>();
 
     // Log validation attempt for debugging
-    console.debug(
       `[CREATE_DROP] Attempt: id=${body.id}, tier=${body.tier ?? 'free'}, visibility=${body.visibility}, nameLength=${body.nameLength}, payloadSize=${body.payload.length}`
     );
 
     if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
-      console.debug(`[CREATE_DROP] Rejected: INVALID_MIME_TYPE - ${body.mimeType}`);
       return c.json(
         {
           error: {
@@ -424,7 +422,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       );
     }
     if (body.encryptionAlgo && !isAlgorithmSupported(body.encryptionAlgo)) {
-      console.debug(`[CREATE_DROP] Rejected: INVALID_ALGORITHM - ${body.encryptionAlgo}`);
       return c.json(
         {
           error: {
@@ -441,14 +438,12 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       if (body.upgradeToken === upgradeToken) {
         tier = 'deep';
       } else {
-        console.debug(`[CREATE_DROP] Rejected: INVALID_TOKEN`);
         return c.json({ error: { code: 'INVALID_TOKEN', message: 'Invalid upgrade token' } }, 401);
       }
     }
 
     const minNameLength = TIER_NAME_MIN_LENGTHS[tier];
     if (body.nameLength < minNameLength) {
-      console.debug(
         `[CREATE_DROP] Rejected: INVALID_NAME - ${body.nameLength} < ${minNameLength} (${tier} tier)`
       );
       return c.json(
@@ -465,7 +460,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     const payloadSize = new TextEncoder().encode(body.payload).length;
     const maxSize = TIER_MAX_PAYLOAD_SIZES[tier];
     if (payloadSize > maxSize) {
-      console.debug(
         `[CREATE_DROP] Rejected: PAYMENT_REQUIRED - ${payloadSize} > ${maxSize} (${tier} tier)`
       );
       return c.json(
@@ -481,7 +475,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
     const existing = await getDropById(db, body.id);
     if (existing) {
-      console.debug(`[CREATE_DROP] Rejected: DROP_EXISTS - ${body.id}`);
       return c.json({ error: { code: 'DROP_EXISTS', message: 'Drop name already taken' } }, 409);
     }
 
@@ -492,7 +485,19 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     if (body.visibility === 'private') {
       adminHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
     } else {
-      adminHash = body.adminHash ?? '';
+      // Public drops require adminHash to be provided and non-empty
+      if (!body.adminHash || body.adminHash === '') {
+        return c.json(
+          {
+            error: {
+              code: 'MISSING_ADMIN_HASH',
+              message: 'Public drops require an admin hash. Please provide a password.',
+            },
+          },
+          400
+        );
+      }
+      adminHash = body.adminHash;
     }
 
     await createDrop(db, {
@@ -510,9 +515,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       expiresAt,
     });
 
-    console.debug(
-      `[CREATE_DROP] Success: id=${body.id}, tier=${tier}, expiresAt=${expiresAt.toISOString()}`
-    );
     return c.json({ success: true as const, version: 1, tier }, 201);
   });
 
@@ -625,6 +627,22 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       );
     }
 
+    // Validate public drop requires adminPassword
+    if (drop.visibility === 'public' && (!body.adminPassword || body.adminPassword === '')) {
+      return c.json(
+        {
+          error: {
+            code: 'MISSING_ADMIN_PASSWORD',
+            message: 'Public drops require an admin password to edit.',
+          },
+        },
+        400
+      );
+    }
+
+    // adminPassword is validated to be non-empty above for public drops
+    const adminPassword: string | undefined = body.adminPassword;
+
     let providedHash: string;
     let newAdminHash: string;
     if (drop.visibility === 'private') {
@@ -634,7 +652,8 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         pepper
       );
     } else {
-      providedHash = await sha256((body.adminPassword ?? '') + drop.salt);
+      // adminPassword is validated to be non-empty above, so we can safely cast
+      providedHash = await sha256(adminPassword + drop.salt);
       newAdminHash = providedHash;
     }
 
@@ -683,6 +702,10 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         content: { 'application/json': { schema: successResponseSchema } },
         description: 'Drop deleted',
       },
+      400: {
+        content: { 'application/json': { schema: errorResponseSchema } },
+        description: 'Invalid request',
+      },
       401: {
         content: { 'application/json': { schema: errorResponseSchema } },
         description: 'Invalid credentials',
@@ -704,11 +727,28 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
     const body = await c.req.json<{ contentHash?: string; adminPassword?: string }>();
 
+    // Validate public drop requires adminPassword
+    if (drop.visibility === 'public' && (!body.adminPassword || body.adminPassword === '')) {
+      return c.json(
+        {
+          error: {
+            code: 'MISSING_ADMIN_PASSWORD',
+            message: 'Public drops require an admin password to delete.',
+          },
+        },
+        400
+      );
+    }
+
+    // adminPassword is validated to be non-empty above for public drops
+    const adminPassword: string | undefined = body.adminPassword;
+
     let providedHash: string;
     if (drop.visibility === 'private') {
       providedHash = await computePrivateAdminHash(body.contentHash ?? '', pepper);
     } else {
-      providedHash = await sha256((body.adminPassword ?? '') + drop.salt);
+      // adminPassword is validated to be non-empty above, so we can safely cast
+      providedHash = await sha256(adminPassword + drop.salt);
     }
 
     if (providedHash !== drop.adminHash) {
@@ -916,7 +956,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
   // Error handler
   app.onError((err, c) => {
-    console.debug('[API_ERROR]', {
       message: err.message,
       stack: err.stack,
       path: c.req.path,

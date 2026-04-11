@@ -85,7 +85,12 @@ export default function CreatePage() {
         respContentHash = await sha256(contentJson);
       } else {
         payload = btoa(contentJson);
-        adminHash = await computePublicAdminHash(password, salt);
+        // Compute admin hash for public drops
+        const computedHash = await computePublicAdminHash(password, salt);
+        if (!computedHash) {
+          throw new Error('Failed to compute admin hash');
+        }
+        adminHash = computedHash;
       }
 
       // Build request body - only include fields that are needed
@@ -96,13 +101,15 @@ export default function CreatePage() {
         visibility,
         payload,
         salt,
-        iv,
         mimeType: 'text/plain',
-        contentHash: respContentHash,
       };
 
-      // Only include adminHash for public drops (not for private drops)
-      if (visibility === 'public') {
+      // Only include fields specific to visibility type
+      if (visibility === 'private') {
+        requestBody.iv = iv;
+        requestBody.contentHash = respContentHash;
+      } else {
+        // Public drops require adminHash
         requestBody.adminHash = adminHash;
       }
 
