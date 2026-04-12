@@ -53,7 +53,8 @@
       "Bash(fuser -k 3010/tcp)",
       "Bash(npx eslint:*)",
       "Bash(xxd)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls -la /workspaces/dead-drop/packages/engine/dist/crypto.*)"
     ]
   }
 }

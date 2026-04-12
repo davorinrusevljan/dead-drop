@@ -1,13 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, desc, and } from 'drizzle-orm';
 import { drops, dropHistory, dropAuditLog } from '@dead-drop/engine/db';
-import type {
-  DropTier,
-  DropVisibility,
-  EncryptionAlgorithm,
-  EncryptionParams,
-  MimeType,
-} from '@dead-drop/engine';
+import type { DropTier, DropVisibility, MimeType } from '@dead-drop/engine';
 
 /**
  * Drop record type from database
@@ -20,7 +14,7 @@ export interface DropRecord {
   visibility: 'private' | 'public';
   salt: string;
   iv: string | null;
-  encryptionAlgo: EncryptionAlgorithm;
+  encryptionAlgo: 'pbkdf2-aes256-gcm-v1' | 'xchacha20-poly1305-v1' | 'argon2id-xchacha20-v1' | null;
   encryptionParams: string | null;
   mimeType: MimeType;
   adminHash: string;
@@ -40,7 +34,7 @@ export interface DropHistoryRecord {
   data: string | null;
   r2Key: string | null;
   iv: string | null;
-  encryptionAlgo: EncryptionAlgorithm | null;
+  encryptionAlgo: 'pbkdf2-aes256-gcm-v1' | 'xchacha20-poly1305-v1' | 'argon2id-xchacha20-v1' | null;
   encryptionParams: string | null;
   mimeType: MimeType | null;
   createdAt: Date;
@@ -58,8 +52,8 @@ export async function createDrop(
     r2Key: string | null;
     salt: string;
     iv: string | null;
-    encryptionAlgo?: EncryptionAlgorithm;
-    encryptionParams?: EncryptionParams | null;
+    encryptionAlgo?: 'pbkdf2-aes256-gcm-v1' | 'xchacha20-poly1305-v1' | 'argon2id-xchacha20-v1';
+    encryptionParams?: { rounds?: number } | null;
     mimeType?: MimeType;
     adminHash: string;
     tier: DropTier;

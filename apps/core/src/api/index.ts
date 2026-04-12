@@ -43,7 +43,7 @@ import {
   upgradeDropResponseSchema,
   generateNameResponseSchema,
 } from './openapi.js';
-import type { EncryptionAlgorithm, EncryptionParams, MimeType } from '@dead-drop/engine';
+import type { MimeType } from '@dead-drop/engine';
 import { securityHeaders } from './middleware.js';
 
 /**
@@ -390,7 +390,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     const pepper = c.env.ADMIN_HASH_PEPPER;
     const upgradeToken = c.env.UPGRADE_TOKEN;
 
-    const body = await c.req.json<{
+    const body = (await c.req.json()) as {
       id: string;
       nameLength: number;
       tier?: 'free' | 'deep';
@@ -398,17 +398,13 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       payload: string;
       salt: string;
       iv?: string;
-      encryptionAlgo?: EncryptionAlgorithm;
-      encryptionParams?: EncryptionParams;
+      encryptionAlgo?: 'pbkdf2-aes256-gcm-v1' | 'xchacha20-poly1305-v1' | 'argon2id-xchacha20-v1';
+      encryptionParams?: { rounds?: number };
       mimeType?: MimeType;
       contentHash?: string;
       adminHash?: string;
       upgradeToken?: string;
-    }>();
-
-    // Log validation attempt for debugging
-      `[CREATE_DROP] Attempt: id=${body.id}, tier=${body.tier ?? 'free'}, visibility=${body.visibility}, nameLength=${body.nameLength}, payloadSize=${body.payload.length}`
-    );
+    };
 
     if (body.mimeType && !isMimeTypeAllowed(body.mimeType)) {
       return c.json(
@@ -444,8 +440,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
     const minNameLength = TIER_NAME_MIN_LENGTHS[tier];
     if (body.nameLength < minNameLength) {
-        `[CREATE_DROP] Rejected: INVALID_NAME - ${body.nameLength} < ${minNameLength} (${tier} tier)`
-      );
       return c.json(
         {
           error: {
@@ -460,8 +454,6 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     const payloadSize = new TextEncoder().encode(body.payload).length;
     const maxSize = TIER_MAX_PAYLOAD_SIZES[tier];
     if (payloadSize > maxSize) {
-        `[CREATE_DROP] Rejected: PAYMENT_REQUIRED - ${payloadSize} > ${maxSize} (${tier} tier)`
-      );
       return c.json(
         {
           error: {
@@ -955,12 +947,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
   });
 
   // Error handler
-  app.onError((err, c) => {
-      message: err.message,
-      stack: err.stack,
-      path: c.req.path,
-      method: c.req.method,
-    });
+  app.onError((_err, c) => {
     return c.json(
       { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
       500

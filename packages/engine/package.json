@@ -12,8 +12,8 @@
       "import": "./dist/index.js"
     },
     "./crypto": {
-      "types": "./dist/crypto.d.ts",
-      "import": "./dist/crypto.js"
+      "types": "./dist/crypto/index.d.ts",
+      "import": "./dist/crypto/index.js"
     },
     "./validation": {
       "types": "./dist/validation.d.ts",
