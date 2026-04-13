@@ -29,7 +29,6 @@ describe('Public Drop Creation', () => {
 
   it('should reject empty admin hash for public drops', async () => {
     const emptyHash = '';
-    const salt = generateSalt();
 
     // Empty hash should be detectable
     expect(emptyHash).toBe('');

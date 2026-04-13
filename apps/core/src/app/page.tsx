@@ -20,6 +20,7 @@ import {
   type DropVersionInfo,
   type VersionDataResponse,
 } from '../lib/drop-client';
+import { PasswordInput } from '@dead-drop/ui';
 
 type AppState = 'landing' | 'checking' | 'notfound' | 'unlock' | 'view' | 'edit' | 'delete';
 
@@ -998,26 +999,22 @@ export default function HomePage() {
               )}
 
               {!isPublic && (
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    value={unlockPassword}
-                    onChange={(e) => setUnlockPassword(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && agreedToViewTerms) {
-                        if (isPublic) {
-                          setState('view');
-                        } else {
-                          handleUnlock(unlockPassword);
-                        }
+                <PasswordInput
+                  label="Password"
+                  value={unlockPassword}
+                  onChange={(e) => setUnlockPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && agreedToViewTerms) {
+                      if (isPublic) {
+                        setState('view');
+                      } else {
+                        handleUnlock(unlockPassword);
                       }
-                    }}
-                    className="form-input"
-                    placeholder="enter password"
-                    autoFocus
-                  />
-                </div>
+                    }
+                  }}
+                  placeholder="enter password"
+                  autoFocus
+                />
               )}
 
               {error && <p className="error-message">{error}</p>}
@@ -1465,15 +1462,7 @@ export default function HomePage() {
               </p>
 
               {dropData.visibility === 'public' && (
-                <div className="form-group">
-                  <label className="form-label">Admin Password</label>
-                  <input
-                    type="password"
-                    id="edit-pwd"
-                    className="form-input"
-                    placeholder="required"
-                  />
-                </div>
+                <PasswordInput label="Admin Password" id="edit-pwd" placeholder="required" />
               )}
 
               <div className="form-group">
@@ -1579,15 +1568,7 @@ export default function HomePage() {
               </p>
 
               {dropData.visibility === 'public' && (
-                <div className="form-group" style={{ textAlign: 'left' }}>
-                  <label className="form-label">Admin Password</label>
-                  <input
-                    type="password"
-                    id="delete-pwd"
-                    className="form-input"
-                    placeholder="required"
-                  />
-                </div>
+                <PasswordInput label="Admin Password" id="delete-pwd" placeholder="required" />
               )}
 
               {error && <p className="error-message">{error}</p>}

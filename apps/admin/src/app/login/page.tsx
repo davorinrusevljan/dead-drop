@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { API_BASE_URL } from '@/lib/api-config';
+import { PasswordInput } from '@dead-drop/ui';
 
 interface LoginResponse {
   success?: boolean;
@@ -86,12 +87,9 @@ export default function LoginPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="password" className="admin-form-label">
-              Password
-            </label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
+              label="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="admin-form-input"

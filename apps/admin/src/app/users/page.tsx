@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/lib/api-config';
+import { PasswordInput } from '@dead-drop/ui';
 
 interface User {
   id: number;
@@ -305,18 +306,15 @@ export default function UsersPage() {
                     title="Alphanumeric, underscore, or hyphen only"
                   />
                 </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Password</label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="admin-form-input"
-                    placeholder="min 8 chars"
-                    required
-                    minLength={8}
-                  />
-                </div>
+                <PasswordInput
+                  label="Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="admin-form-input"
+                  placeholder="min 8 chars"
+                  required
+                  minLength={8}
+                />
                 <div className="admin-form-group">
                   <label className="admin-form-label">Role</label>
                   <select
@@ -383,16 +381,57 @@ export default function UsersPage() {
                           onSubmit={handleUpdatePassword}
                           style={{ display: 'flex', gap: '0.5rem' }}
                         >
-                          <input
-                            type="password"
-                            value={editPassword}
-                            onChange={(e) => setEditPassword(e.target.value)}
-                            className="admin-form-input admin-form-input-sm"
-                            placeholder="New password"
-                            minLength={8}
-                            required
-                            style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
-                          />
+                          <div style={{ position: 'relative' }}>
+                            <input
+                              type="password"
+                              value={editPassword}
+                              onChange={(e) => setEditPassword(e.target.value)}
+                              className="admin-form-input admin-form-input-sm"
+                              placeholder="New password"
+                              minLength={8}
+                              required
+                              style={{
+                                padding: '0.5rem 2.75rem 0.5rem 0.75rem',
+                                fontSize: '0.8125rem',
+                              }}
+                              id={`edit-pwd-${user.id}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const input = document.getElementById(
+                                  `edit-pwd-${user.id}`
+                                ) as HTMLInputElement;
+                                input.type = input.type === 'password' ? 'text' : 'password';
+                              }}
+                              style={{
+                                position: 'absolute',
+                                right: '0.5rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: '#71717a',
+                                padding: '0.25rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                              </svg>
+                            </button>
+                          </div>
                           <button
                             type="submit"
                             className="admin-btn admin-btn-primary admin-btn-sm"

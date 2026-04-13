@@ -14,6 +14,7 @@ import {
   computePublicAdminHash,
 } from '@dead-drop/engine';
 import { API_URL } from '../../lib/config';
+import { PasswordInput } from '@dead-drop/ui';
 
 interface DropContent {
   type: 'text';
@@ -47,6 +48,10 @@ export default function CreatePage() {
 
   const normalizedName = normalizeDropName(dropName);
   const validation = validateDropName(normalizedName, 12);
+
+  const passwordsMatch = confirmPassword === '' || password === confirmPassword;
+  const isButtonDisabled =
+    isLoading || !password || !confirmPassword || !passwordsMatch || !content || !agreedToTerms;
 
   const handleCreate = useCallback(async () => {
     if (!validation.valid) {
@@ -226,27 +231,20 @@ export default function CreatePage() {
                 </button>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="min 8 characters"
-                />
-              </div>
+              <PasswordInput
+                label="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="min 8 characters"
+              />
 
-              <div className="form-group">
-                <label className="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="repeat password"
-                />
-              </div>
+              <PasswordInput
+                label="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="repeat password"
+                error={confirmPassword && !passwordsMatch ? 'Passwords do not match' : undefined}
+              />
 
               <div className="form-group">
                 <label className="form-label">Your Secret</label>
@@ -302,13 +300,7 @@ export default function CreatePage() {
               </div>
 
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                <button
-                  onClick={handleCreate}
-                  disabled={
-                    isLoading || !password || !confirmPassword || !content || !agreedToTerms
-                  }
-                  className="action-btn"
-                >
+                <button onClick={handleCreate} disabled={isButtonDisabled} className="action-btn">
                   {isLoading ? 'CREATING...' : 'CREATE DROP'}
                 </button>
               </div>

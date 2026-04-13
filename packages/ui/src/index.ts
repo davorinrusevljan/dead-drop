@@ -2,3 +2,4 @@
 export { cn } from './utils.js';
 export { TerminalInput } from './components/TerminalInput.js';
 export type { TerminalInputProps } from './components/TerminalInput.js';
+export { PasswordInput } from './components/PasswordInput.js';
