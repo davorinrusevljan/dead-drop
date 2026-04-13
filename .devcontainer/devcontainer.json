@@ -31,7 +31,7 @@
       }
     }
   },
-  "postCreateCommand": "test -f package.json && pnpm install || echo 'No package.json yet - project not initialized'",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "forwardPorts": [3000, 8787, 8788],
   "remoteEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096"

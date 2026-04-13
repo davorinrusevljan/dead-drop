@@ -54,7 +54,8 @@
       "Bash(npx eslint:*)",
       "Bash(xxd)",
       "Bash(grep:*)",
-      "Bash(ls -la /workspaces/dead-drop/packages/engine/dist/crypto.*)"
+      "Bash(ls -la /workspaces/dead-drop/packages/engine/dist/crypto.*)",
+      "Bash(gh repo:*)"
     ]
   }
 }
