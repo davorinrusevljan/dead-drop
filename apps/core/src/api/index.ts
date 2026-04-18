@@ -507,7 +507,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       expiresAt,
     });
 
-    return c.json({ success: true as const, version: 1, tier }, 201);
+    return c.json({ success: true as const, version: 1 as const, tier }, 201);
   });
 
   // ===== Update drop endpoint =====
