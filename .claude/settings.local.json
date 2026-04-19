@@ -55,7 +55,32 @@
       "Bash(xxd)",
       "Bash(grep:*)",
       "Bash(ls -la /workspaces/dead-drop/packages/engine/dist/crypto.*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(npx:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh api:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(sed -i '13s|\"format:write\": \"prettier --write \"\\\\*\\\\*/{ts,tsx,js,jsx,json,md}\",|\"format:write\": \"prettier --write \\\\\"**/*.{ts,tsx,js,jsx,json,md}\\\\\",' /workspaces/dead-drop/package.json)",
+      "Bash(sed -n '13p' /workspaces/dead-drop/package.json)",
+      "Bash(perl -i -pe 's|\"format:write\": \"prettier --write \"\\\\*\\\\*/{ts,tsx,js,jsx,json,md}\",|\"format:write\": \"prettier --write \\\\\"**/*.{ts,tsx,js,jsx,json,md}\\\\\",| if $.==13' /workspaces/dead-drop/package.json)",
+      "Bash(netstat -tlnp)",
+      "Bash(wrangler d1:*)",
+      "Bash(ls:*)",
+      "Bash(openssl dgst:*)",
+      "Bash(node:*)",
+      "Bash(lsof -ti:9090 -ti:9091 -ti:9092)",
+      "Bash(jobs)",
+      "Bash(sqlite3 .wrangler/state/local.db \"PRAGMA table_info\\(drops\\);\")",
+      "Bash(kill 1142187 1142204)",
+      "Bash(sqlite3 .wrangler/state/local.db \"SELECT id, hash_algo FROM drops LIMIT 5;\")",
+      "Bash(awk '{print $2}')",
+      "Bash(kill %1)",
+      "Bash(NEXT_PUBLIC_API_URL=http://localhost:9090 pnpm dev)",
+      "Bash(chmod +x /tmp/test-ui-flows.sh)",
+      "Bash(/tmp/test-ui-flows.sh)",
+      "Bash(set +e)"
     ]
   }
 }

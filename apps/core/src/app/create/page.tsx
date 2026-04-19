@@ -130,8 +130,18 @@ export default function CreatePage() {
         setError('Drop name already taken');
         setState('error');
       } else {
-        const err = (await response.json()) as { error?: { message?: string } };
-        setError(err.error?.message || 'Failed to create drop');
+        const err = await response.json();
+        // Handle both {error: {message}} and ZodError formats
+        const message =
+          typeof err === 'object' && err && 'error' in err
+            ? (err.error as { message?: string }).message ||
+              (err.error as { code?: string }).code ||
+              'Failed to create drop'
+            : typeof err === 'object' && err && 'success' in err && !err.success && 'error' in err
+              ? ((err.error as { issues?: Array<{ message?: string }> }).issues?.[0]
+                  ?.message as string) || 'Failed to create drop'
+              : 'Failed to create drop';
+        setError(message);
         setState('error');
       }
     } catch {

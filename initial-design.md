@@ -168,6 +168,47 @@ To support multi-word phrases (e.g., `"quick brown polar bear"`) while preventin
 *   `POST /api/payments/checkout`: Accepts `{ id, nameLength }`. Creates Stripe session. Returns `{ checkoutUrl }`.
 *   `POST /api/payments/webhook`: Stripe webhook handler. Sets `paymentStatus = 'paid'` and `tier = 'deep'` in D1.
 
+### v1.0 API Enhancements
+Additional endpoints added for v1.0:
+
+*   `GET /api/health`: Health check endpoint. Returns `{ status: 'ok', timestamp: ISO-8601 }`.
+*   `GET /api/docs`: Swagger UI documentation interface.
+*   `GET /api/docs/openapi.json`: OpenAPI 3.0 specification.
+*   `GET /api/drops/generate-name`: Generate a random drop name (UX enhancement).
+*   `GET /api/drops/check/{id}`: Check if a drop ID is available (UX enhancement).
+*   `GET /api/drops/{id}/history`: List all versions of a drop.
+*   `GET /api/drops/{id}/history/{version}`: Get a specific version of a drop.
+*   `POST /api/drops/{id}/upgrade`: Upgrade a drop from free to deep tier.
+
+### v1.0 API Features & Restrictions
+
+#### Rate Limit Headers (v1.0)
+All API responses include rate limit headers for forward compatibility. In v1.0, rate limiting is not enforced - these headers prepare clients for future rate limiting without breaking changes.
+
+*   `X-RateLimit-Limit`: Maximum requests per window (default: 100)
+*   `X-RateLimit-Remaining`: Requests remaining (v1.0: always full limit)
+*   `X-RateLimit-Reset`: Unix timestamp when window resets
+*   `X-RateLimit-Window`: Window length in seconds (default: 3600 = 1 hour)
+
+**v1.1+**: Rate limit values will be actively tracked and enforced.
+
+#### Algorithm Restrictions (v1.0)
+
+**Encryption Algorithm:**
+*   v1.0 only supports `pbkdf2-aes256-gcm-v1` (PBKDF2 + AES-256-GCM)
+*   Future versions may add additional algorithms without breaking compatibility
+*   Server stores `encryptionAlgo` field for client-side decryption reference
+
+**Hash Algorithm:**
+*   v1.0 uses `SHA-256` for all authentication hashes
+*   Both private and public drops use `adminHash` for edit/delete operations
+*   Future v1.1+ may add `hashAlgo` field for algorithm versioning
+
+**MIME Types:**
+*   v1.0 only supports `text/plain` (UTF-8 compatible with application/json)
+*   Core edition enforces text-only content
+*   SaaS edition will add file upload support with additional MIME types
+
 ---
 
 ## 8. Data Structures & Storage
@@ -199,7 +240,7 @@ export const drops = sqliteTable('drops', {
   encryptionAlgo: text('encryption_algo').default('pbkdf2-aes256-gcm-v1').notNull(), // Algorithm identifier
   encryptionParams: text('encryption_params'), // Algorithm-specific params (JSON)
   mimeType: text('mime_type').default('text/plain').notNull(), // MIME type of content
-  adminHash: text('admin_hash'), // Null if private
+  adminHash: text('admin_hash'), // Both private & public drops use this for authentication
   tier: text('tier').default('free').notNull(),
   paymentStatus: text('payment_status').default('none').notNull(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),

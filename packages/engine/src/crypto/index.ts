@@ -21,8 +21,6 @@ export {
   type EncryptionParams,
   encryptionAlgorithmSchema,
   pbkdf2Aes256GcmParamsSchema,
-  xchacha20Poly1305ParamsSchema,
-  argon2idXchacha20ParamsSchema,
   getDefaultAlgorithm,
   isAlgorithmSupported,
   validateParams,

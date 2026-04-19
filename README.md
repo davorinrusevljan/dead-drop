@@ -387,4 +387,6 @@ If you edit files and commit directly (bypassing pre-commit), the formatting won
 ## Documentation
 
 - [Design Document](./initial-design.md) - Full system design
+- [API Reference](./docs/api-reference.md) - Complete API documentation
 - [Frontend Redesign Plan](./FRONTEND-REDESIGN-PLAN.md) - Future UI improvements
+- [API Changes](./API_CHANGES.md) - API version history and changes

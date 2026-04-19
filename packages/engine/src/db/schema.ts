@@ -26,6 +26,8 @@ export const drops = sqliteTable('drops', {
   mimeType: text('mime_type').default('text/plain').notNull(),
   /** SHA-256(contentHash + PEPPER) for private, SHA-256(adminPassword + salt) for public */
   adminHash: text('admin_hash').notNull(),
+  /** Hash algorithm identifier (v1.1+ future-proofing) */
+  hashAlgo: text('hash_algo').default('sha-256').notNull(),
   /** Tier: 'free' | 'deep' */
   tier: text('tier').default('free').notNull(),
   /** Payment status: 'none' | 'pending' | 'completed' */

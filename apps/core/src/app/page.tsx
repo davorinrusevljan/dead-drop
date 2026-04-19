@@ -34,6 +34,7 @@ interface DropData {
   encryptionAlgo: EncryptionAlgorithm;
   encryptionParams: EncryptionParams | null;
   mimeType: MimeType;
+  hashAlgo: string;
   expiresAt: string;
 }
 
@@ -397,8 +398,18 @@ export default function HomePage() {
         } else if (response.status === 401) {
           setError('Invalid password');
         } else {
-          const err = (await response.json()) as { error?: { message?: string } };
-          setError(err.error?.message || 'Failed to save');
+          const err = await response.json();
+          // Handle both {error: {message}} and ZodError formats
+          const message =
+            typeof err === 'object' && err && 'error' in err
+              ? (err.error as { message?: string }).message ||
+                (err.error as { code?: string }).code ||
+                'Failed to save'
+              : typeof err === 'object' && err && 'success' in err && !err.success && 'error' in err
+                ? ((err.error as { issues?: Array<{ message?: string }> }).issues?.[0]
+                    ?.message as string) || 'Failed to save'
+                : 'Failed to save';
+          setError(message);
         }
       } catch {
         setError('Network error');
@@ -435,8 +446,18 @@ export default function HomePage() {
         } else if (response.status === 401) {
           setError('Invalid password');
         } else {
-          const err = (await response.json()) as { error?: { message?: string } };
-          setError(err.error?.message || 'Failed to delete');
+          const err = await response.json();
+          // Handle both {error: {message}} and ZodError formats
+          const message =
+            typeof err === 'object' && err && 'error' in err
+              ? (err.error as { message?: string }).message ||
+                (err.error as { code?: string }).code ||
+                'Failed to delete'
+              : typeof err === 'object' && err && 'success' in err && !err.success && 'error' in err
+                ? ((err.error as { issues?: Array<{ message?: string }> }).issues?.[0]
+                    ?.message as string) || 'Failed to delete'
+                : 'Failed to delete';
+          setError(message);
         }
       } catch {
         setError('Network error');

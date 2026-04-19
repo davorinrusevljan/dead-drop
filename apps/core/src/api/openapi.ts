@@ -51,20 +51,26 @@ export const dropTierSchema = z.enum(['free', 'deep']).openapi({
 /**
  * Encryption algorithm schema
  */
-export const encryptionAlgoSchema = z
-  .enum(['pbkdf2-aes256-gcm-v1', 'xchacha20-poly1305-v1', 'argon2id-xchacha20-v1'])
-  .openapi({
-    example: 'pbkdf2-aes256-gcm-v1',
-    description:
-      'Encryption algorithm used for private drops. Current: pbkdf2-aes256-gcm-v1 (PBKDF2 + AES-256-GCM)',
-  });
+export const encryptionAlgoSchema = z.literal('pbkdf2-aes256-gcm-v1').openapi({
+  example: 'pbkdf2-aes256-gcm-v1',
+  description:
+    'Encryption algorithm used for private drops. v1.0 only supports pbkdf2-aes256-gcm-v1 (PBKDF2 + AES-256-GCM).',
+});
+
+/**
+ * Hash algorithm schema (v1.1+ future-proofing)
+ */
+export const hashAlgoSchema = z.literal('sha-256').openapi({
+  example: 'sha-256',
+  description: 'Hash algorithm used for admin authentication. v1.0 defaults to sha-256.',
+});
 
 /**
  * MIME type schema
  */
-export const mimeTypeSchema = z.enum(['text/plain', 'application/json']).openapi({
+export const mimeTypeSchema = z.literal('text/plain').openapi({
   example: 'text/plain',
-  description: 'MIME type of the drop content',
+  description: 'MIME type of the drop content. v1.0 only supports text/plain.',
 });
 
 /**
@@ -141,6 +147,9 @@ export const dropResponseSchema = z.object({
   mimeType: mimeTypeSchema.openapi({
     description: 'MIME type of the drop content',
   }),
+  hashAlgo: hashAlgoSchema.openapi({
+    description: 'Hash algorithm used for admin authentication',
+  }),
   expiresAt: z.string().openapi({
     format: 'date-time',
     example: '2026-04-25T12:00:00.000Z',
@@ -184,6 +193,9 @@ export const createDropRequestSchema = z.object({
     description: 'Encryption parameters (JSON object)',
   }),
   mimeType: mimeTypeSchema.optional().openapi({ description: 'MIME type, defaults to text/plain' }),
+  hashAlgo: hashAlgoSchema.optional().openapi({
+    description: 'Hash algorithm for admin authentication, defaults to sha-256 (v1.1+)',
+  }),
   contentHash: sha256HashSchema.optional().openapi({
     description: 'SHA-256 hash of content payload JSON, required for private drops',
   }),
@@ -329,4 +341,31 @@ export const generateNameResponseSchema = z.object({
     description: 'Generated 4-word drop name (kebab-case, lowercase)',
   }),
   id: sha256HashSchema.openapi({ description: 'SHA-256 hash of the name' }),
+});
+
+/**
+ * Rate limit headers (v1.0: sent without enforcement, v1.1+: enforced)
+ *
+ * These headers are included in all API responses to prepare clients for future rate limiting.
+ * In v1.0, `X-RateLimit-Remaining` always returns the full limit.
+ *
+ * @see https://tools.ietf.org/html/rfc6585#name-rate-limit
+ */
+export const rateLimitHeadersSchema = z.object({
+  'X-RateLimit-Limit': z.number().int().positive().openapi({
+    example: 100,
+    description: 'Maximum number of requests allowed in the time window',
+  }),
+  'X-RateLimit-Remaining': z.number().int().min(0).openapi({
+    example: 99,
+    description: 'Number of requests remaining in the current time window',
+  }),
+  'X-RateLimit-Reset': z.number().int().positive().openapi({
+    example: 1742345678,
+    description: 'Unix timestamp when the rate limit window resets',
+  }),
+  'X-RateLimit-Window': z.number().int().positive().openapi({
+    example: 3600,
+    description: 'Length of the rate limit window in seconds (3600 = 1 hour)',
+  }),
 });

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS drops (
   encryption_params TEXT,
   mime_type TEXT NOT NULL DEFAULT 'text/plain',
   admin_hash TEXT NOT NULL,
+  hash_algo TEXT NOT NULL DEFAULT 'sha-256',
   tier TEXT NOT NULL DEFAULT 'free',
   payment_status TEXT NOT NULL DEFAULT 'none',
   expires_at INTEGER NOT NULL,

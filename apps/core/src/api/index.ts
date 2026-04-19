@@ -28,6 +28,7 @@ import {
   normalizeDropName,
   computeDropId,
   validateDropName,
+  type EncryptionAlgorithm,
 } from '@dead-drop/engine';
 import {
   checkAvailabilityResponseSchema,
@@ -44,7 +45,7 @@ import {
   generateNameResponseSchema,
 } from './openapi.js';
 import type { MimeType } from '@dead-drop/engine';
-import { securityHeaders } from './middleware.js';
+import { securityHeaders, rateLimitHeaders } from './middleware.js';
 
 /**
  * Maximum attempts to find an unused name
@@ -88,7 +89,21 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     return c.text('User-agent: *\nDisallow: /');
   });
 
+  /**
+   * Rate Limit Headers (v1.0)
+   *
+   * All API responses include rate limit headers for forward compatibility:
+   * - X-RateLimit-Limit: Maximum requests per window
+   * - X-RateLimit-Remaining: Requests remaining (v1.0: always full)
+   * - X-RateLimit-Reset: Unix timestamp when window resets
+   * - X-RateLimit-Window: Window length in seconds (3600 = 1 hour)
+   *
+   * In v1.0, headers are sent but not enforced. v1.1+ will implement enforcement.
+   * Clients can start using these headers now without breaking changes.
+   */
+
   // Middleware
+  app.use('*', rateLimitHeaders);
   app.use('*', securityHeaders);
   app.use('*', logger());
   app.use(
@@ -334,6 +349,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
         encryptionAlgo: drop.encryptionAlgo,
         encryptionParams: drop.encryptionParams ? JSON.parse(drop.encryptionParams) : null,
         mimeType: drop.mimeType,
+        hashAlgo: drop.hashAlgo as 'sha-256',
         expiresAt: drop.expiresAt.toISOString(),
       },
       200
@@ -398,11 +414,12 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       payload: string;
       salt: string;
       iv?: string;
-      encryptionAlgo?: 'pbkdf2-aes256-gcm-v1' | 'xchacha20-poly1305-v1' | 'argon2id-xchacha20-v1';
+      encryptionAlgo?: EncryptionAlgorithm;
       encryptionParams?: { rounds?: number };
       mimeType?: MimeType;
       contentHash?: string;
       adminHash?: string;
+      hashAlgo?: string;
       upgradeToken?: string;
     };
 
@@ -503,6 +520,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
       encryptionParams: body.encryptionParams,
       mimeType: body.mimeType ?? 'text/plain',
       adminHash,
+      hashAlgo: body.hashAlgo ?? 'sha-256',
       tier,
       expiresAt,
     });
@@ -635,6 +653,10 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     // adminPassword is validated to be non-empty above for public drops
     const adminPassword: string | undefined = body.adminPassword;
 
+    // Future: Use drop.hashAlgo to select hashing algorithm (v1.1+)
+    // Currently only 'sha-256' is supported, so we use SHA-256 directly
+    void (drop.hashAlgo ?? 'sha-256');
+
     let providedHash: string;
     let newAdminHash: string;
     if (drop.visibility === 'private') {
@@ -734,6 +756,10 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
 
     // adminPassword is validated to be non-empty above for public drops
     const adminPassword: string | undefined = body.adminPassword;
+
+    // Future: Use drop.hashAlgo to select hashing algorithm (v1.1+)
+    // Currently only 'sha-256' is supported, so we use SHA-256 directly
+    void (drop.hashAlgo ?? 'sha-256');
 
     let providedHash: string;
     if (drop.visibility === 'private') {
@@ -947,7 +973,32 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
   });
 
   // Error handler
-  app.onError((_err, c) => {
+  app.onError((err, c) => {
+    // Handle Zod validation errors
+    if (err instanceof Error && err.name === 'ZodError') {
+      try {
+        const zodError = JSON.parse(err.message);
+        if (zodError.issues && Array.isArray(zodError.issues)) {
+          const firstIssue = zodError.issues[0];
+          const message =
+            firstIssue.message || 'Invalid request data. Please check your input and try again.';
+          return c.json({ error: { code: 'VALIDATION_ERROR', message } }, 400);
+        }
+      } catch {
+        // If we can't parse as ZodError, fall through to general error handling
+      }
+    }
+
+    // Handle HTTPError from Hono
+    if (err instanceof Error && 'status' in err) {
+      const status = (err as { status?: number }).status || 500;
+      return c.json(
+        { error: { code: 'HTTP_ERROR', message: err.message || 'An error occurred' } },
+        status as 400 | 401 | 402 | 403 | 404 | 409 | 500
+      );
+    }
+
+    // General error handler
     return c.json(
       { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
       500

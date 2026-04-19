@@ -1,22 +1,16 @@
 import { z } from 'zod';
 
 /**
- * Supported encryption algorithm identifiers
- * Versioned to allow future algorithm upgrades while maintaining backward compatibility
+ * Supported encryption algorithm identifier
+ *
+ * v1.0 only supports PBKDF2-AES256-GCM. Future versions may add more algorithms.
  */
-export type EncryptionAlgorithm =
-  | 'pbkdf2-aes256-gcm-v1' // Current: PBKDF2 (100k iter) + AES-256-GCM
-  | 'xchacha20-poly1305-v1' // Future: XChaCha20-Poly1305
-  | 'argon2id-xchacha20-v1'; // Future: Argon2id KDF + XChaCha20-Poly1305
+export type EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1'; // PBKDF2 (100k iter) + AES-256-GCM
 
 /**
  * Zod schema for encryption algorithm validation
  */
-export const encryptionAlgorithmSchema = z.enum([
-  'pbkdf2-aes256-gcm-v1',
-  'xchacha20-poly1305-v1',
-  'argon2id-xchacha20-v1',
-]);
+export const encryptionAlgorithmSchema = z.literal('pbkdf2-aes256-gcm-v1');
 
 /**
  * Algorithm-specific parameters for PBKDF2-AES256-GCM
@@ -27,32 +21,9 @@ export const pbkdf2Aes256GcmParamsSchema = z.object({
 });
 
 /**
- * Algorithm-specific parameters for XChaCha20-Poly1305 (future)
+ * Algorithm-specific parameters for PBKDF2-AES256-GCM
  */
-export const xchacha20Poly1305ParamsSchema = z.object({
-  /** Reserved for future use */
-  _reserved: z.never().optional(),
-});
-
-/**
- * Algorithm-specific parameters for Argon2id-XChaCha20 (future)
- */
-export const argon2idXchacha20ParamsSchema = z.object({
-  /** Memory cost in KB */
-  memory: z.number().int().positive().optional(),
-  /** Time cost (iterations) */
-  time: z.number().int().positive().optional(),
-  /** Parallelism */
-  parallelism: z.number().int().positive().optional(),
-});
-
-/**
- * Union type for all algorithm-specific parameters
- */
-export type EncryptionParams =
-  | z.infer<typeof pbkdf2Aes256GcmParamsSchema>
-  | z.infer<typeof xchacha20Poly1305ParamsSchema>
-  | z.infer<typeof argon2idXchacha20ParamsSchema>;
+export type EncryptionParams = z.infer<typeof pbkdf2Aes256GcmParamsSchema>;
 
 /**
  * Get the default algorithm identifier
@@ -72,43 +43,19 @@ export function isAlgorithmSupported(algorithm: string): algorithm is Encryption
  * Validate algorithm-specific parameters
  */
 export function validateParams(
-  algorithm: EncryptionAlgorithm,
+  _algorithm: EncryptionAlgorithm,
   params: unknown
 ): { valid: boolean; error?: string } {
-  switch (algorithm) {
-    case 'pbkdf2-aes256-gcm-v1':
-      return pbkdf2Aes256GcmParamsSchema.safeParse(params).success
-        ? { valid: true }
-        : { valid: false, error: 'Invalid PBKDF2-AES256-GCM parameters' };
-
-    case 'xchacha20-poly1305-v1':
-      return xchacha20Poly1305ParamsSchema.safeParse(params).success
-        ? { valid: true }
-        : { valid: false, error: 'Invalid XChaCha20-Poly1305 parameters' };
-
-    case 'argon2id-xchacha20-v1':
-      return argon2idXchacha20ParamsSchema.safeParse(params).success
-        ? { valid: true }
-        : { valid: false, error: 'Invalid Argon2id-XChaCha20 parameters' };
-
-    default:
-      return { valid: false, error: `Unknown algorithm: ${algorithm}` };
-  }
+  return pbkdf2Aes256GcmParamsSchema.safeParse(params).success
+    ? { valid: true }
+    : { valid: false, error: 'Invalid PBKDF2-AES256-GCM parameters' };
 }
 
 /**
- * Get the IV length (in bytes) for a given algorithm
+ * Get the IV length (in bytes) for the algorithm
  */
-export function getIVLength(algorithm: EncryptionAlgorithm): number {
-  switch (algorithm) {
-    case 'pbkdf2-aes256-gcm-v1':
-      return 12; // 96 bits for AES-GCM
-    case 'xchacha20-poly1305-v1':
-    case 'argon2id-xchacha20-v1':
-      return 24; // 192 bits for XChaCha20
-    default:
-      return 12;
-  }
+export function getIVLength(_algorithm: EncryptionAlgorithm): number {
+  return 12; // 96 bits for AES-GCM
 }
 
 /**
