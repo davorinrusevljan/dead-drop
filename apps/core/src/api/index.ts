@@ -651,7 +651,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }
 
     // adminPassword is validated to be non-empty above for public drops
-    const adminPassword: string | undefined = body.adminPassword;
+    const adminPassword = body.adminPassword;
 
     // Future: Use drop.hashAlgo to select hashing algorithm (v1.1+)
     // Currently only 'sha-256' is supported, so we use SHA-256 directly
@@ -755,7 +755,7 @@ export function createApiApp(): OpenAPIHono<AppEnv> {
     }
 
     // adminPassword is validated to be non-empty above for public drops
-    const adminPassword: string | undefined = body.adminPassword;
+    const adminPassword = body.adminPassword;
 
     // Future: Use drop.hashAlgo to select hashing algorithm (v1.1+)
     // Currently only 'sha-256' is supported, so we use SHA-256 directly
