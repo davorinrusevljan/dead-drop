@@ -8,15 +8,6 @@ interface HealthResponse {
   timestamp: string;
 }
 
-interface OpenAPISpec {
-  openapi: string;
-  info: {
-    title: string;
-    version: string;
-  };
-  paths: Record<string, unknown>;
-}
-
 describe('API App', () => {
   let app: Hono<AppEnv>;
 
@@ -24,10 +15,11 @@ describe('API App', () => {
     app = createApiApp();
   });
 
-  describe('GET /api/health', () => {
+  describe('GET /api/v1/health', () => {
     it('should return health status', async () => {
-      const res = await app.request('/api/health');
+      const res = await app.request('/api/v1/health');
       expect(res.status).toBe(200);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const data = (await res.json()) as HealthResponse;
       expect(data).toHaveProperty('status', 'ok');
@@ -36,7 +28,7 @@ describe('API App', () => {
     });
 
     it('should return a valid ISO 8601 timestamp', async () => {
-      const res = await app.request('/api/health');
+      const res = await app.request('/api/v1/health');
       const data = (await res.json()) as HealthResponse;
 
       const timestamp = new Date(data.timestamp);
@@ -45,65 +37,18 @@ describe('API App', () => {
     });
   });
 
-  describe('GET /api/docs', () => {
-    it('should return Swagger UI HTML', async () => {
-      const res = await app.request('/api/docs');
-      expect(res.status).toBe(200);
-      expect(res.headers.get('content-type')).toContain('text/html');
-
-      const html = await res.text();
-      expect(html).toContain('<!DOCTYPE html>');
-      expect(html).toContain('SwaggerUIBundle');
-      expect(html).toContain('dead-drop API Documentation');
-    });
-
-    it('should include OpenAPI URL in the HTML', async () => {
-      const res = await app.request('/api/docs');
-      const html = await res.text();
-
-      expect(html).toContain('/api/docs/openapi.json');
-    });
-  });
-
-  describe('GET /api/docs/openapi.json', () => {
-    it('should return OpenAPI specification', async () => {
-      const res = await app.request('/api/docs/openapi.json');
-      expect(res.status).toBe(200);
-      expect(res.headers.get('content-type')).toContain('application/json');
-
-      const spec = (await res.json()) as OpenAPISpec;
-      expect(spec).toHaveProperty('openapi', '3.1.0');
-      expect(spec).toHaveProperty('info');
-      expect(spec.info).toHaveProperty('title', 'dead-drop API');
-      expect(spec.info).toHaveProperty('version', '1.0.0');
-    });
-
-    it('should include health endpoint in paths', async () => {
-      const res = await app.request('/api/docs/openapi.json');
-      const spec = (await res.json()) as OpenAPISpec;
-
-      expect(spec.paths).toHaveProperty('/api/health');
-      expect(spec.paths['/api/health']).toHaveProperty('get');
-    });
-
-    it('should include docs endpoints in paths', async () => {
-      const res = await app.request('/api/docs/openapi.json');
-      const spec = (await res.json()) as OpenAPISpec;
-
-      expect(spec.paths).toHaveProperty('/api/docs');
-      expect(spec.paths).toHaveProperty('/api/docs/openapi.json');
-    });
-  });
+  // Note: Swagger UI and OpenAPI JSON endpoints are not implemented in the current API
+  // The OpenAPI schemas are defined for validation but there is no /docs endpoint
 
   describe('404 Not Found', () => {
     it('should return 404 for unknown API routes', async () => {
-      const res = await app.request('/api/unknown');
+      const res = await app.request('/api/v1/unknown');
       // Hono returns 404 by default for unmatched routes
       expect(res.status).toBe(404);
     });
   });
 
-  describe('GET /api/drops/check/:id', () => {
+  describe('GET /api/v1/drops/check/:id', () => {
     // Mock DB that always returns null (drop doesn't exist)
     // Using a simplified mock that satisfies Drizzle's D1 adapter requirements
     const mockDb = {
@@ -128,8 +73,9 @@ describe('API App', () => {
 
     it('should return 200 with available=true for non-existent drop', async () => {
       const testId = 'nonexistent00000000000000000000000000000000000000000000000000000000000000000';
-      const res = await app.request(`/api/drops/check/${testId}`, {}, testEnv);
+      const res = await app.request(`/api/v1/drops/check/${testId}`, {}, testEnv);
       expect(res.status).toBe(200);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const data = (await res.json()) as { id: string; available: boolean };
       expect(data).toHaveProperty('id', testId);
@@ -137,8 +83,9 @@ describe('API App', () => {
     });
 
     it('should return 200 status with valid JSON structure', async () => {
-      const res = await app.request('/api/drops/check/test-id-123', {}, testEnv);
+      const res = await app.request('/api/v1/drops/check/test-id-123', {}, testEnv);
       expect(res.status).toBe(200);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const data = (await res.json()) as { id: string; available: boolean };
       expect(typeof data.id).toBe('string');
@@ -147,8 +94,9 @@ describe('API App', () => {
 
     it('should handle 64-character hex drop IDs', async () => {
       const hexId = 'a'.repeat(64); // 64 hex chars
-      const res = await app.request(`/api/drops/check/${hexId}`, {}, testEnv);
+      const res = await app.request(`/api/v1/drops/check/${hexId}`, {}, testEnv);
       expect(res.status).toBe(200);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const data = (await res.json()) as { id: string; available: boolean };
       expect(data.id).toBe(hexId);
@@ -157,7 +105,7 @@ describe('API App', () => {
 
     it('should include CORS headers on check endpoint', async () => {
       const res = await app.request(
-        '/api/drops/check/test-id',
+        '/api/v1/drops/check/test-id',
         {
           headers: { Origin: 'https://example.com' },
         },
@@ -169,7 +117,7 @@ describe('API App', () => {
 
   describe('CORS', () => {
     it('should allow all origins', async () => {
-      const res = await app.request('/api/health', {
+      const res = await app.request('/api/v1/health', {
         headers: {
           Origin: 'https://example.com',
         },
@@ -178,7 +126,7 @@ describe('API App', () => {
     });
 
     it('should allow OPTIONS requests', async () => {
-      const res = await app.request('/api/health', {
+      const res = await app.request('/api/v1/health', {
         method: 'OPTIONS',
         headers: {
           Origin: 'https://example.com',
@@ -192,11 +140,11 @@ describe('API App', () => {
     it('should handle internal errors gracefully', async () => {
       // Create an app with a route that throws an error
       const errorApp = createApiApp();
-      errorApp.get('/api/test-error', () => {
+      errorApp.get('/api/v1/test-error', () => {
         throw new Error('Test error');
       });
 
-      const res = await errorApp.request('/api/test-error');
+      const res = await errorApp.request('/api/v1/test-error');
       expect(res.status).toBe(500);
 
       const data = (await res.json()) as { error: { code: string; message: string } };
@@ -210,11 +158,11 @@ describe('API App', () => {
       // error is handled by checking the response instead.
 
       const errorApp = createApiApp();
-      errorApp.get('/api/test-error', () => {
+      errorApp.get('/api/v1/test-error', () => {
         throw new Error('Test error');
       });
 
-      const res = await errorApp.request('/api/test-error');
+      const res = await errorApp.request('/api/v1/test-error');
       expect(res.status).toBe(500);
 
       const data = (await res.json()) as { error: { code: string; message: string } };

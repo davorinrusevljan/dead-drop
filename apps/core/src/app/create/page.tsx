@@ -107,6 +107,7 @@ export default function CreatePage() {
         payload,
         salt,
         mimeType: 'text/plain',
+        I_agree_with_terms_and_conditions: true,
       };
 
       // Only include fields specific to visibility type
@@ -118,7 +119,7 @@ export default function CreatePage() {
         requestBody.adminHash = adminHash;
       }
 
-      const response = await fetch(`${API_URL}/api/drops`, {
+      const response = await fetch(`${API_URL}/api/v1/drops`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),

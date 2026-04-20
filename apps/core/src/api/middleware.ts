@@ -45,3 +45,12 @@ export const securityHeaders: MiddlewareHandler = async (c, next) => {
   res.headers.set('X-Frame-Options', 'DENY');
   res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 };
+
+/**
+ * API version header middleware
+ * Adds X-API-Version header to all responses
+ */
+export const versionHeader: MiddlewareHandler = async (c, next) => {
+  await next();
+  c.header('X-API-Version', '1.0.0');
+};

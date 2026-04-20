@@ -278,7 +278,9 @@ export interface VersionDataResponse {
  * Fetch the list of versions for a drop
  */
 export async function fetchVersionList(dropId: string): Promise<VersionListResponse> {
-  const response = await fetch(`${API_URL}/api/drops/${dropId}/history`);
+  const response = await fetch(
+    `${API_URL}/api/v1/drops/${dropId}/history?I_agree_with_terms_and_conditions=true`
+  );
   if (!response.ok) {
     throw new Error('Failed to fetch version list');
   }
@@ -289,7 +291,9 @@ export async function fetchVersionList(dropId: string): Promise<VersionListRespo
  * Fetch a specific version of a drop
  */
 export async function fetchVersion(dropId: string, version: number): Promise<VersionDataResponse> {
-  const response = await fetch(`${API_URL}/api/drops/${dropId}/history/${version}`);
+  const response = await fetch(
+    `${API_URL}/api/v1/drops/${dropId}/history/${version}?I_agree_with_terms_and_conditions=true`
+  );
   if (!response.ok) {
     throw new Error('Failed to fetch version');
   }

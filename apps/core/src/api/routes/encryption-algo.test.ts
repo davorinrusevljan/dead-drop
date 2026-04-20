@@ -27,7 +27,7 @@ describe('Encryption Algorithm Validation', () => {
     UPGRADE_TOKEN: 'test-token',
   };
 
-  describe('POST /api/drops with encryptionAlgo', () => {
+  describe('POST /api/v1/drops with encryptionAlgo', () => {
     const validPayload = {
       id: 'a'.repeat(64), // 64 hex chars
       nameLength: 12,
@@ -37,11 +37,12 @@ describe('Encryption Algorithm Validation', () => {
       iv: 'c'.repeat(24), // 24 hex chars
       encryptionAlgo: 'pbkdf2-aes256-gcm-v1',
       contentHash: 'd'.repeat(64), // 64 hex chars
+      I_agree_with_terms_and_conditions: true,
     };
 
     it('should accept valid encryptionAlgo (pbkdf2-aes256-gcm-v1)', async () => {
       const res = await app.request(
-        '/api/drops',
+        '/api/v1/drops',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -53,6 +54,7 @@ describe('Encryption Algorithm Validation', () => {
       // Should get 201 (created) or 409 (name already taken in other tests)
       // Both are acceptable - we're testing that encryptionAlgo is accepted
       expect([201, 409]).toContain(res.status);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       // Should NOT get 400 (invalid algorithm)
       expect(res.status).not.toBe(400);
@@ -70,7 +72,7 @@ describe('Encryption Algorithm Validation', () => {
       };
 
       const res = await app.request(
-        '/api/drops',
+        '/api/v1/drops',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -81,6 +83,7 @@ describe('Encryption Algorithm Validation', () => {
 
       // Should get 400 (bad request) - Zod rejects invalid literal values
       expect(res.status).toBe(400);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const text = await res.text();
       expect(text).toBeTruthy();
@@ -93,7 +96,7 @@ describe('Encryption Algorithm Validation', () => {
       };
 
       const res = await app.request(
-        '/api/drops',
+        '/api/v1/drops',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -104,6 +107,7 @@ describe('Encryption Algorithm Validation', () => {
 
       // Should get 400 (bad request)
       expect(res.status).toBe(400);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const text = await res.text();
       expect(text).toBeTruthy();
@@ -116,7 +120,7 @@ describe('Encryption Algorithm Validation', () => {
       };
 
       const res = await app.request(
-        '/api/drops',
+        '/api/v1/drops',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -127,6 +131,7 @@ describe('Encryption Algorithm Validation', () => {
 
       // Should get 400 (bad request)
       expect(res.status).toBe(400);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       const text = await res.text();
       expect(text).toBeTruthy();
@@ -139,7 +144,7 @@ describe('Encryption Algorithm Validation', () => {
       };
 
       const res = await app.request(
-        '/api/drops',
+        '/api/v1/drops',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -150,6 +155,7 @@ describe('Encryption Algorithm Validation', () => {
 
       // Should get 201 (created) or 409 (name already taken)
       expect([201, 409]).toContain(res.status);
+      expect(res.headers.get('x-api-version')).toBe('1.0.0');
 
       // Should NOT get 400
       expect(res.status).not.toBe(400);

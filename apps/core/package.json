@@ -10,7 +10,7 @@
     "dev:worker": "wrangler dev",
     "build": "next build",
     "build:pages": "next-on-pages",
-    "deploy:pages": "pnpm build:pages && wrangler pages deploy .vercel/output/static",
+    "deploy:pages": "NEXT_PUBLIC_API_URL=https://api.dead-drop.xyz pnpm build:pages && wrangler pages deploy .vercel/output/static",
     "start": "next start",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",

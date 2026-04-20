@@ -80,7 +80,18 @@
       "Bash(NEXT_PUBLIC_API_URL=http://localhost:9090 pnpm dev)",
       "Bash(chmod +x /tmp/test-ui-flows.sh)",
       "Bash(/tmp/test-ui-flows.sh)",
-      "Bash(set +e)"
+      "Bash(set +e)",
+      "Bash(openssl rand:*)",
+      "Bash(lsof -i:9090)",
+      "Bash(lsof -ti:9090,9091,9092,9093,3010,3011,3000)",
+      "Bash(wrangler:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(lsof -ti:9090,3010)",
+      "Bash(xargs -r kill -9)",
+      "Bash(command -v xdg-open)",
+      "Bash(xdg-open http://localhost:3010)",
+      "Bash(command -v open)",
+      "Bash(open http://localhost:3010)"
     ]
   }
 }

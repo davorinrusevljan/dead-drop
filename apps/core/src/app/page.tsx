@@ -127,7 +127,7 @@ export default function HomePage() {
     const timeoutId = setTimeout(async () => {
       try {
         const dropId = await computeDropId(normalizedName);
-        const response = await fetch(`${API_URL}/api/drops/check/${dropId}`);
+        const response = await fetch(`${API_URL}/api/v1/drops/check/${dropId}`);
         if (response.ok) {
           const data = (await response.json()) as { available: boolean };
           setCreateAvailable(data.available);
@@ -159,7 +159,7 @@ export default function HomePage() {
     const timeoutId = setTimeout(async () => {
       try {
         const dropId = await computeDropId(normalizedName);
-        const response = await fetch(`${API_URL}/api/drops/check/${dropId}`);
+        const response = await fetch(`${API_URL}/api/v1/drops/check/${dropId}`);
         if (response.ok) {
           const data = (await response.json()) as { available: boolean };
           setViewExists(!data.available); // Exists if NOT available
@@ -196,7 +196,9 @@ export default function HomePage() {
     setIsLoading(true);
     try {
       const dropId = await computeDropId(name);
-      const response = await fetch(`${API_URL}/api/drops/${dropId}`);
+      const response = await fetch(
+        `${API_URL}/api/v1/drops/${dropId}?I_agree_with_terms_and_conditions=true`
+      );
       if (response.status === 404) {
         // Drop doesn't exist, show not found state
         setError('Drop not found');
@@ -371,6 +373,7 @@ export default function HomePage() {
         // Build request body
         const requestBody: Record<string, unknown> = {
           payload,
+          I_agree_with_terms_and_conditions: true,
         };
 
         // Only include fields specific to visibility type
@@ -382,7 +385,7 @@ export default function HomePage() {
           requestBody.adminPassword = editPwd;
         }
 
-        const response = await fetch(`${API_URL}/api/drops/${dropData.id}`, {
+        const response = await fetch(`${API_URL}/api/v1/drops/${dropData.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
@@ -430,13 +433,17 @@ export default function HomePage() {
       setIsLoading(true);
       setError(null);
       try {
-        const body: { contentHash?: string; adminPassword?: string } = {};
+        const body: {
+          contentHash?: string;
+          adminPassword?: string;
+          I_agree_with_terms_and_conditions: true;
+        } = { I_agree_with_terms_and_conditions: true };
         if (dropData.visibility === 'private') {
           body.contentHash = contentHash ?? '';
         } else {
           body.adminPassword = deletePwd;
         }
-        const response = await fetch(`${API_URL}/api/drops/${dropData.id}`, {
+        const response = await fetch(`${API_URL}/api/v1/drops/${dropData.id}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -490,7 +497,7 @@ export default function HomePage() {
   const fetchGeneratedName = useCallback(async () => {
     setGeneratingName(true);
     try {
-      const response = await fetch(`${API_URL}/api/drops/generate-name`);
+      const response = await fetch(`${API_URL}/api/v1/drops/generate-name`);
       if (response.ok) {
         const data = (await response.json()) as { name: string; id: string };
         handleCreateInputChange(data.name);
@@ -580,7 +587,7 @@ export default function HomePage() {
                 </span>
                 <br />
                 <a
-                  href="https://api.dead-drop.xyz/api/docs"
+                  href="https://api.dead-drop.xyz/api/v1/docs"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -1655,3 +1662,4 @@ export default function HomePage() {
   // Fallback
   return null;
 }
+// Cache bust: 1776629619
