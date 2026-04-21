@@ -13,6 +13,11 @@ export const v1OpenApiConfig = {
       name: 'dead-drop.xyz',
       url: 'https://dead-drop.xyz',
     },
+    termsOfService: 'https://dead-drop.xyz/terms',
+    license: {
+      name: 'MIT',
+      url: 'https://github.com/davorinrusevljan/dead-drop/blob/main/LICENSE',
+    },
   },
   servers: [
     { url: '/api/v1', description: 'v1 API' },
@@ -200,7 +205,8 @@ export const checkAvailabilityResponseSchema = z.object({
 export const termsAgreementSchema = z
   .boolean()
   .refine((val) => val === true, {
-    message: 'You must agree to the terms and conditions. Set I_agree_with_terms_and_conditions to true.',
+    message:
+      'You must agree to the terms and conditions. Set I_agree_with_terms_and_conditions to true.',
   })
   .openapi({
     example: true,
@@ -240,7 +246,9 @@ export const createDropRequestSchema = z
     encryptionParams: encryptionParamsSchema.optional().openapi({
       description: 'Encryption parameters (JSON object)',
     }),
-    mimeType: mimeTypeSchema.optional().openapi({ description: 'MIME type, defaults to text/plain' }),
+    mimeType: mimeTypeSchema
+      .optional()
+      .openapi({ description: 'MIME type, defaults to text/plain' }),
     hashAlgo: hashAlgoSchema.optional().openapi({
       description: 'Hash algorithm for admin authentication, defaults to sha-256 (v1.1+)',
     }),
