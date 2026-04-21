@@ -587,18 +587,19 @@ export default function HomePage() {
                 </span>
                 <br />
                 <a
-                  href="https://api.dead-drop.xyz/api/v1/docs"
+                  href="https://davorinrusevljan.github.io/dead-drop/latest/"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    opacity: 0.6,
+                    opacity: 0.8,
                     fontSize: '0.875rem',
                     display: 'inline-block',
                     marginTop: '0.75rem',
                     color: 'var(--accent)',
+                    textDecoration: 'underline',
                   }}
                 >
-                  API docs coming soon
+                  Full API available
                 </a>
               </p>
             </div>
@@ -854,6 +855,13 @@ export default function HomePage() {
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
               <a
+                href="https://davorinrusevljan.github.io/dead-drop/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Documentation
+              </a>
+              <a
                 href="https://github.com/davorinrusevljan/dead-drop"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -953,6 +961,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://davorinrusevljan.github.io/dead-drop/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Documentation
+              </a>
               <a
                 href="https://github.com/davorinrusevljan/dead-drop"
                 target="_blank"
@@ -1110,6 +1125,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://davorinrusevljan.github.io/dead-drop/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Documentation
+              </a>
               <a
                 href="https://github.com/davorinrusevljan/dead-drop"
                 target="_blank"
@@ -1291,6 +1313,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://davorinrusevljan.github.io/dead-drop/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Documentation
+              </a>
               <a
                 href="https://github.com/davorinrusevljan/dead-drop"
                 target="_blank"
@@ -1530,6 +1559,13 @@ export default function HomePage() {
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
               <a
+                href="https://davorinrusevljan.github.io/dead-drop/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Documentation
+              </a>
+              <a
                 href="https://github.com/davorinrusevljan/dead-drop"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -1634,6 +1670,13 @@ export default function HomePage() {
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
               <a href="/terms">Terms of Service</a>
+              <a
+                href="https://davorinrusevljan.github.io/dead-drop/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Documentation
+              </a>
               <a
                 href="https://github.com/davorinrusevljan/dead-drop"
                 target="_blank"

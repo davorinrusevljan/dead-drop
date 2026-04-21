@@ -159,6 +159,13 @@ export default function GlossaryPage() {
           <Link href="/faq">F.A.Q.</Link>
           <Link href="/terms">Terms of Service</Link>
           <Link
+            href="https://davorinrusevljan.github.io/dead-drop/latest/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            API Documentation
+          </Link>
+          <Link
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"
             rel="noopener noreferrer"

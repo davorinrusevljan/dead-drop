@@ -76,8 +76,20 @@ const faqItems: FAQItem[] = [
   },
   {
     question: 'Is there an API for programmatic access?',
-    answer:
-      'A REST API for machine access is coming soon. It will allow you to create, read, and manage drops from scripts, CI/CD pipelines, and other automation tools.',
+    answer: (
+      <>
+        Yes. A full REST API is available for machine access. You can create, read, update, and
+        delete drops from scripts, CI/CD pipelines, and other automation tools. See the{' '}
+        <a
+          href="https://davorinrusevljan.github.io/dead-drop/latest/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          API Documentation
+        </a>{' '}
+        for details.
+      </>
+    ),
   },
   {
     question: 'Where is dead-drop hosted?',
@@ -144,6 +156,13 @@ export default function FAQPage() {
           <Link href="/glossary">Glossary</Link>
           <Link href="/faq">F.A.Q.</Link>
           <Link href="/terms">Terms of Service</Link>
+          <Link
+            href="https://davorinrusevljan.github.io/dead-drop/latest/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            API Documentation
+          </Link>
           <Link
             href="https://github.com/davorinrusevljan/dead-drop"
             target="_blank"

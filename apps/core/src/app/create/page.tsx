@@ -367,6 +367,13 @@ export default function CreatePage() {
             <a href="/faq">F.A.Q.</a>
             <a href="/terms">Terms of Service</a>
             <a
+              href="https://davorinrusevljan.github.io/dead-drop/latest/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              API Documentation
+            </a>
+            <a
               href="https://github.com/davorinrusevljan/dead-drop"
               target="_blank"
               rel="noopener noreferrer"
