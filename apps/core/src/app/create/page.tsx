@@ -49,9 +49,16 @@ export default function CreatePage() {
   const normalizedName = normalizeDropName(dropName);
   const validation = validateDropName(normalizedName, 12);
 
-  const passwordsMatch = confirmPassword === '' || password === confirmPassword;
+  const passwordsMatch = password === confirmPassword;
+  const isPasswordTooShort = password.length > 0 && password.length < 8;
   const isButtonDisabled =
-    isLoading || !password || !confirmPassword || !passwordsMatch || !content || !agreedToTerms;
+    isLoading ||
+    !password ||
+    isPasswordTooShort ||
+    !confirmPassword ||
+    !passwordsMatch ||
+    !content ||
+    !agreedToTerms;
 
   const handleCreate = useCallback(async () => {
     if (!validation.valid) {
@@ -247,6 +254,7 @@ export default function CreatePage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="min 8 characters"
+                error={isPasswordTooShort ? 'Password must be at least 8 characters' : undefined}
               />
 
               <PasswordInput
