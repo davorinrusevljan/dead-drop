@@ -1095,6 +1095,7 @@ export default function HomePage() {
                         textDecoration: 'underline',
                         textUnderlineOffset: '2px',
                       }}
+                      tabIndex={-1}
                     >
                       Terms of Service
                     </Link>
@@ -1528,6 +1529,7 @@ export default function HomePage() {
                   defaultValue={decryptedContent}
                   className="form-textarea"
                   rows={8}
+                  autoFocus
                 />
               </div>
 

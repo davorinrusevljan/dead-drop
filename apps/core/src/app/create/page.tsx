@@ -255,6 +255,7 @@ export default function CreatePage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="min 8 characters"
                 error={isPasswordTooShort ? 'Password must be at least 8 characters' : undefined}
+                autoFocus
               />
 
               <PasswordInput
@@ -266,7 +267,7 @@ export default function CreatePage() {
               />
 
               <div className="form-group">
-                <label className="form-label">Your Secret</label>
+                <label className="form-label">your drop</label>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -311,6 +312,7 @@ export default function CreatePage() {
                         textDecoration: 'underline',
                         textUnderlineOffset: '2px',
                       }}
+                      tabIndex={-1}
                     >
                       Terms of Service
                     </Link>
