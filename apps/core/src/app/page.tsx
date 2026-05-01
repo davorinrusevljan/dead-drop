@@ -67,11 +67,14 @@ export default function HomePage() {
   const createInputRef = useRef<HTMLInputElement>(null);
   const viewInputRef = useRef<HTMLInputElement>(null);
 
+  // API connectivity state
+  const [apiChecking, setApiChecking] = useState(true);
+  const [apiReachable, setApiReachable] = useState<boolean | null>(null);
+
   // Create tab state
   const [createName, setCreateName] = useState('');
   const [createChecking, setCreateChecking] = useState(false);
   const [createAvailable, setCreateAvailable] = useState<boolean | null>(null);
-  const [generatingName, setGeneratingName] = useState(false);
 
   // View tab state
   const [viewName, setViewName] = useState('');
@@ -105,8 +108,8 @@ export default function HomePage() {
       const normalized = normalizeDropName(hash);
       checkDrop(normalized);
     } else {
-      // Pre-populate create lane with a random name from API
-      fetchGeneratedName();
+      // Check API connectivity first
+      checkApiReachability();
     }
     setMounted(true);
     // Intentionally empty deps - we only want this to run once on mount
@@ -114,7 +117,7 @@ export default function HomePage() {
 
   // Check availability for create lane (debounced)
   useEffect(() => {
-    if (hasFragment || state !== 'landing') return;
+    if (hasFragment || state !== 'landing' || apiReachable === false) return;
 
     const normalizedName = normalizeDropName(createName);
     const v = validateDropName(normalizedName, CREATE_MIN_LENGTH);
@@ -142,11 +145,11 @@ export default function HomePage() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [createName, hasFragment, state]);
+  }, [createName, hasFragment, state, apiReachable]);
 
   // Check existence for view lane (debounced)
   useEffect(() => {
-    if (hasFragment || state !== 'landing') return;
+    if (hasFragment || state !== 'landing' || apiReachable === false) return;
 
     const normalizedName = normalizeDropName(viewName);
     const v = validateDropName(normalizedName, VIEW_MIN_LENGTH);
@@ -174,7 +177,7 @@ export default function HomePage() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [viewName, hasFragment, state]);
+  }, [viewName, hasFragment, state, apiReachable]);
 
   const normalizedCreateName = normalizeDropName(createName);
   const createValidation = validateDropName(normalizedCreateName, CREATE_MIN_LENGTH);
@@ -233,7 +236,8 @@ export default function HomePage() {
         setHasFragment(false);
       }
     } catch {
-      setError('Network error');
+      setError('Network error - server unreachable');
+      setApiReachable(false);
       setState('landing');
       setHasFragment(false);
     } finally {
@@ -493,25 +497,41 @@ export default function HomePage() {
     setError(null);
   }, []);
 
-  // Fetch a random generated name from the API
-  const fetchGeneratedName = useCallback(async () => {
-    setGeneratingName(true);
+  // Check API connectivity
+  const checkApiReachability = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/drops/generate-name`);
-      if (response.ok) {
-        const data = (await response.json()) as { name: string; id: string };
-        handleCreateInputChange(data.name);
+      const response = await fetch(`${API_URL}/api/v1/health`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      const reachable = response.ok;
+      setApiReachable(reachable);
+      if (reachable) {
+        // Fetch generated name from API
+        try {
+          const nameResponse = await fetch(`${API_URL}/api/v1/drops/generate-name`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          if (nameResponse.ok) {
+            const data = (await nameResponse.json()) as { name: string; id: string };
+            handleCreateInputChange(data.name);
+          } else {
+            const { generateDropNameSuggestions } = await import('@dead-drop/engine');
+            handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+          }
+        } catch {
+          const { generateDropNameSuggestions } = await import('@dead-drop/engine');
+          handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+        }
       } else {
-        // Fallback: generate locally if API fails
         const { generateDropNameSuggestions } = await import('@dead-drop/engine');
         handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
       }
     } catch {
-      // Fallback: generate locally if API fails
+      setApiReachable(false);
       const { generateDropNameSuggestions } = await import('@dead-drop/engine');
       handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
     } finally {
-      setGeneratingName(false);
+      setApiChecking(false);
     }
   }, [handleCreateInputChange]);
 
@@ -604,6 +624,64 @@ export default function HomePage() {
               </p>
             </div>
 
+            {/* API Connectivity Error Banner */}
+            {!apiChecking && apiReachable === false && (
+              <div
+                style={{
+                  background: 'var(--danger)',
+                  color: 'white',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>
+                  <strong>Server unreachable.</strong> Create and view features are disabled.
+                  <button
+                    onClick={() => {
+                      setApiChecking(true);
+                      checkApiReachability();
+                    }}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.4)',
+                      borderRadius: '0.25rem',
+                      padding: '0.25rem 0.5rem',
+                      marginLeft: '0.5rem',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)')
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)')
+                    }
+                  >
+                    Retry
+                  </button>
+                </span>
+              </div>
+            )}
+
             <div className="split-container">
               {/* CREATE CARD - Expanded by default */}
               <div
@@ -657,11 +735,33 @@ export default function HomePage() {
                       </svg>
                     </button>
                     <button
-                      onClick={(e) => {
+                      type="button"
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        fetchGeneratedName();
+                        if (apiReachable) {
+                          try {
+                            const response = await fetch(`${API_URL}/api/v1/drops/generate-name`, {
+                              signal: AbortSignal.timeout(5000),
+                            });
+                            if (response.ok) {
+                              const data = (await response.json()) as { name: string; id: string };
+                              handleCreateInputChange(data.name);
+                            } else {
+                              const { generateDropNameSuggestions } =
+                                await import('@dead-drop/engine');
+                              handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+                            }
+                          } catch {
+                            const { generateDropNameSuggestions } =
+                              await import('@dead-drop/engine');
+                            handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+                          }
+                        } else {
+                          const { generateDropNameSuggestions } = await import('@dead-drop/engine');
+                          handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+                        }
                       }}
-                      disabled={generatingName}
+                      disabled={apiReachable === false}
                       className="split-btn-icon"
                       title="Generate random name"
                     >
@@ -706,7 +806,10 @@ export default function HomePage() {
                       handleCreate();
                     }}
                     disabled={
-                      !createValidation.valid || createChecking || createAvailable === false
+                      !createValidation.valid ||
+                      createChecking ||
+                      createAvailable === false ||
+                      apiReachable === false
                     }
                     className="split-action-btn"
                   >
@@ -822,7 +925,12 @@ export default function HomePage() {
                       e.stopPropagation();
                       handleView();
                     }}
-                    disabled={!viewValidation.valid || viewChecking || viewExists === false}
+                    disabled={
+                      !viewValidation.valid ||
+                      viewChecking ||
+                      viewExists === false ||
+                      apiReachable === false
+                    }
                     className="split-action-btn"
                   >
                     {viewChecking ? 'Searching...' : 'View Drop'}
