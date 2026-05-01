@@ -29,6 +29,9 @@ export default function CreatePage() {
   const [state, setState] = useState<CreateState>('form');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const formDisabled = isAvailable === false;
 
   const [visibility, setVisibility] = useState<'private' | 'public'>('private');
   const [password, setPassword] = useState('');
@@ -46,6 +49,33 @@ export default function CreatePage() {
     setMounted(true);
   }, []);
 
+  // Check availability when drop name changes
+  useEffect(() => {
+    if (!dropName || !validateDropName(dropName, 12).valid) {
+      setIsAvailable(null);
+      return;
+    }
+
+    const checkAvailability = async () => {
+      setIsCheckingAvailability(true);
+      try {
+        const dropId = await computeDropId(dropName);
+        const response = await fetch(`${API_URL}/api/v1/drops/check/${dropId}`);
+        if (response.ok) {
+          const data = (await response.json()) as { available: boolean };
+          setIsAvailable(data.available);
+        }
+      } catch {
+        // If check fails, assume available (user will get error on submit)
+        setIsAvailable(true);
+      } finally {
+        setIsCheckingAvailability(false);
+      }
+    };
+
+    checkAvailability();
+  }, [dropName]);
+
   const normalizedName = normalizeDropName(dropName);
   const validation = validateDropName(normalizedName, 12);
 
@@ -53,6 +83,7 @@ export default function CreatePage() {
   const isPasswordTooShort = password.length > 0 && password.length < 8;
   const isButtonDisabled =
     isLoading ||
+    isAvailable === false ||
     !password ||
     isPasswordTooShort ||
     !confirmPassword ||
@@ -217,7 +248,15 @@ export default function CreatePage() {
           <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '32rem' }}>
             <div className="terminal-container">
               <div style={{ marginBottom: '1.5rem' }}>
-                <span className="tag">✓ AVAILABLE</span>
+                {isCheckingAvailability ? (
+                  <span className="tag">CHECKING...</span>
+                ) : isAvailable === false ? (
+                  <span className="tag" style={{ background: 'var(--danger)', color: 'white' }}>
+                    ALREADY TAKEN
+                  </span>
+                ) : (
+                  <span className="tag">✓ AVAILABLE</span>
+                )}
                 <p
                   style={{
                     color: 'var(--accent)',
@@ -228,102 +267,139 @@ export default function CreatePage() {
                 >
                   {normalizedName}
                 </p>
-              </div>
-
-              <div className="visibility-toggle">
-                <button
-                  onClick={() => setVisibility('private')}
-                  className={`visibility-option ${visibility === 'private' ? 'active' : ''}`}
-                >
-                  🔒 Private
-                  <br />
-                  <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>encrypted</span>
-                </button>
-                <button
-                  onClick={() => setVisibility('public')}
-                  className={`visibility-option ${visibility === 'public' ? 'active' : ''}`}
-                >
-                  👁 Public
-                  <br />
-                  <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>readable</span>
-                </button>
-              </div>
-
-              <PasswordInput
-                label="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="min 8 characters"
-                error={isPasswordTooShort ? 'Password must be at least 8 characters' : undefined}
-                autoFocus
-              />
-
-              <PasswordInput
-                label="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="repeat password"
-                error={confirmPassword && !passwordsMatch ? 'Passwords do not match' : undefined}
-              />
-
-              <div className="form-group">
-                <label className="form-label">your drop</label>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="form-textarea"
-                  placeholder="Type your secret message here..."
-                  rows={6}
-                />
-              </div>
-
-              {error && <p className="error-message">{error}</p>}
-
-              <div className="terms-checkbox">
-                <label
-                  className="terms-checkbox-label"
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    fontSize: '0.875rem',
-                    color: 'var(--fg)',
-                    opacity: 0.85,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    style={{
-                      cursor: 'pointer',
-                      width: '1rem',
-                      height: '1rem',
-                      accentColor: 'var(--accent)',
-                    }}
-                  />
-                  <span style={{ cursor: 'pointer' }}>
-                    I agree with the{' '}
-                    <Link
-                      href="/terms"
+                {isAvailable === false && (
+                  <p
+                    style={{ color: 'var(--fg-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}
+                  >
+                    This drop name is already taken.{' '}
+                    <button
+                      onClick={goHome}
                       style={{
+                        background: 'none',
+                        border: 'none',
                         color: 'var(--accent)',
                         textDecoration: 'underline',
-                        textUnderlineOffset: '2px',
+                        cursor: 'pointer',
+                        padding: 0,
+                        font: 'inherit',
                       }}
-                      tabIndex={-1}
                     >
-                      Terms of Service
-                    </Link>
-                  </span>
-                </label>
+                      Choose a different name
+                    </button>
+                  </p>
+                )}
               </div>
 
-              <div className="btn-group" style={{ marginTop: '1.5rem' }}>
-                <button onClick={handleCreate} disabled={isButtonDisabled} className="action-btn">
-                  {isLoading ? 'CREATING...' : 'CREATE DROP'}
-                </button>
+              <div
+                style={{
+                  opacity: formDisabled ? 0.5 : 1,
+                  pointerEvents: formDisabled ? 'none' : 'auto',
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                <div className="visibility-toggle">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('private')}
+                    className={`visibility-option ${visibility === 'private' ? 'active' : ''}`}
+                    disabled={formDisabled}
+                  >
+                    🔒 Private
+                    <br />
+                    <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>encrypted</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('public')}
+                    className={`visibility-option ${visibility === 'public' ? 'active' : ''}`}
+                    disabled={formDisabled}
+                  >
+                    👁 Public
+                    <br />
+                    <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>readable</span>
+                  </button>
+                </div>
+
+                <PasswordInput
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="min 8 characters"
+                  error={isPasswordTooShort ? 'Password must be at least 8 characters' : undefined}
+                  autoFocus
+                  disabled={formDisabled}
+                />
+
+                <PasswordInput
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="repeat password"
+                  error={confirmPassword && !passwordsMatch ? 'Passwords do not match' : undefined}
+                  disabled={formDisabled}
+                />
+
+                <div className="form-group">
+                  <label className="form-label">your drop</label>
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="form-textarea"
+                    placeholder="Type your secret message here..."
+                    rows={6}
+                    disabled={formDisabled}
+                  />
+                </div>
+
+                {error && <p className="error-message">{error}</p>}
+
+                <div className="terms-checkbox">
+                  <label
+                    className="terms-checkbox-label"
+                    style={{
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontSize: '0.875rem',
+                      color: 'var(--fg)',
+                      opacity: 0.85,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      disabled={formDisabled}
+                      style={{
+                        cursor: formDisabled ? 'not-allowed' : 'pointer',
+                        width: '1rem',
+                        height: '1rem',
+                        accentColor: 'var(--accent)',
+                      }}
+                    />
+                    <span style={{ cursor: 'pointer' }}>
+                      I agree with the{' '}
+                      <Link
+                        href="/terms"
+                        style={{
+                          color: 'var(--accent)',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '2px',
+                        }}
+                        tabIndex={-1}
+                      >
+                        Terms of Service
+                      </Link>
+                    </span>
+                  </label>
+                </div>
+
+                <div className="btn-group" style={{ marginTop: '1.5rem' }}>
+                  <button onClick={handleCreate} disabled={isButtonDisabled} className="action-btn">
+                    {isLoading ? 'CREATING...' : 'CREATE DROP'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
