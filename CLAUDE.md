@@ -86,6 +86,7 @@ pnpm deploy:pages    # Frontend pages
 ## Important Notes
 
 - **Never use `--force` when pushing** git (user requirement)
+- **Never deploy to Cloudflare without explicit request** - Do not run `pnpm deploy:api` or `pnpm deploy:pages` unless the user explicitly requests deployment
 - **Always check ports** before starting dev servers to avoid conflicts
 - **Port allocation**:
   - Core API: 9090
