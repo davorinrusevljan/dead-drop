@@ -109,7 +109,10 @@ export default function HomePage() {
       checkDrop(normalized);
     } else {
       // Check API connectivity first
-      checkApiReachability();
+      checkApiReachability().catch(() => {
+        // If API check fails, ensure we still unmount the loading state
+        setApiChecking(false);
+      });
     }
     setMounted(true);
     // Intentionally empty deps - we only want this to run once on mount
@@ -499,18 +502,20 @@ export default function HomePage() {
 
   // Check API connectivity
   const checkApiReachability = useCallback(async () => {
+    setMounted(true);
+
     try {
-      const response = await fetch(`${API_URL}/api/v1/health`, {
-        signal: AbortSignal.timeout(5000),
-      });
-      const reachable = response.ok;
+      // Use Promise.race for timeout
+      const response = await Promise.race([
+        fetch(`${API_URL}/api/v1/health`),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)),
+      ]);
+      const reachable = (response as Response).ok;
       setApiReachable(reachable);
       if (reachable) {
         // Fetch generated name from API
         try {
-          const nameResponse = await fetch(`${API_URL}/api/v1/drops/generate-name`, {
-            signal: AbortSignal.timeout(5000),
-          });
+          const nameResponse = await fetch(`${API_URL}/api/v1/drops/generate-name`);
           if (nameResponse.ok) {
             const data = (await nameResponse.json()) as { name: string; id: string };
             handleCreateInputChange(data.name);
