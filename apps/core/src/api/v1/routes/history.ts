@@ -1,7 +1,16 @@
 import { createRoute, type OpenAPIHono } from '@hono/zod-openapi';
 import type { AppEnv } from '../../types.js';
-import { historyListResponseSchema, historyVersionResponseSchema, errorResponseSchema } from '../openapi.js';
-import { getDropById, getDropHistoryList, getDropHistoryVersion, TIER_VERSION_LIMITS } from '../../db.js';
+import {
+  historyListResponseSchema,
+  historyVersionResponseSchema,
+  errorResponseSchema,
+} from '../openapi.js';
+import {
+  getDropById,
+  getDropHistoryList,
+  getDropHistoryVersion,
+  TIER_VERSION_LIMITS,
+} from '../../db.js';
 
 // ===== History list endpoint =====
 export const historyListRoute = createRoute({
@@ -123,7 +132,7 @@ export function registerHistoryRoutes(app: OpenAPIHono<AppEnv>): void {
       {
         versions,
         current: drop.version,
-        maxVersions: TIER_VERSION_LIMITS[drop.tier],
+        maxVersions: TIER_VERSION_LIMITS[drop.tier] ?? 5,
       },
       200
     );
