@@ -6,7 +6,8 @@
   "mounts": [
     "source=claude-config,target=/root/.claude,type=volume",
     "source=gh-config,target=/root/.config/gh,type=volume",
-    "source=wrangler-config,target=/root/.config/.wrangler,type=volume"
+    "source=wrangler-config,target=/root/.config/.wrangler,type=volume",
+    "source=pi-config,target=/root/.pi,type=volume"
   ],
   "customizations": {
     "vscode": {
@@ -35,6 +36,9 @@
   "forwardPorts": [3000, 8787, 8788],
   "remoteEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  "containerEnv": {
+    "ZAI_API_KEY": "${localEnv:ZAI_API_KEY}"
   },
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
