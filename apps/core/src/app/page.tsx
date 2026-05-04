@@ -657,7 +657,7 @@ export default function HomePage() {
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
                 <span>
-                  <strong>Server unreachable.</strong> Create and view features are disabled.
+                  <strong>Server unreachable.</strong> Please try again later.
                   <button
                     onClick={() => {
                       setApiChecking(true);
@@ -687,7 +687,10 @@ export default function HomePage() {
               </div>
             )}
 
-            <div className="split-container">
+            <div
+              className="split-container"
+              style={apiReachable === false ? { display: 'none' } : undefined}
+            >
               {/* CREATE CARD - Expanded by default */}
               <div
                 className={`split-card split-card-create ${activeTab === 'create' ? 'expanded' : ''}`}
