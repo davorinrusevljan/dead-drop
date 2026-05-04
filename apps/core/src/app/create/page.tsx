@@ -13,7 +13,6 @@ import {
   encrypt,
   computePublicAdminHash,
 } from '@dead-drop/engine';
-import { decodePublicDrop, decodePrivateDrop } from '../../lib/drop-client';
 import { API_URL } from '../../lib/config';
 import { PasswordInput } from '@dead-drop/ui';
 
