@@ -436,7 +436,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     }
 
     const versionCount = await countDropVersions(db, id);
-    const maxVersions = TIER_VERSION_LIMITS[drop.tier];
+    const maxVersions = TIER_VERSION_LIMITS[drop.tier] ?? 5;
     if (versionCount >= maxVersions) {
       return c.json(
         { error: { code: 'VERSION_LIMIT', message: 'Maximum number of versions reached' } },
