@@ -21,6 +21,7 @@ import {
   computeDropId,
   normalizeDropName,
 } from '@dead-drop/engine';
+import { decodePrivateDrop } from '../../lib/drop-client';
 
 /**
  * Simulates the server-side logic for private drop authentication
@@ -127,13 +128,13 @@ function createMockClient() {
     },
 
     /** Initialize content hash from content */
-    async initContentHash(contentJson: string) {
-      this.contentHash = await sha256(contentJson);
+    async initContentHash(content: string) {
+      this.contentHash = await sha256(content);
     },
 
     /** Update content hash after successful edit */
-    async updateContentHash(newContentJson: string) {
-      this.contentHash = await sha256(newContentJson);
+    async updateContentHash(newContent: string) {
+      this.contentHash = await sha256(newContent);
     },
   };
 }
@@ -152,25 +153,23 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     const dropId = await computeDropId(normalizedName);
     const salt = generateSalt();
 
-    const originalContent = { type: 'text' as const, content: 'original secret' };
-    const originalJson = JSON.stringify(originalContent);
-    const originalHash = await sha256(originalJson);
+    const originalContent = 'original secret';
+    const originalHash = await sha256(originalContent);
 
     const iv = generateIV();
     const key = await deriveKey(password, salt);
-    const encryptedPayload = await encrypt(originalJson, key, iv);
+    const encryptedPayload = await encrypt(originalContent, key, iv);
 
     await server.createDrop(dropId, encryptedPayload, salt, iv, originalHash, 'private');
 
     client.setUnlockData(password, salt);
-    await client.initContentHash(originalJson);
+    await client.initContentHash(originalContent);
 
     // === STEP 2: First edit ===
-    const edit1Content = { type: 'text' as const, content: 'first edit' };
-    const edit1Json = JSON.stringify(edit1Content);
-    const edit1Hash = await sha256(edit1Json);
+    const edit1Content = 'first edit';
+    const edit1Hash = await sha256(edit1Content);
     const iv1 = generateIV();
-    const encryptedPayload1 = await encrypt(edit1Json, key, iv1);
+    const encryptedPayload1 = await encrypt(edit1Content, key, iv1);
 
     const authHash1 = await client.getContentHash();
     const result1 = await server.updateDrop(dropId, encryptedPayload1, iv1, authHash1!, edit1Hash);
@@ -179,14 +178,13 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     expect(result1.status).toBe(200);
 
     // Update client's stored hash to the NEW content hash
-    await client.updateContentHash(edit1Json);
+    await client.updateContentHash(edit1Content);
 
     // === STEP 3: Second edit - should succeed ===
-    const edit2Content = { type: 'text' as const, content: 'second edit' };
-    const edit2Json = JSON.stringify(edit2Content);
-    const edit2Hash = await sha256(edit2Json);
+    const edit2Content = 'second edit';
+    const edit2Hash = await sha256(edit2Content);
     const iv2 = generateIV();
-    const encryptedPayload2 = await encrypt(edit2Json, key, iv2);
+    const encryptedPayload2 = await encrypt(edit2Content, key, iv2);
 
     const authHash2 = await client.getContentHash();
     const result2 = await server.updateDrop(dropId, encryptedPayload2, iv2, authHash2!, edit2Hash);
@@ -195,14 +193,13 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     expect(result2.status).toBe(200);
 
     // Update client's stored hash
-    await client.updateContentHash(edit2Json);
+    await client.updateContentHash(edit2Content);
 
     // === STEP 4: Third edit - also should succeed ===
-    const edit3Content = { type: 'text' as const, content: 'third edit' };
-    const edit3Json = JSON.stringify(edit3Content);
-    const edit3Hash = await sha256(edit3Json);
+    const edit3Content = 'third edit';
+    const edit3Hash = await sha256(edit3Content);
     const iv3 = generateIV();
-    const encryptedPayload3 = await encrypt(edit3Json, key, iv3);
+    const encryptedPayload3 = await encrypt(edit3Content, key, iv3);
 
     const authHash3 = await client.getContentHash();
     const result3 = await server.updateDrop(dropId, encryptedPayload3, iv3, authHash3!, edit3Hash);
@@ -210,11 +207,11 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     expect(result3.success).toBe(true);
     expect(result3.status).toBe(200);
 
-    // Verify final content can be decrypted
+    // Verify final content can be decrypted and decoded
     const drop = server.getDrop(dropId);
     expect(drop).toBeDefined();
     const decrypted = await decrypt(drop!.data, key, drop!.iv!);
-    expect(JSON.parse(decrypted)).toEqual(edit3Content);
+    expect(decrypted).toBe(edit3Content);
   });
 
   it('simulates different tabs/sessions editing the same drop', async () => {
@@ -229,58 +226,54 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     const dropId = await computeDropId(normalizedName);
     const salt = generateSalt();
 
-    const originalContent = { type: 'text' as const, content: 'original secret' };
-    const originalJson = JSON.stringify(originalContent);
-    const originalHash = await sha256(originalJson);
+    const originalContent = 'original secret';
+    const originalHash = await sha256(originalContent);
 
     const iv = generateIV();
     const key = await deriveKey(password, salt);
-    const encryptedPayload = await encrypt(originalJson, key, iv);
+    const encryptedPayload = await encrypt(originalContent, key, iv);
 
     await server.createDrop(dropId, encryptedPayload, salt, iv, originalHash, 'private');
 
     // === STEP 2: Tab 1 unlocks and edits ===
     client1.setUnlockData(password, salt);
-    await client1.initContentHash(originalJson);
+    await client1.initContentHash(originalContent);
 
-    const edit1Content = { type: 'text' as const, content: 'tab1 edit' };
-    const edit1Json = JSON.stringify(edit1Content);
-    const edit1Hash = await sha256(edit1Json);
+    const edit1Content = 'tab1 edit';
+    const edit1Hash = await sha256(edit1Content);
     const iv1 = generateIV();
-    const encryptedPayload1 = await encrypt(edit1Json, key, iv1);
+    const encryptedPayload1 = await encrypt(edit1Content, key, iv1);
 
     const authHash1 = await client1.getContentHash();
     const result1 = await server.updateDrop(dropId, encryptedPayload1, iv1, authHash1!, edit1Hash);
     expect(result1.success).toBe(true);
 
     // Update Tab 1's stored hash
-    await client1.updateContentHash(edit1Json);
+    await client1.updateContentHash(edit1Content);
 
     // === STEP 3: Tab 2 unlocks (from server) and edits ===
     // Tab 2 gets the current content from server (edit1Content)
     client2.setUnlockData(password, salt);
-    await client2.initContentHash(edit1Json); // Initialize with CURRENT content
+    await client2.initContentHash(edit1Content); // Initialize with CURRENT content
 
-    const edit2Content = { type: 'text' as const, content: 'tab2 edit' };
-    const edit2Json = JSON.stringify(edit2Content);
-    const edit2Hash = await sha256(edit2Json);
+    const edit2Content = 'tab2 edit';
+    const edit2Hash = await sha256(edit2Content);
     const iv2 = generateIV();
-    const encryptedPayload2 = await encrypt(edit2Json, key, iv2);
+    const encryptedPayload2 = await encrypt(edit2Content, key, iv2);
 
     const authHash2 = await client2.getContentHash();
     const result2 = await server.updateDrop(dropId, encryptedPayload2, iv2, authHash2!, edit2Hash);
     expect(result2.success).toBe(true);
 
     // Update Tab 2's stored hash
-    await client2.updateContentHash(edit2Json);
+    await client2.updateContentHash(edit2Content);
 
     // === STEP 4: Tab 1 tries to edit again (without refreshing) ===
     // Tab 1 still has the old hash (edit1Hash), but server now expects edit2Hash
-    const edit3Content = { type: 'text' as const, content: 'tab1 second edit' };
-    const edit3Json = JSON.stringify(edit3Content);
-    const edit3Hash = await sha256(edit3Json);
+    const edit3Content = 'tab1 second edit';
+    const edit3Hash = await sha256(edit3Content);
     const iv3 = generateIV();
-    const encryptedPayload3 = await encrypt(edit3Json, key, iv3);
+    const encryptedPayload3 = await encrypt(edit3Content, key, iv3);
 
     const authHash3 = await client1.getContentHash();
     const result3 = await server.updateDrop(dropId, encryptedPayload3, iv3, authHash3!, edit3Hash);
@@ -301,25 +294,23 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     const dropId = await computeDropId(normalizedName);
     const salt = generateSalt();
 
-    const originalContent = { type: 'text' as const, content: 'original' };
-    const originalJson = JSON.stringify(originalContent);
-    const originalHash = await sha256(originalJson);
+    const originalContent = 'original';
+    const originalHash = await sha256(originalContent);
 
     const iv = generateIV();
     const key = await deriveKey(password, salt);
-    const encryptedPayload = await encrypt(originalJson, key, iv);
+    const encryptedPayload = await encrypt(originalContent, key, iv);
 
     await server.createDrop(dropId, encryptedPayload, salt, iv, originalHash, 'private');
 
     client.setUnlockData(password, salt);
-    await client.initContentHash(originalJson);
+    await client.initContentHash(originalContent);
 
     // First edit
-    const edit1Content = { type: 'text' as const, content: 'first edit' };
-    const edit1Json = JSON.stringify(edit1Content);
-    const edit1Hash = await sha256(edit1Json);
+    const edit1Content = 'first edit';
+    const edit1Hash = await sha256(edit1Content);
     const iv1 = generateIV();
-    const encryptedPayload1 = await encrypt(edit1Json, key, iv1);
+    const encryptedPayload1 = await encrypt(edit1Content, key, iv1);
 
     const result1 = await server.updateDrop(
       dropId,
@@ -329,19 +320,18 @@ describe('Private Drop Edit Flow - E2E Test', () => {
       edit1Hash
     );
     expect(result1.success).toBe(true);
-    await client.updateContentHash(edit1Json);
+    await client.updateContentHash(edit1Content);
 
     // === STEP 2: Simulate page refresh - re-unlock with current content ===
     // After refresh, the client would fetch the drop and decrypt it
     // The contentHash would be computed from the CURRENT content
-    await client.initContentHash(edit1Json); // Re-init with current content
+    await client.initContentHash(edit1Content); // Re-init with current content
 
     // Second edit after "refresh"
-    const edit2Content = { type: 'text' as const, content: 'second edit after refresh' };
-    const edit2Json = JSON.stringify(edit2Content);
-    const edit2Hash = await sha256(edit2Json);
+    const edit2Content = 'second edit after refresh';
+    const edit2Hash = await sha256(edit2Content);
     const iv2 = generateIV();
-    const encryptedPayload2 = await encrypt(edit2Json, key, iv2);
+    const encryptedPayload2 = await encrypt(edit2Content, key, iv2);
 
     const result2 = await server.updateDrop(
       dropId,
@@ -351,5 +341,18 @@ describe('Private Drop Edit Flow - E2E Test', () => {
       edit2Hash
     );
     expect(result2.success).toBe(true);
+  });
+
+  it('handles legacy wrapper format in decrypted content', async () => {
+    // Old drops store { type: "text", content: "..." } in the encrypted payload.
+    // decodePrivateDrop should extract the content from the wrapper.
+    const legacyPayload = '{"type":"text","content":"legacy secret"}';
+    const decoded = decodePrivateDrop(legacyPayload);
+    expect(decoded).toBe('legacy secret');
+
+    // New format: raw text
+    const newPayload = 'new secret';
+    const newDecoded = decodePrivateDrop(newPayload);
+    expect(newDecoded).toBe('new secret');
   });
 });

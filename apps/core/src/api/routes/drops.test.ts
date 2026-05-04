@@ -15,7 +15,7 @@ describe('Private Drop Edit Flow - Bug Demonstration', () => {
     // This test verifies the fix: after editing, client keeps original hash for auth
 
     // === STEP 1: Create drop ===
-    const originalContent = JSON.stringify({ type: 'text', content: 'original' });
+    const originalContent = 'original';
     const originalContentHash = await sha256(originalContent);
     const storedAdminHash = await computePrivateAdminHash(originalContentHash, pepper);
 
@@ -37,7 +37,7 @@ describe('Private Drop Edit Flow - Bug Demonstration', () => {
 
   it('shows the fix: client should keep original hash for auth', async () => {
     // === STEP 1: Create drop ===
-    const originalContent = JSON.stringify({ type: 'text', content: 'original' });
+    const originalContent = 'original';
     const originalContentHash = await sha256(originalContent);
     const storedAdminHash = await computePrivateAdminHash(originalContentHash, pepper);
 

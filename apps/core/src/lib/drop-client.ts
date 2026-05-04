@@ -16,13 +16,6 @@ import {
 import { API_URL } from './config';
 
 /**
- * Drop content payload for client-side encryption
- */
-export type DropContentPayload =
-  | { type: 'text'; content: string }
-  | { type: 'file'; mime: string; name: string; data: string };
-
-/**
  * Encrypted drop data ready for API submission
  */
 export interface EncryptedDropData {
@@ -52,12 +45,73 @@ export interface PublicDropData {
 }
 
 /**
+ * Check if a string looks like the old { type: "text", content: "..." } wrapper.
+ * Returns the extracted content if it is, or null otherwise.
+ */
+function tryUnwrapOldFormat(raw: string): string | null {
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && 'type' in parsed && 'content' in parsed) {
+      return parsed.content as string;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extract content from a possibly-wrapped payload value.
+ * Old format: JSON.parse gives { type: "text", content: "..." }
+ * New format: raw string
+ * TODO: Remove after 2026-05-11 (all old drops will have expired)
+ */
+export function unwrapContent(raw: string): string {
+  return tryUnwrapOldFormat(raw) ?? raw;
+}
+
+/**
+ * Decode a public drop payload, handling all legacy formats.
+ * - Old base64 + wrapper: atob → unwrap
+ * - Old raw JSON + wrapper: unwrap
+ * - New format: raw content string
+ * TODO: Simplify after 2026-05-11 (all old drops will have expired)
+ */
+export function decodePublicDrop(payload: string): string {
+  // Try base64 decode first (oldest format: btoa of JSON wrapper)
+  try {
+    const decoded = atob(payload);
+    const unwrapped = tryUnwrapOldFormat(decoded);
+    if (unwrapped !== null) {
+      return unwrapped;
+    }
+    // atob succeeded but result is not the old wrapper — check if original
+    // payload was raw JSON wrapper (not base64)
+  } catch {
+    // Not valid base64
+  }
+
+  // Try raw JSON wrapper or return as-is
+  return unwrapContent(payload);
+}
+
+/**
+ * Decode a decrypted private drop payload, handling old wrapper format.
+ * - Old format: decrypted string is JSON.stringify({ type, content })
+ * - New format: decrypted string is raw content
+ * TODO: Simplify after 2026-05-11 (all old drops will have expired)
+ */
+export function decodePrivateDrop(decryptedPayload: string): string {
+  return unwrapContent(decryptedPayload);
+}
+
+/**
  * Create drop data for API submission
  */
 export async function createDropData(
   name: string,
   password: string,
-  content: DropContentPayload,
+  content: string,
   visibility: 'private',
   tier: DropTier,
   algorithm?: EncryptionAlgorithm,
@@ -66,7 +120,7 @@ export async function createDropData(
 export async function createDropData(
   name: string,
   password: string,
-  content: DropContentPayload,
+  content: string,
   visibility: 'public',
   tier: DropTier,
   algorithm?: EncryptionAlgorithm,
@@ -75,7 +129,7 @@ export async function createDropData(
 export async function createDropData(
   name: string,
   password: string,
-  content: DropContentPayload,
+  content: string,
   visibility: DropVisibility,
   tier: DropTier,
   algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1',
@@ -93,13 +147,10 @@ export async function createDropData(
   // Compute drop ID
   const id = await computeDropId(normalizedName);
 
-  // Serialize content
-  const contentJson = JSON.stringify(content);
-
   if (visibility === 'private') {
-    return createPrivateDropData(id, normalizedName, password, contentJson, algorithm, mimeType);
+    return createPrivateDropData(id, normalizedName, password, content, algorithm, mimeType);
   } else {
-    return createPublicDropData(id, normalizedName, password, contentJson, mimeType);
+    return createPublicDropData(id, normalizedName, password, content, mimeType);
   }
 }
 
@@ -110,7 +161,7 @@ async function createPrivateDropData(
   id: string,
   normalizedName: string,
   password: string,
-  contentJson: string,
+  content: string,
   algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1',
   mimeType: MimeType = 'text/plain'
 ): Promise<EncryptedDropData> {
@@ -122,13 +173,13 @@ async function createPrivateDropData(
   const iv = provider.generateIV();
 
   // Compute content hash
-  const contentHash = await sha256(contentJson);
+  const contentHash = await sha256(content);
 
   // Derive encryption key from password
   const key = await provider.deriveKey(password, salt);
 
   // Encrypt content
-  const payload = await provider.encrypt(contentJson, key, iv);
+  const payload = await provider.encrypt(content, key, iv);
 
   return {
     id,
@@ -151,7 +202,7 @@ async function createPublicDropData(
   id: string,
   normalizedName: string,
   password: string,
-  contentJson: string,
+  content: string,
   mimeType: MimeType = 'text/plain'
 ): Promise<PublicDropData> {
   // Generate salt for admin hash
@@ -160,14 +211,11 @@ async function createPublicDropData(
   // Compute admin hash
   const adminHash = await computePublicAdminHash(password, salt);
 
-  // Content is stored as plaintext (base64 encoded)
-  const payload = btoa(contentJson);
-
   return {
     id,
     nameLength: normalizedName.length,
     visibility: 'public',
-    payload,
+    payload: content,
     salt,
     mimeType,
     adminHash,
@@ -184,7 +232,7 @@ export async function decryptDrop(
   iv: string,
   algorithm: EncryptionAlgorithm = 'pbkdf2-aes256-gcm-v1',
   _params?: EncryptionParams
-): Promise<DropContentPayload> {
+): Promise<string> {
   // Get the crypto provider for the specified algorithm
   const provider = cryptoRegistry.get(algorithm);
 
@@ -192,31 +240,22 @@ export async function decryptDrop(
   const key = await provider.deriveKey(password, salt, _params);
 
   // Decrypt content
-  const contentJson = await provider.decrypt(payload, key, iv);
+  const decrypted = await provider.decrypt(payload, key, iv);
 
-  // Parse and return content
-  return JSON.parse(contentJson) as DropContentPayload;
-}
-
-/**
- * Decrypt a public drop (no decryption needed, just decode)
- */
-export function decodePublicDrop(payload: string): DropContentPayload {
-  const contentJson = atob(payload);
-  return JSON.parse(contentJson) as DropContentPayload;
+  // Handle old wrapper format
+  return decodePrivateDrop(decrypted);
 }
 
 /**
  * Verify admin password for a private drop
  */
 export async function verifyPrivatePassword(
-  content: DropContentPayload,
+  content: string,
   _password: string,
   storedAdminHash: string,
   pepper: string
 ): Promise<boolean> {
-  const contentJson = JSON.stringify(content);
-  const contentHash = await sha256(contentJson);
+  const contentHash = await sha256(content);
   const computedHash = await computePrivateAdminHash(contentHash, pepper);
   return computedHash === storedAdminHash;
 }
@@ -231,20 +270,6 @@ export async function verifyPublicPassword(
 ): Promise<boolean> {
   const computedHash = await computePublicAdminHash(password, salt);
   return computedHash === storedAdminHash;
-}
-
-/**
- * Serialize content payload to JSON
- */
-export function serializeContent(content: DropContentPayload): string {
-  return JSON.stringify(content);
-}
-
-/**
- * Parse content payload from JSON
- */
-export function parseContent(json: string): DropContentPayload {
-  return JSON.parse(json) as DropContentPayload;
 }
 
 /**

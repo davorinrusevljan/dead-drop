@@ -2,7 +2,7 @@
  * Tests for public drop CRUD operations
  *
  * Public drops:
- * - Content is stored as plaintext (base64 encoded)
+ * - Content is stored as raw content string (interpreted by mimeType)
  * - Admin hash is computed as SHA-256(adminPassword + salt)
  * - Anyone can read, but only admin (with password) can edit/delete
  */
@@ -15,6 +15,7 @@ import {
   normalizeDropName,
   computePublicAdminHash,
 } from '@dead-drop/engine';
+import { decodePublicDrop, unwrapContent } from '../../lib/drop-client';
 
 describe('Public Drop Creation', () => {
   it('should create a public drop with valid admin hash', async () => {
@@ -153,24 +154,47 @@ describe('Public Drop Delete Flow', () => {
 });
 
 describe('Public Drop Content Handling', () => {
-  it('should encode and decode content correctly', () => {
-    const content = { type: 'text' as const, content: 'Hello, World!' };
-    const contentJson = JSON.stringify(content);
-    const encoded = btoa(contentJson);
-    const decoded = atob(encoded);
-    const parsed = JSON.parse(decoded) as typeof content;
-
-    expect(parsed).toEqual(content);
+  it('should handle new format: raw content string', () => {
+    const payload = 'Hello, World!';
+    const content = decodePublicDrop(payload);
+    expect(content).toBe('Hello, World!');
   });
 
-  it('should handle special characters in content', () => {
-    const content = { type: 'text' as const, content: 'Special: @#$%^&*()' };
-    const contentJson = JSON.stringify(content);
-    const encoded = btoa(contentJson);
-    const decoded = atob(encoded);
-    const parsed = JSON.parse(decoded) as typeof content;
+  it('should handle special characters in raw content', () => {
+    const payload = 'Special: @#$%^&*() <html> "quotes"';
+    const content = decodePublicDrop(payload);
+    expect(content).toBe(payload);
+  });
 
-    expect(parsed).toEqual(content);
+  it('should handle legacy base64 + wrapper format', () => {
+    const oldContent = { type: 'text', content: 'Hello from legacy!' };
+    const payload = btoa(JSON.stringify(oldContent));
+    const content = decodePublicDrop(payload);
+    expect(content).toBe('Hello from legacy!');
+  });
+
+  it('should handle legacy raw JSON wrapper format', () => {
+    const oldContent = { type: 'text', content: 'Raw JSON legacy!' };
+    const payload = JSON.stringify(oldContent);
+    const content = decodePublicDrop(payload);
+    expect(content).toBe('Raw JSON legacy!');
+  });
+});
+
+describe('unwrapContent compat helper', () => {
+  it('should extract content from old wrapper', () => {
+    const result = unwrapContent('{"type":"text","content":"hello"}');
+    expect(result).toBe('hello');
+  });
+
+  it('should return raw string for non-wrapper JSON', () => {
+    const result = unwrapContent('{"some":"json"}');
+    expect(result).toBe('{"some":"json"}');
+  });
+
+  it('should return raw string for plain text', () => {
+    const result = unwrapContent('just plain text');
+    expect(result).toBe('just plain text');
   });
 });
 
@@ -208,11 +232,9 @@ describe('Public Drop CRUD Integration', () => {
     expect(adminHash).not.toBe('');
 
     // === READ (anyone can read public drops) ===
-    const content = { type: 'text' as const, content: 'Public secret message' };
-    const contentJson = JSON.stringify(content);
-    const encoded = btoa(contentJson);
-    const decoded = atob(encoded);
-    expect(JSON.parse(decoded)).toEqual(content);
+    const content = 'Public secret message';
+    const decoded = decodePublicDrop(content);
+    expect(decoded).toBe(content);
 
     // === EDIT (requires admin password) ===
     const editAuthHash = await sha256(adminPassword + salt);

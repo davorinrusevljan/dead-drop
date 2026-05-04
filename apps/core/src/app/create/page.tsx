@@ -13,13 +13,9 @@ import {
   encrypt,
   computePublicAdminHash,
 } from '@dead-drop/engine';
+import { decodePublicDrop, decodePrivateDrop } from '../../lib/drop-client';
 import { API_URL } from '../../lib/config';
 import { PasswordInput } from '@dead-drop/ui';
-
-interface DropContent {
-  type: 'text';
-  content: string;
-}
 
 type CreateState = 'form' | 'success' | 'error';
 
@@ -114,8 +110,6 @@ export default function CreatePage() {
     try {
       const dropId = await computeDropId(normalizedName);
       const salt = generateSalt();
-      const contentPayload: DropContent = { type: 'text', content };
-      const contentJson = JSON.stringify(contentPayload);
       let payload: string;
       let iv: string | null = null;
       let respContentHash: string | null = null;
@@ -124,11 +118,11 @@ export default function CreatePage() {
       if (visibility === 'private') {
         const key = await deriveKey(password, salt);
         iv = generateIV();
-        payload = await encrypt(contentJson, key, iv);
-        respContentHash = await sha256(contentJson);
+        payload = await encrypt(content, key, iv);
+        respContentHash = await sha256(content);
       } else {
-        payload = btoa(contentJson);
-        // Compute admin hash for public drops
+        // Public drops: raw content string, no encoding
+        payload = content;
         const computedHash = await computePublicAdminHash(password, salt);
         if (!computedHash) {
           throw new Error('Failed to compute admin hash');

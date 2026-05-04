@@ -16,6 +16,8 @@ import { API_URL } from '../lib/config';
 import {
   fetchVersionList,
   fetchVersion,
+  decodePublicDrop,
+  decodePrivateDrop,
   type VersionListResponse,
   type DropVersionInfo,
   type VersionDataResponse,
@@ -36,11 +38,6 @@ interface DropData {
   mimeType: MimeType;
   hashAlgo: string;
   expiresAt: string;
-}
-
-interface DropContent {
-  type: 'text';
-  content: string;
 }
 
 // Filter invalid characters as user types
@@ -219,9 +216,8 @@ export default function HomePage() {
         setCurrentDropName(name);
         if (data.visibility === 'public') {
           try {
-            const contentJson = atob(data.payload);
-            const parsed = JSON.parse(contentJson) as DropContent;
-            setDecryptedContent(parsed.content);
+            const content = decodePublicDrop(data.payload);
+            setDecryptedContent(content);
           } catch {
             setError('Failed to decode content');
             setState('landing');
@@ -262,11 +258,11 @@ export default function HomePage() {
           dropData.salt,
           dropData.encryptionParams ?? undefined
         );
-        const contentJson = await provider.decrypt(dropData.payload, key, dropData.iv!);
-        const parsed = JSON.parse(contentJson) as DropContent;
-        const hash = await sha256(contentJson);
+        const decryptedRaw = await provider.decrypt(dropData.payload, key, dropData.iv!);
+        const content = decodePrivateDrop(decryptedRaw);
+        const hash = await sha256(decryptedRaw);
         setContentHash(hash);
-        setDecryptedContent(parsed.content);
+        setDecryptedContent(content);
         setAgreedToViewTerms(false);
         setState('view');
       } catch {
@@ -317,14 +313,11 @@ export default function HomePage() {
             dropData.salt,
             dropData.encryptionParams ?? undefined
           );
-          const contentJson = await provider.decrypt(versionData.payload, key, versionData.iv!);
-          const parsed = JSON.parse(contentJson) as DropContent;
-          content = parsed.content;
+          const decryptedRaw = await provider.decrypt(versionData.payload, key, versionData.iv!);
+          content = decodePrivateDrop(decryptedRaw);
         } else {
-          // Public drop - just decode
-          const contentJson = atob(versionData.payload);
-          const parsed = JSON.parse(contentJson) as DropContent;
-          content = parsed.content;
+          // Public drop - decode payload (handles legacy formats)
+          content = decodePublicDrop(versionData.payload);
         }
 
         setSelectedVersionContent(content);
@@ -352,8 +345,6 @@ export default function HomePage() {
       setIsLoading(true);
       setError(null);
       try {
-        const contentPayload: DropContent = { type: 'text', content: newContent };
-        const contentJson = JSON.stringify(contentPayload);
         let payload: string;
         let iv: string | null = null;
         let reqContentHash: string | null = null;
@@ -368,13 +359,13 @@ export default function HomePage() {
             dropData.encryptionParams ?? undefined
           );
           iv = provider.generateIV();
-          payload = await provider.encrypt(contentJson, key, iv);
+          payload = await provider.encrypt(newContent, key, iv);
           reqContentHash = contentHash;
           // Compute the NEW content hash for the server to store
-          newReqContentHash = await sha256(contentJson);
+          newReqContentHash = await sha256(newContent);
         } else {
-          // Public drops - no encryption, just base64 encode
-          payload = btoa(contentJson);
+          // Public drops - raw content string, no encoding
+          payload = newContent;
         }
 
         // Build request body

@@ -10,7 +10,9 @@ async function sha256(message: string): Promise<string> {
 
 function generateSalt(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 async function computePublicAdminHash(adminPassword: string, salt: string): Promise<string> {
@@ -35,16 +37,11 @@ test.describe('Public Drop Creation - Frontend Simulation', () => {
     // Generate salt
     const salt = generateSalt();
 
-    // Create content
-    const contentPayload = { type: 'text', content: 'Test public drop content' };
-    const contentJson = JSON.stringify(contentPayload);
-
-    // For public drops: base64 encode the content
-    const payload = btoa(contentJson);
+    // Create content - new format: raw text string
+    const payload = 'Test public drop content';
 
     // Compute admin hash for public drops
     const adminHash = await computePublicAdminHash(password, salt);
-
 
     // Build request body - EXACTLY as the frontend does
     const requestBody: Record<string, unknown> = {
@@ -55,13 +52,12 @@ test.describe('Public Drop Creation - Frontend Simulation', () => {
       payload,
       salt,
       mimeType: 'text/plain',
-      // Public drops only require adminHash, not iv or contentHash
       adminHash,
+      I_agree_with_terms_and_conditions: true,
     };
 
-
     // Make the request
-    const response = await request.post('http://localhost:9090/api/drops', {
+    const response = await request.post('http://localhost:9090/api/v1/drops', {
       headers: { 'Content-Type': 'application/json' },
       data: requestBody,
     });
@@ -83,7 +79,6 @@ test.describe('Public Drop Creation - Frontend Simulation', () => {
     const salt = generateSalt();
 
     const hash = await computePublicAdminHash(password, salt);
-
 
     expect(hash).toBeDefined();
     expect(typeof hash).toBe('string');

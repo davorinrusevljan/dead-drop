@@ -163,7 +163,12 @@ export const dropResponseSchema = z.object({
   id: sha256HashSchema.openapi({ description: 'SHA-256 hash of drop name' }),
   tier: dropTierSchema,
   visibility: dropVisibilitySchema,
-  payload: z.string().openapi({ description: 'Encrypted (hex) or plaintext data' }),
+  payload: z
+    .string()
+    .openapi({
+      description:
+        'For private drops: hex-encoded AES-GCM ciphertext (opaque). For public drops: raw content string, interpreted by mimeType.',
+    }),
   salt: saltSchema,
   iv: ivSchema.nullable().openapi({
     description: 'Hex-encoded IV (12 bytes = 24 hex chars), null for public drops',
@@ -231,10 +236,9 @@ export const createDropRequestSchema = z
     tier: dropTierSchema.optional().openapi({ description: 'Drop tier, defaults to free' }),
     visibility: dropVisibilitySchema.openapi({ description: 'Drop visibility type' }),
     payload: z.string().openapi({
-      example:
-        '8f9e1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      example: 'Hello, world!',
       description:
-        'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
+        'For private drops: hex-encoded AES-GCM ciphertext. For public drops: raw content string, interpreted by mimeType.',
     }),
     salt: saltSchema,
     iv: ivSchema.optional().openapi({
@@ -276,10 +280,9 @@ export const createDropResponseSchema = z.object({
 export const updateDropRequestSchema = z
   .object({
     payload: z.string().openapi({
-      example:
-        '8f9e1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      example: 'Hello, world!',
       description:
-        'AES-GCM encrypted data (hex-encoded) for private drops, plaintext for public drops',
+        'For private drops: hex-encoded AES-GCM ciphertext. For public drops: raw content string, interpreted by mimeType.',
     }),
     iv: ivSchema.optional().openapi({
       description: 'Hex-encoded IV (12 bytes = 24 hex chars), required for private drops',
@@ -355,7 +358,12 @@ export const historyListResponseSchema = z.object({
  */
 export const historyVersionResponseSchema = z.object({
   version: z.number().int().positive().openapi({ example: 2, description: 'Version number' }),
-  payload: z.string().openapi({ description: 'Encrypted (hex) or plaintext data' }),
+  payload: z
+    .string()
+    .openapi({
+      description:
+        'For private drops: hex-encoded AES-GCM ciphertext (opaque). For public drops: raw content string, interpreted by mimeType.',
+    }),
   iv: ivSchema.nullable().openapi({
     description: 'Hex-encoded IV (12 bytes = 24 hex chars), null for public drops',
   }),
