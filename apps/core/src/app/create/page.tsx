@@ -323,7 +323,7 @@ export default function CreatePage() {
                 <PasswordInput
                   label="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   placeholder="min 8 characters"
                   error={isPasswordTooShort ? 'Password must be at least 8 characters' : undefined}
                   autoFocus
@@ -333,7 +333,9 @@ export default function CreatePage() {
                 <PasswordInput
                   label="Confirm Password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setConfirmPassword(e.target.value)
+                  }
                   placeholder="repeat password"
                   error={confirmPassword && !passwordsMatch ? 'Passwords do not match' : undefined}
                   disabled={formDisabled}
@@ -343,7 +345,9 @@ export default function CreatePage() {
                   <label className="form-label">your drop</label>
                   <textarea
                     value={content}
-                    onChange={(e) => setContent(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setContent(e.target.value)
+                    }
                     className="form-textarea"
                     placeholder="Type your secret message here..."
                     rows={6}
@@ -369,7 +373,9 @@ export default function CreatePage() {
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setAgreedToTerms(e.target.checked)
+                      }
                       disabled={formDisabled}
                       style={{
                         cursor: formDisabled ? 'not-allowed' : 'pointer',
