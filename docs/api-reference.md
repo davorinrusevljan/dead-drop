@@ -72,15 +72,28 @@ Retrieve a drop by ID.
   "id": "7c4e8d3a9f1b6e2c8d4a7f3b9e1c5d8a2f6b4e9d3c7a1f8b5e2d9c4a6f3b7e1d",
   "tier": "free",
   "visibility": "private",
-  "payload": "encrypted-content-base64",
+  "payload": "hex-encoded-aes-gcm-ciphertext",
   "salt": "a1b2c3d4e5f6...",
   "iv": "g7h8i9j0k1l2",
   "encryptionAlgo": "pbkdf2-aes256-gcm-v1",
   "encryptionParams": null,
   "mimeType": "text/plain",
+  "hashAlgo": "sha-256",
   "expiresAt": "2026-04-25T12:00:00.000Z"
 }
 ```
+
+**Fields:**
+- `id`: SHA-256 hash of drop name
+- `tier`: Drop tier (`"free"` or `"deep"`)
+- `visibility`: Drop visibility (`"private"` or `"public"`)
+- `payload`: For private drops: hex-encoded AES-GCM ciphertext (opaque). For public drops: raw content string, interpreted by `mimeType`.
+- `salt`: Hex-encoded salt
+- `iv`: Hex-encoded IV (null for public drops)
+- `encryptionAlgo`: Encryption algorithm used (null for public drops)
+- `mimeType`: MIME type of the content
+- `hashAlgo`: Hash algorithm for admin authentication
+- `expiresAt`: ISO 8601 timestamp when drop expires
 
 **Error Responses:**
 - `404 Not Found`: Drop does not exist or has expired
@@ -98,13 +111,13 @@ Create a new drop.
   "nameLength": 14,
   "tier": "free",
   "visibility": "private",
-  "payload": "encrypted-content-base64",
+  "payload": "hex-encoded-aes-gcm-ciphertext",
   "salt": "a1b2c3d4e5f6...",
   "iv": "g7h8i9j0k1l2",
   "encryptionAlgo": "pbkdf2-aes256-gcm-v1",
-  "encryptionParams": null,
   "mimeType": "text/plain",
-  "adminHash": "sha256-hash"
+  "contentHash": "sha256-of-content",
+  "I_agree_with_terms_and_conditions": true
 }
 ```
 
@@ -113,13 +126,14 @@ Create a new drop.
 - `nameLength` (required): Length of original drop name (used for tier validation)
 - `tier` (required): `"free"` or `"deep"`
 - `visibility` (required): `"private"` or `"public"`
-- `payload` (required): Encrypted content (private) or plaintext (public)
+- `payload` (required): For private drops: hex-encoded AES-GCM ciphertext. For public drops: raw content string, interpreted by `mimeType`.
 - `salt` (required): Random salt for encryption/authentication
 - `iv` (optional): Initialization vector (required for private drops)
-- `encryptionAlgo` (required): Must be `"pbkdf2-aes256-gcm-v1"` in v1.0
+- `encryptionAlgo` (optional): Must be `"pbkdf2-aes256-gcm-v1"` in v1.0 (required for private drops)
 - `encryptionParams` (optional): Algorithm-specific parameters
-- `mimeType` (required): Must be `"text/plain"` in v1.0
-- `adminHash` (required): SHA-256 hash for authentication
+- `mimeType` (optional): Must be `"text/plain"` in v1.0, defaults to `text/plain`
+- `contentHash` (optional): SHA-256 hash of content (required for private drops)
+- `adminHash` (optional): `SHA-256(adminPassword + salt)` (required for public drops)
 
 **Response (201 Created):**
 ```json
@@ -145,7 +159,7 @@ Update an existing drop.
 **Request Body:**
 ```json
 {
-  "payload": "new-encrypted-content-base64",
+  "payload": "new-hex-encoded-aes-gcm-ciphertext",
   "iv": "new-initialization-vector",
   "contentHash": "content-hash-for-auth",
   "adminPassword": "admin-password"
@@ -153,7 +167,7 @@ Update an existing drop.
 ```
 
 **Fields:**
-- `payload` (required): New encrypted content
+- `payload` (required): For private drops: hex-encoded AES-GCM ciphertext. For public drops: raw content string.
 - `iv` (optional): New initialization vector (for private drops)
 - `contentHash` (optional): Content hash for private drop authentication
 - `adminPassword` (optional): Admin password for public drop authentication
@@ -246,7 +260,7 @@ Get a specific version of a drop.
 {
   "id": "7c4e8d3a9f1b6e2c8d4a7f3b9e1c5d8a2f6b4e9d3c7a1f8b5e2d9c4a6f3b7e1d",
   "version": 1,
-  "payload": "encrypted-content-base64",
+  "payload": "hex-encoded-aes-gcm-ciphertext",
   "iv": "g7h8i9j0k1l2",
   "encryptionAlgo": "pbkdf2-aes256-gcm-v1",
   "mimeType": "text/plain",
@@ -404,11 +418,11 @@ v1.0 only supports plain text content. Core edition enforces text-only. SaaS edi
 2. Normalize the drop name (lowercase, kebab-case)
 3. Hash the normalized name with SHA-256 to get the drop ID
 4. For private drops:
-   - Derive encryption key using PBKDF2 (password + salt, 100k iterations)
+   - Derive encryption key using PBKDF2 (password + salt, 600k iterations)
    - Encrypt payload using AES-256-GCM (key + random IV)
-   - Compute admin hash: `SHA-256(contentHash + pepper)`
+   - Compute content hash: `SHA-256(content)`
 5. For public drops:
-   - Store payload as plaintext
+   - Payload is the raw content string directly (no encoding)
    - Compute admin hash: `SHA-256(adminPassword + salt)`
 6. POST to `/api/drops` with all fields
 
@@ -419,7 +433,7 @@ v1.0 only supports plain text content. Core edition enforces text-only. SaaS edi
    - Derive encryption key using PBKDF2 (password + salt from DB)
    - Decrypt payload using AES-256-GCM (key + IV from DB)
 3. For public drops:
-   - Payload is already plaintext
+   - Payload is the raw content string (interpreted by `mimeType`)
 
 ### Updating a Drop
 
