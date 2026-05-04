@@ -22,7 +22,12 @@ import {
   TIER_MAX_PAYLOAD_SIZES,
   TIER_EXPIRATION_DAYS,
 } from '../../db.js';
-import { computePrivateAdminHash, sha256, isAlgorithmSupported, isMimeTypeAllowed } from '@dead-drop/engine';
+import {
+  computePrivateAdminHash,
+  sha256,
+  isAlgorithmSupported,
+  isMimeTypeAllowed,
+} from '@dead-drop/engine';
 
 // ===== Get drop endpoint =====
 export const getDropRoute = createRoute({
@@ -312,7 +317,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
 
     const tier: 'free' | 'deep' = body.tier ?? 'free';
 
-    const minNameLength = TIER_NAME_MIN_LENGTHS[tier];
+    const minNameLength = TIER_NAME_MIN_LENGTHS[tier] ?? 12;
     if (body.nameLength < minNameLength) {
       return c.json(
         {
@@ -326,7 +331,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     }
 
     const payloadSize = new TextEncoder().encode(body.payload).length;
-    const maxSize = TIER_MAX_PAYLOAD_SIZES[tier];
+    const maxSize = TIER_MAX_PAYLOAD_SIZES[tier] ?? 10 * 1024;
     if (payloadSize > maxSize) {
       return c.json(
         {
@@ -345,7 +350,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     }
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + TIER_EXPIRATION_DAYS[tier]);
+    expiresAt.setDate(expiresAt.getDate() + (TIER_EXPIRATION_DAYS[tier] ?? 7));
 
     let adminHash: string;
     if (body.visibility === 'private') {
@@ -417,7 +422,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     }
 
     const payloadSize = new TextEncoder().encode(body.payload).length;
-    const maxSize = TIER_MAX_PAYLOAD_SIZES[drop.tier];
+    const maxSize = TIER_MAX_PAYLOAD_SIZES[drop.tier] ?? 10 * 1024;
     if (payloadSize > maxSize) {
       return c.json(
         {
