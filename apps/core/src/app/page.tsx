@@ -714,8 +714,10 @@ export default function HomePage() {
                       ref={createInputRef}
                       type="text"
                       value={createName}
-                      onChange={(e) => handleCreateInputChange(e.target.value)}
-                      onKeyDown={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleCreateInputChange(e.target.value)
+                      }
+                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
                         e.key === 'Enter' && createValidation.valid && handleCreate()
                       }
                       className={`split-input ${(createName && !createValidation.valid) || (createValidation.valid && createAvailable === false) ? 'error' : ''}`}
@@ -872,8 +874,12 @@ export default function HomePage() {
                       ref={viewInputRef}
                       type="text"
                       value={viewName}
-                      onChange={(e) => handleViewInputChange(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && viewValidation.valid && handleView()}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleViewInputChange(e.target.value)
+                      }
+                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                        e.key === 'Enter' && viewValidation.valid && handleView()
+                      }
                       className={`split-input ${viewValidation.valid && viewExists === false ? 'error' : ''}`}
                       placeholder="enter-drop-name"
                       spellCheck={false}
@@ -1158,8 +1164,10 @@ export default function HomePage() {
                 <PasswordInput
                   label="Password"
                   value={unlockPassword}
-                  onChange={(e) => setUnlockPassword(e.target.value)}
-                  onKeyDown={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setUnlockPassword(e.target.value)
+                  }
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter' && agreedToViewTerms) {
                       if (isPublic) {
                         setState('view');
@@ -1191,7 +1199,9 @@ export default function HomePage() {
                   <input
                     type="checkbox"
                     checked={agreedToViewTerms}
-                    onChange={(e) => setAgreedToViewTerms(e.target.checked)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setAgreedToViewTerms(e.target.checked)
+                    }
                     style={{
                       cursor: 'pointer',
                       width: '1rem',
