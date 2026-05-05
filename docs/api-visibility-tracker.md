@@ -15,7 +15,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | 3 | RapidAPI Hub | [rapidapi.com](https://rapidapi.com) | 2026-05-04 | ✅ Live | [dead-drop on RapidAPI](https://rapidapi.com/davorinrusevljan/api/dead-drop1) |
 | 4 | Postman API Network | [postman.com/api-network](https://www.postman.com/api-network) | — | 🔒 Paid plan required | Public workspaces need paid Postman plan. Collection available as [GitHub Gist](https://gist.github.com/davorinrusevljan/679dca83547c148e5364d268a2440f87) for import |
 | 5 | APIs.io | [apis.io](https://apis.io) | 2026-05-05 | 🟡 Pending review | [Issue #24](https://github.com/api-search/network/issues/24) |
-| 6 | API List | [apilist.fun](https://apilist.fun) | — | ⬜ Not submitted | |
+| 6 | API List | [apilist.fun](https://apilist.fun) | — | 🔴 Site down (521) | Site appears inactive, skipping |
 | 7 | Apidog Hub | [apidog.com/hub](https://apidog.com/hub) | 2026-05-05 | ✅ Live | [dead-drop API on Apidog](https://fco1nz9fq3.apidog.io) |
 
 ## Developer Platforms & Launch
