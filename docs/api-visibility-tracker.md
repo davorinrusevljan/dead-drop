@@ -40,7 +40,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | Platform | Submitted | Status | Notes |
 |---|----------|-----------|--------|-------|
-| 15 | GitHub topics & README | — | ⬜ Not tagged | Add topics: `api`, `encryption`, `ephemeral`, `privacy`, `cloudflare-workers` |
+| 15 | GitHub topics & README | 2026-05-05 | ✅ Done | 11 topics + homepage URL + description updated |
 | 16 | npm package (`@dead-drop/sdk`) | — | ⬜ Not published | npm pages rank well on Google |
 | 17 | Reddit (r/SideProject, r/privacy, r/webdev) | — | ⬜ Not submitted | |
 | 18 | X/Twitter — tag @CloudflareDev | — | ⬜ Not posted | They retweet Workers projects |
