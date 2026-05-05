@@ -38,21 +38,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'WebAPI',
+              '@type': 'SoftwareApplication',
               name: 'dead-drop',
               description: 'Privacy-focused, ephemeral zero-knowledge encrypted data sharing API',
-              url: 'https://api.dead-drop.xyz',
-              documentation: 'https://api.dead-drop.xyz/api/v1/docs',
-              termsOfService: 'https://dead-drop.xyz/terms',
-              license: 'https://github.com/davorinrusevljan/dead-drop/blob/main/LICENSE',
-              provider: {
-                '@type': 'Organization',
-                name: 'dead-drop.xyz',
-                url: 'https://dead-drop.xyz',
-              },
+              url: 'https://dead-drop.xyz',
+              applicationCategory: 'DeveloperApplication',
+              operatingSystem: 'Web',
               offers: {
                 '@type': 'Offer',
-                description: 'Free tier: 10KB, 7-day expiry, no API key needed',
                 price: '0',
                 priceCurrency: 'USD',
               },
