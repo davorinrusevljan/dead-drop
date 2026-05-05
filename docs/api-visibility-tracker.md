@@ -23,7 +23,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | # | Platform | URL | Submitted | Status | Notes |
 |---|----------|-----|-----------|--------|-------|
 | 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | — | ⬜ Not submitted | Has "Privnote alternatives" page with 12 competitors. Submit via logged-in dashboard "Add new app". Category: Security & Privacy |
-| 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | — | ⬜ Not submitted | Has "Pastebin and Secret Sharing" section listing crypt.fyi, PrivateBin, Yopass, scrt.link, dele-to. Submit via PR |
+| 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | 2026-05-05 | 🟡 Pending review | [PR #802](https://github.com/pluja/awesome-privacy/pull/802) — Pastebin and Secret Sharing section |
 | 10 | ~~awesome-selfhosted~~ | — | — | 🔴 Not eligible | dead-drop is a hosted SaaS, not self-hostable. Requires own server deployment to qualify |
 | 11 | SaaSHub | [saashub.com](https://www.saashub.com) | — | ⬜ Not submitted | Submit at [saashub.com/services/submit](https://www.saashub.com/services/submit). Paste URL, free, goes through approval |
 | 12 | SourceForge | [sourceforge.net](https://sourceforge.net) | — | ⬜ Not submitted | Create project, import from GitHub. Free for open source. Still ranks well in Google |
