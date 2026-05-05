@@ -32,7 +32,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | # | Task | Impact | Status | Notes |
 |---|------|--------|--------|-------|
 | 11 | Create `docs.dead-drop.xyz` static docs site | 🔥 High | ⬜ Not started | Mintlify, Docusaurus, or GitBook |
-| 12 | Add JSON-LD structured data to main site | 🔥 High | ⬜ Not started | WebAPI schema markup |
+| 12 | Add JSON-LD structured data to main site | 🔥 High | ✅ Done | Added WebAPI schema markup to `layout.tsx` |
 | 13 | Create API status page (`status.dead-drop.xyz`) | Medium | ⬜ Not started | Instatus or Cachet |
 | 14 | Write blog post on `dead-drop.xyz/blog` | Medium | ⬜ Not started | Long-tail SEO traffic |
 

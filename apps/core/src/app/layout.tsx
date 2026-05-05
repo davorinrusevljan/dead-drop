@@ -34,7 +34,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebAPI',
+              name: 'dead-drop',
+              description: 'Privacy-focused, ephemeral zero-knowledge encrypted data sharing API',
+              url: 'https://api.dead-drop.xyz',
+              documentation: 'https://api.dead-drop.xyz/api/v1/docs',
+              termsOfService: 'https://dead-drop.xyz/terms',
+              license: 'https://github.com/davorinrusevljan/dead-drop/blob/main/LICENSE',
+              provider: {
+                '@type': 'Organization',
+                name: 'dead-drop.xyz',
+                url: 'https://dead-drop.xyz',
+              },
+              offers: {
+                '@type': 'Offer',
+                description: 'Free tier: 10KB, 7-day expiry, no API key needed',
+                price: '0',
+                priceCurrency: 'USD',
+              },
+            }),
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
