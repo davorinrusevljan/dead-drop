@@ -24,7 +24,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 |---|----------|-----|-----------|--------|-------|
 | 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | — | ⬜ Not submitted | Has "Privnote alternatives" page with 12 competitors. Submit via logged-in dashboard "Add new app". Category: Security & Privacy |
 | 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | — | ⬜ Not submitted | Has "Pastebin and Secret Sharing" section listing crypt.fyi, PrivateBin, Yopass, scrt.link, dele-to. Submit via PR |
-| 10 | awesome-selfhosted (⭐290k) | [github.com/awesome-selfhosted/awesome-selfhosted](https://github.com/awesome-selfhosted/awesome-selfhosted) | — | ⬜ Not submitted | Has "Pastebins" section listing One Time Secret, OTS, Shhh. Submit via PR |
+| 10 | ~~awesome-selfhosted~~ | — | — | 🔴 Not eligible | dead-drop is a hosted SaaS, not self-hostable. Requires own server deployment to qualify |
 | 11 | SaaSHub | [saashub.com](https://www.saashub.com) | — | ⬜ Not submitted | Submit at [saashub.com/services/submit](https://www.saashub.com/services/submit). Paste URL, free, goes through approval |
 | 12 | SourceForge | [sourceforge.net](https://sourceforge.net) | — | ⬜ Not submitted | Create project, import from GitHub. Free for open source. Still ranks well in Google |
 | 13 | PrivacyGuides | [privacyguides.org](https://www.privacyguides.org) | — | ⬜ Not submitted | Curated privacy recommendations. More selective. Submit via [GitHub issue](https://github.com/privacyguides/privacyguides.org) |
@@ -63,6 +63,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | bug.hr forum | Strict anti-advertising rules — instant ban for self-promotion |
 | forum.hr | General Croatian forum, not tech-focused, no developer audience |
 | index.hr | Croatian tabloid, wrong audience |
+| awesome-selfhosted | Not eligible — dead-drop is a hosted SaaS, not self-hostable software |
 
 ---
 
