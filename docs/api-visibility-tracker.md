@@ -22,7 +22,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | Platform | URL | Submitted | Status | Notes |
 |---|----------|-----|-----------|--------|-------|
-| 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | — | ⬜ Not submitted | Has "Privnote alternatives" page with 12 competitors. Submit via logged-in dashboard "Add new app". Category: Security & Privacy |
+| 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | 2026-05-05 | ⏳ Registered, 7-day cooling period | Submit after 2026-05-12. Category: Security & Privacy, Platform: Online, License: MIT, Alternative to: Privnote |
 | 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | 2026-05-05 | 🟡 Pending review | [PR #802](https://github.com/pluja/awesome-privacy/pull/802) — Pastebin and Secret Sharing section |
 | 10 | ~~awesome-selfhosted~~ | — | — | 🔴 Not eligible | dead-drop is a hosted SaaS, not self-hostable. Requires own server deployment to qualify |
 | 11 | SaaSHub | [saashub.com](https://www.saashub.com) | 2026-05-05 | 🟡 Submitted (up to 35 days approval) | Submitted at saashub.com/services/submit |
