@@ -35,7 +35,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | 2026-05-05 | ⏳ Registered, 7-day cooling period | Submit after 2026-05-12. See §AlternativeTo Submission below |
 | 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | 2026-05-05 | 🟡 Pending review | [PR #802](https://github.com/pluja/awesome-privacy/pull/802) — Pastebin and Secret Sharing section |
 | 10 | ~~awesome-selfhosted~~ | — | — | 🔴 Not eligible | dead-drop is a hosted SaaS, not self-hostable. Requires own server deployment to qualify |
-| 11 | SaaSHub | [saashub.com](https://www.saashub.com) | 2026-05-05 | 🟡 Submitted (up to 35 days approval) | Submitted at saashub.com/services/submit |
+| 11 | SaaSHub | [saashub.com](https://www.saashub.com) | 2026-05-05 | ✅ Accepted | Still need screenshots. Consider $99 promotion plan. |
 | 12 | SourceForge | [sourceforge.net](https://sourceforge.net) | 2026-05-05 | ✅ Live (basic info) | Needs additional info: screenshots, tags, categories, features, detailed description. URL: sourceforge.net/projects/dead-drop. Homepage link to dead-drop.xyz confirmed present (but nofollow). |
 | 13 | PrivacyGuides (tools list) | [privacyguides.org](https://www.privacyguides.org) | — | ⬜ Not submitted | Curated privacy recommendations. More selective. Submit via [GitHub issue](https://github.com/privacyguides/privacyguides.org) |
 | 14 | Privacy Guides Forum (showcase) | [discuss.privacyguides.net/c/showcase/13](https://discuss.privacyguides.net/c/showcase/13) | 2026-05-05 | ⏳ Registered, waiting for UI changes | Post after compatibility layer / old drops removed. See §Privacy Guides Draft Post below |
