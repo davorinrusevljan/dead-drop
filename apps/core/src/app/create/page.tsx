@@ -427,10 +427,19 @@ export default function CreatePage() {
             </div>
 
             <div className="btn-group" style={{ marginTop: '2rem' }}>
-              <button onClick={copyUrl} className="action-btn">
+              <button
+                ref={(el) => el?.focus()}
+                onClick={copyUrl}
+                className="action-btn"
+                style={{ marginTop: 0 }}
+              >
                 COPY LINK
               </button>
-              <button onClick={copyDropName} className="secondary-btn">
+              <button
+                onClick={copyDropName}
+                className="secondary-btn"
+                style={{ padding: '1.25rem 1.25rem' }}
+              >
                 COPY DROP NAME
               </button>
             </div>
