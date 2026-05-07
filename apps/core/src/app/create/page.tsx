@@ -193,6 +193,10 @@ export default function CreatePage() {
     window.location.href = '/';
   }, []);
 
+  const copyDropName = useCallback(() => {
+    navigator.clipboard.writeText(normalizedName);
+  }, [normalizedName]);
+
   if (!mounted) {
     return (
       <>
@@ -426,8 +430,8 @@ export default function CreatePage() {
               <button onClick={copyUrl} className="action-btn">
                 COPY LINK
               </button>
-              <button onClick={goHome} className="secondary-btn">
-                Go to Home
+              <button onClick={copyDropName} className="secondary-btn">
+                COPY DROP NAME
               </button>
             </div>
 
