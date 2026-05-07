@@ -26,6 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libpango-1.0-0 \
     libcairo2 \
+    # Firefox dependencies
+    libdbus-glib-1-2 \
+    libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm 9.x
@@ -43,7 +46,7 @@ RUN pnpm config set global-bin-dir /usr/local/bin && \
     playwright
 
 # Install Playwright browsers
-RUN npx playwright install chromium
+RUN npx playwright install chromium firefox
 
 # Set working directory
 WORKDIR /workspace
