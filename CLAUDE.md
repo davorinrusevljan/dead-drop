@@ -17,7 +17,6 @@ Privacy-focused, ephemeral data-sharing service running on Cloudflare Workers.
 ```
 apps/
 ├── core/       # Community edition (free tier, text only, D1)
-├── saas/        # Production edition (Deep Drops, Stripe, R2)
 └── admin/      # Admin panel
 
 packages/

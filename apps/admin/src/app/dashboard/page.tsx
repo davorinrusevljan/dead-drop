@@ -253,7 +253,7 @@ export default function DashboardPage() {
               <div className="admin-distribution-value">{distribution.byTier.free}</div>
             </div>
             <div className="admin-distribution-item">
-              <div className="admin-distribution-label">Deep Drops</div>
+              <div className="admin-distribution-label">Upgraded Drops</div>
               <div className="admin-distribution-value">{distribution.byTier.deep}</div>
             </div>
             <div className="admin-distribution-item">

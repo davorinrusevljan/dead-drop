@@ -372,7 +372,7 @@ v1.0 uses SHA-256 for all authentication hashes. Future v1.1+ may add algorithm 
 
 **Supported:** `text/plain` only
 
-v1.0 only supports plain text content. Core edition enforces text-only. SaaS edition will add file upload support.
+v1.0 only supports plain text content. Core edition enforces text-only. Deep Drop tier will add file upload support.
 
 ---
 
@@ -392,7 +392,7 @@ v1.0 only supports plain text content. Core edition enforces text-only. SaaS edi
 - **Min Name Length:** 3 characters
 - **Expiration:** 90 days
 - **Max Versions:** 20
-- **Content:** Text + files (SaaS edition only)
+- **Content:** Text + files (Deep Drop tier)
 
 ---
 
@@ -471,7 +471,7 @@ The complete OpenAPI 3.0 specification is available at:
 ### v1.1 (Planned)
 - Active rate limiting enforcement
 - Additional hash algorithms (SHA-512, Argon2)
-- File upload support (SaaS edition)
+- File upload support (Deep Drop tier)
 
 ### v2.0 (Future)
 - Additional encryption algorithms (XChaCha20-Poly1305)

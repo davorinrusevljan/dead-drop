@@ -4,7 +4,7 @@
 **Objective:** Build a privacy-focused, ephemeral data-sharing service (`dead-drop.xyz`) running on Cloudflare Workers (Edge Runtime).
 **Architecture:** Monorepo (Turborepo + pnpm workspaces) generating applications for two distinct environments:
 1.  **Core Edition (`apps/core`):** Open-source community edition. Free tier only. Text only. D1 Database storage.
-2.  **SaaS Edition (`apps/saas`):** Production service. Includes Deep Drops (File uploads), Stripe Billing, and R2 Object Storage.
+2.  **Deep Drop Tier:** Future expansion. File uploads, larger payloads (up to 4MB), R2 Object Storage, extended lifespan (90 days).
 
 ---
 
@@ -14,7 +14,7 @@ The system is decoupled into a UI frontend and a lightweight Edge API.
 *   **Frontend:** Next.js 14.2.x (App Router). Pure UI deployed to Cloudflare Pages.
 *   **API:** Hono. A lightning-fast, edge-native REST API deployed to Cloudflare Workers.
 *   **Database:** Cloudflare D1 (via Drizzle ORM).
-*   **Storage:** Cloudflare R2 (SaaS edition only).
+*   **Storage:** Cloudflare R2 (for Deep Drops, payloads > 10KB).
 
 ### Directory Structure
 ```text
@@ -24,8 +24,7 @@ The system is decoupled into a UI frontend and a lightweight Edge API.
 ├── turbo.json
 ├── vitest.config.ts
 ├── apps/
-│   ├── core/             # Community Version (Next.js UI + Hono API configured for D1 only)
-│   └── saas/             # Production Version (Next.js UI + Hono API configured for D1, R2, Stripe)
+│   └── core/             # Community Version (Next.js UI + Hono API configured for D1 only)
 └── packages/
     ├── engine/           # Shared logic (Zod schemas, Drizzle DB schema, Web Crypto wrappers)
     └── ui/               # Shared React components (Terminal interface, Drop Viewer)
@@ -114,7 +113,7 @@ export default function Home() {
 4.  **And** the client `POST`s the payload to the API.
 5.  **Result:** User is shown a success message with the shareable URL.
 
-### 5.4 Upgrading to a Deep Drop (SaaS Edition)
+### 5.4 Upgrading to a Deep Drop
 1.  **Given** a user selects a 3MB file to upload.
 2.  **When** the client detects payload size `> 10KB`, it prompts for a $1 upgrade.
 3.  **Then** the client requests `POST /api/payments/checkout`.
@@ -164,9 +163,9 @@ To support multi-word phrases (e.g., `"quick brown polar bear"`) while preventin
     *   **Public:** Compute `SHA-256(adminPassword + db.salt)`. If `!== db.adminHash`, return `401 Unauthorized`. If match, overwrite `payload`.
 *   **Response (200):** `{ success: true }`
 
-### SaaS Billing Endpoints (`apps/saas` only)
-*   `POST /api/payments/checkout`: Accepts `{ id, nameLength }`. Creates Stripe session. Returns `{ checkoutUrl }`.
-*   `POST /api/payments/webhook`: Stripe webhook handler. Sets `paymentStatus = 'paid'` and `tier = 'deep'` in D1.
+### Payment & Upgrade Endpoints (Future)
+*   `POST /api/payments/checkout`: Accepts `{ id, nameLength }`. Creates checkout session. Returns `{ checkoutUrl }`.
+*   `POST /api/payments/webhook`: Payment webhook handler. Sets `paymentStatus = 'paid'` and `tier = 'deep'` in D1.
 
 ### v1.0 API Enhancements
 Additional endpoints added for v1.0:
@@ -207,7 +206,7 @@ All API responses include rate limit headers for forward compatibility. In v1.0,
 **MIME Types:**
 *   v1.0 only supports `text/plain` (UTF-8 compatible with application/json)
 *   Core edition enforces text-only content
-*   SaaS edition will add file upload support with additional MIME types
+*   Deep Drop tier will add file upload support with additional MIME types
 
 ---
 
@@ -313,7 +312,7 @@ Legacy functions (`generateSalt`, `deriveKey`, `encrypt`, `decrypt`) are maintai
 
 ## 11. Agent Implementation Roadmap
 **Step 1: Workspace & QA Foundation**
-*   Initialize Turborepo, `apps/core`, `apps/saas`, `packages/engine`, and `packages/ui`.
+*   Initialize Turborepo, `apps/core`, `packages/engine`, and `packages/ui`.
 *   Install and configure Vitest, ESLint, Prettier, Husky. Establish 100% coverage thresholds.
 
 **Step 2: Engine Logic (`packages/engine`)**
@@ -329,7 +328,7 @@ Legacy functions (`generateSalt`, `deriveKey`, `encrypt`, `decrypt`) are maintai
 *   Implement Client-side encryption/decryption flow.
 *   *Requirement:* Integration tests mocking D1 database.
 
-**Step 4: SaaS Features & E2E Verification (`apps/saas`)**
+**Step 4: Deep Drop Features & E2E Verification**
 *   Implement Hybrid Storage routing (D1 vs R2 abstraction based on size).
-*   Implement Stripe Checkout and Webhook routes in Hono API.
+*   Implement payment checkout and webhook routes in Hono API.
 *   Write Playwright tests (Privacy interception, Integrity rejection, Vanity validation for names < 12 chars).

@@ -9,7 +9,6 @@ Privacy-focused, ephemeral data-sharing service running on Cloudflare Workers.
 ## Features
 
 - **Free drops**: 10KB, 7-day lifespan, text only
-- **Deep drops** (coming soon): 4MB, 90-day lifespan, files supported
 - **Zero-knowledge encryption**: Content encrypted client-side
 - **Version history**: Track all changes with 5 version limit
 - **Public & Private drops**: Choose visibility level

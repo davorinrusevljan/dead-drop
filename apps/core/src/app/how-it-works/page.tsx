@@ -47,7 +47,7 @@ const creationSteps: Step[] = [
     details: [
       'Content is wrapped in a typed payload structure',
       'Supports text/plain MIME type',
-      'Future: file uploads for Deep Drops',
+      'Future: file uploads',
     ],
   },
   {

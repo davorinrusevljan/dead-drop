@@ -337,7 +337,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
         {
           error: {
             code: 'PAYMENT_REQUIRED',
-            message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB. Upgrade to Deep drop required.`,
+            message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB limit.`,
           },
         },
         402
@@ -428,7 +428,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
         {
           error: {
             code: 'PAYMENT_REQUIRED',
-            message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB. Upgrade to Deep drop required.`,
+            message: `Payload exceeds ${(maxSize / 1024).toFixed(0)}KB limit.`,
           },
         },
         402

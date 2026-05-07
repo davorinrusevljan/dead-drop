@@ -320,7 +320,7 @@ describe('dropNameSchemaWithMin', () => {
     expect(result).toBe('abc');
   });
 
-  it('should work with minimum of 3 for Deep drops', async () => {
+  it('should work with minimum of 3 characters', async () => {
     const schema = dropNameSchemaWithMin(3);
     const result = await schema.parseAsync('xyz');
     expect(result).toBe('xyz');
