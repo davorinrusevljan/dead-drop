@@ -27,9 +27,9 @@ packages/
 ## Key Commands
 
 ```bash
-pnpm dev              # Start all dev servers
 pnpm build            # Build all packages
-pnpm test             # Run tests
+pnpm test             # Run unit tests
+pnpm test:coverage    # Run tests with coverage
 pnpm deploy:api       # Deploy API to Cloudflare
 pnpm deploy:pages     # Deploy frontend to Cloudflare
 ```
@@ -44,29 +44,41 @@ The API uses URL path versioning: `/api/v1/*`
 
 See: [API Versioning Plan](./docs/api-versioning-plan.md)
 
-## Environment Configuration
+## Local Development
 
-For local development setup and production deployment, see: [Environment Configuration](./docs/environment.md)
+**Starting servers:** `pnpm dev` only starts the Next.js UI (port 3010). The API must be started separately.
 
-**Quick Start:**
 ```bash
-cp apps/core/.env.example apps/core/.env.local
+# Terminal 1: Start API (local Node server with SQLite)
+cd apps/core && pnpm dev:api
+
+# Terminal 2: Start UI
 pnpm dev
 ```
 
-## Testing
+**Why not wrangler?** The API uses `apps/core/src/dev/server.ts` — a local Hono server backed by SQLite (via `@dead-drop/engine/dev/d1-adapter`). This is faster and more reliable than `wrangler dev` for local development. Wrangler is only used for deployment.
+
+**Verify servers:**
+```bash
+curl http://localhost:9090/api/v1/health   # API health check
+curl http://localhost:3010                  # UI check
+```
+
+## E2E Testing
+
+E2E tests use Playwright against local servers (API on :9090, UI on :3010). **Start both servers before running e2e.**
 
 ```bash
-# Local API tests (via curl)
-curl http://localhost:9090/api/v1/health
+# Start servers first (see Local Development above)
 
-# E2E tests (Playwright)
 cd e2e
-npx playwright test --config=playwright.config.ts
-
-# Test coverage
-pnpm test:coverage
+npx playwright install chromium   # First time only
+npx playwright test --config=playwright.config.ts --project=chromium
 ```
+
+**Test categories:**
+- `v1-production.spec.ts` — hits production (`api.dead-drop.xyz`, `dead-drop.xyz`). No local servers needed.
+- All other `*.spec.ts` — hit localhost. Requires `pnpm dev:api` + `pnpm dev` running.
 
 ## Deployment
 

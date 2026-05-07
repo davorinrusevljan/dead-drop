@@ -1,19 +1,94 @@
 import { test, expect } from '@playwright/test';
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 
-const API_URL = 'http://localhost:9090';
+const API_URL = 'http://localhost:9090/api/v1';
 const BASE_URL = 'http://localhost:3010';
 
 test.describe.configure({ mode: 'serial' });
 
+/**
+ * Helper to create a public drop via API
+ */
+async function createPublicDropViaAPI(
+  name: string,
+  content: string,
+  password: string,
+  format: 'old-base64' | 'old-json' | 'new'
+) {
+  const id = createHash('sha256').update(name).digest('hex');
+  const salt = randomBytes(16).toString('hex');
+
+  let payload: string;
+  if (format === 'old-base64') {
+    payload = Buffer.from(JSON.stringify({ type: 'text', content })).toString('base64');
+  } else if (format === 'old-json') {
+    payload = JSON.stringify({ type: 'text', content });
+  } else {
+    payload = content;
+  }
+
+  const adminHash = createHash('sha256')
+    .update(password + salt)
+    .digest('hex');
+
+  const response = await fetch(`${API_URL}/drops`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id,
+      nameLength: name.length,
+      tier: 'free',
+      visibility: 'public',
+      payload,
+      salt,
+      mimeType: 'text/plain',
+      adminHash,
+      I_agree_with_terms_and_conditions: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(`Failed to create drop: ${JSON.stringify(data)}`);
+  }
+}
+
 test.describe('Public Drop Payload Format - Backward Compat + New Format', () => {
+  const seedNames = {
+    newFormat: `new-fmt-pub-${Date.now()}`,
+    oldBase64: `old-b64-pub-${Date.now()}`,
+    rawJson: `raw-json-pub-${Date.now()}`,
+  };
+
+  // Seed test drops before running tests
+  test.beforeAll(async () => {
+    await createPublicDropViaAPI(
+      seedNames.newFormat,
+      'Hello World! This is a new format public drop.',
+      'password123',
+      'new'
+    );
+    await createPublicDropViaAPI(
+      seedNames.oldBase64,
+      'Hello from old format!',
+      'password123',
+      'old-base64'
+    );
+    await createPublicDropViaAPI(
+      seedNames.rawJson,
+      'This drop has raw JSON payload!',
+      'password123',
+      'old-json'
+    );
+  });
+
   test('new format: raw text payload displays correctly', async ({ page }) => {
-    await page.goto(`${BASE_URL}/#new-format-public-drop`);
+    await page.goto(`${BASE_URL}/#${seedNames.newFormat}`);
     await page.waitForTimeout(2000);
 
     // Should land on unlock state with PUBLIC tag
     await expect(page.getByText('👁 PUBLIC')).toBeVisible();
-    await expect(page.getByText('new-format-public-drop')).toBeVisible();
+    await expect(page.getByText(seedNames.newFormat)).toBeVisible();
 
     // Check terms and click VIEW
     await page.locator('input[type="checkbox"]').check();
@@ -27,11 +102,11 @@ test.describe('Public Drop Payload Format - Backward Compat + New Format', () =>
   });
 
   test('legacy base64+wrapper payload displays correctly', async ({ page }) => {
-    await page.goto(`${BASE_URL}/#old-format-public-drop`);
+    await page.goto(`${BASE_URL}/#${seedNames.oldBase64}`);
     await page.waitForTimeout(2000);
 
     await expect(page.getByText('👁 PUBLIC')).toBeVisible();
-    await expect(page.getByText('old-format-public-drop')).toBeVisible();
+    await expect(page.getByText(seedNames.oldBase64)).toBeVisible();
 
     await page.locator('input[type="checkbox"]').check();
     await page.getByRole('button', { name: 'VIEW' }).click();
@@ -43,11 +118,11 @@ test.describe('Public Drop Payload Format - Backward Compat + New Format', () =>
   });
 
   test('legacy raw JSON wrapper payload displays correctly', async ({ page }) => {
-    await page.goto(`${BASE_URL}/#raw-json-public-drop`);
+    await page.goto(`${BASE_URL}/#${seedNames.rawJson}`);
     await page.waitForTimeout(2000);
 
     await expect(page.getByText('👁 PUBLIC')).toBeVisible();
-    await expect(page.getByText('raw-json-public-drop')).toBeVisible();
+    await expect(page.getByText(seedNames.rawJson)).toBeVisible();
 
     await page.locator('input[type="checkbox"]').check();
     await page.getByRole('button', { name: 'VIEW' }).click();
@@ -93,7 +168,7 @@ test.describe('Public Drop Payload Format - Backward Compat + New Format', () =>
     // Now verify via API that payload is raw text (not base64, not JSON wrapper)
     const dropId = createHash('sha256').update(dropName).digest('hex');
     const apiResponse = await page.request.get(
-      `${API_URL}/api/v1/drops/${dropId}?I_agree_with_terms_and_conditions=true`
+      `${API_URL}/drops/${dropId}?I_agree_with_terms_and_conditions=true`
     );
     expect(apiResponse.ok()).toBeTruthy();
     const dropData = await apiResponse.json();
@@ -106,7 +181,7 @@ test.describe('Public Drop Payload Format - Backward Compat + New Format', () =>
   });
 
   test('view the newly created drop back on homepage (round-trip)', async ({ page }) => {
-    await page.goto(`${BASE_URL}/#new-format-public-drop`);
+    await page.goto(`${BASE_URL}/#${seedNames.newFormat}`);
     await page.waitForTimeout(2000);
 
     await expect(page.getByText('👁 PUBLIC')).toBeVisible();

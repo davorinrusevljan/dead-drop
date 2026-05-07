@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 // Run tests serially to avoid shared state issues
 test.describe.configure({ mode: 'serial' });
 
+const API_URL = 'http://localhost:9090/api/v1';
+
 // Helper functions using Web Crypto API (no external dependencies)
 async function sha256(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
@@ -36,7 +38,10 @@ test.describe('Public Drop CRUD Operations', () => {
     dropName = `public-test-${Date.now()}`;
 
     // Compute drop ID (SHA-256 of normalized name)
-    const normalizedName = dropName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-_.]/g, '');
+    const normalizedName = dropName
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-_.]/g, '');
     dropId = await sha256(normalizedName);
 
     // Generate admin password and hash
@@ -50,7 +55,7 @@ test.describe('Public Drop CRUD Operations', () => {
     const payload = btoa(contentJson);
 
     // Create the drop via API
-    const response = await request.post('http://localhost:9090/api/drops', {
+    const response = await request.post(`${API_URL}/drops`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         id: dropId,
@@ -60,9 +65,14 @@ test.describe('Public Drop CRUD Operations', () => {
         salt,
         mimeType: 'text/plain',
         adminHash,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
+    if (!response.ok()) {
+      const errorData = await response.json();
+      console.error('Create drop failed:', response.status(), JSON.stringify(errorData));
+    }
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
     expect(data.success).toBe(true);
@@ -71,7 +81,9 @@ test.describe('Public Drop CRUD Operations', () => {
 
   test('should read a public drop (anyone can read)', async ({ request }) => {
     // Get the drop we just created
-    const response = await request.get(`http://localhost:9090/api/drops/${dropId}`);
+    const response = await request.get(
+      `${API_URL}/drops/${dropId}?I_agree_with_terms_and_conditions=true`
+    );
     expect(response.ok()).toBeTruthy();
 
     const data = await response.json();
@@ -92,11 +104,12 @@ test.describe('Public Drop CRUD Operations', () => {
     const payload = btoa(contentJson);
 
     // Update the drop with admin password
-    const response = await request.put(`http://localhost:9090/api/drops/${dropId}`, {
+    const response = await request.put(`${API_URL}/drops/${dropId}`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         payload,
         adminPassword: password,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
@@ -105,7 +118,9 @@ test.describe('Public Drop CRUD Operations', () => {
     expect(data.success).toBe(true);
 
     // Verify the update
-    const verifyResponse = await request.get(`http://localhost:9090/api/drops/${dropId}`);
+    const verifyResponse = await request.get(
+      `${API_URL}/drops/${dropId}?I_agree_with_terms_and_conditions=true`
+    );
     const verifyData = await verifyResponse.json();
     const verifyContent = JSON.parse(atob(verifyData.payload));
     expect(verifyContent.content).toBe('Updated public drop content');
@@ -116,11 +131,12 @@ test.describe('Public Drop CRUD Operations', () => {
     const contentJson = JSON.stringify(newContent);
     const payload = btoa(contentJson);
 
-    const response = await request.put(`http://localhost:9090/api/drops/${dropId}`, {
+    const response = await request.put(`${API_URL}/drops/${dropId}`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         payload,
         adminPassword: 'wrong-password',
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
@@ -135,25 +151,27 @@ test.describe('Public Drop CRUD Operations', () => {
     const contentJson = JSON.stringify(newContent);
     const payload = btoa(contentJson);
 
-    const response = await request.put(`http://localhost:9090/api/drops/${dropId}`, {
+    const response = await request.put(`${API_URL}/drops/${dropId}`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         payload,
         adminPassword: '',
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
     expect(response.status()).toBe(400);
 
     const data = await response.json();
-    expect(data.error.code).toBe('MISSING_ADMIN_PASSWORD');
+    expect(data.error.code).toBe('VALIDATION_ERROR');
   });
 
   test('should delete a public drop with correct admin password', async ({ request }) => {
-    const response = await request.delete(`http://localhost:9090/api/drops/${dropId}`, {
+    const response = await request.delete(`${API_URL}/drops/${dropId}`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         adminPassword: password,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
@@ -163,7 +181,9 @@ test.describe('Public Drop CRUD Operations', () => {
   });
 
   test('should verify drop was deleted', async ({ request }) => {
-    const response = await request.get(`http://localhost:9090/api/drops/${dropId}`);
+    const response = await request.get(
+      `${API_URL}/drops/${dropId}?I_agree_with_terms_and_conditions=true`
+    );
     expect(response.status()).toBe(404);
   });
 
@@ -181,7 +201,7 @@ test.describe('Public Drop CRUD Operations', () => {
     const payload = btoa(contentJson);
 
     // Try to create without adminHash
-    const response = await request.post('http://localhost:9090/api/drops', {
+    const response = await request.post(`${API_URL}/drops`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         id: testId,
@@ -191,6 +211,7 @@ test.describe('Public Drop CRUD Operations', () => {
         salt: testSalt,
         mimeType: 'text/plain',
         adminHash: '', // Empty!
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
@@ -216,7 +237,7 @@ test.describe('Public Drop CRUD Operations', () => {
     const contentJson = JSON.stringify(content);
     const payload = btoa(contentJson);
 
-    await request.post('http://localhost:9090/api/drops', {
+    await request.post(`${API_URL}/drops`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         id: testId,
@@ -226,20 +247,22 @@ test.describe('Public Drop CRUD Operations', () => {
         salt: testSalt,
         mimeType: 'text/plain',
         adminHash: testAdminHash,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
     // Try to delete with empty password
-    const response = await request.delete(`http://localhost:9090/api/drops/${testId}`, {
+    const response = await request.delete(`${API_URL}/drops/${testId}`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         adminPassword: '',
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
     expect(response.status()).toBe(400);
 
     const data = await response.json();
-    expect(data.error.code).toBe('MISSING_ADMIN_PASSWORD');
+    expect(data.error.code).toBe('VALIDATION_ERROR');
   });
 });

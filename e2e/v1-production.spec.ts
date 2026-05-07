@@ -3,6 +3,21 @@ import { test, expect } from '@playwright/test';
 const PROD_API_URL = 'https://api.dead-drop.xyz';
 const PROD_FRONTEND_URL = 'https://dead-drop.xyz';
 
+// Web Crypto helpers
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateSalt(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 test.describe('Production E2E - v1 API Verification', () => {
   test('API responses should include X-API-Version header', async ({ request }) => {
     const healthResponse = await request.get(`${PROD_API_URL}/api/v1/health`);
@@ -39,19 +54,13 @@ test.describe('Production E2E - v1 API Verification', () => {
   });
 
   test('should create a public drop using v1 API', async ({ request }) => {
-    const crypto = require('crypto');
     const dropName = `test-prod-create-${Date.now()}`;
-    const dropId = crypto.createHash('sha256').update(dropName).digest('hex');
-    const salt = Array.from(crypto.randomBytes(16))
-      .map((b: number) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const dropId = await sha256(dropName);
+    const salt = generateSalt();
 
     const contentPayload = { type: 'text', content: 'Production create test' };
     const payload = btoa(JSON.stringify(contentPayload));
-    const adminHash = crypto
-      .createHash('sha256')
-      .update('test-admin-123' + salt)
-      .digest('hex');
+    const adminHash = await sha256('test-admin-123' + salt);
 
     const response = await request.post(`${PROD_API_URL}/api/v1/drops`, {
       headers: { 'Content-Type': 'application/json' },
@@ -64,6 +73,7 @@ test.describe('Production E2E - v1 API Verification', () => {
         salt,
         mimeType: 'text/plain',
         adminHash,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
@@ -80,19 +90,13 @@ test.describe('Production E2E - v1 API Verification', () => {
 
   test('should fetch drop history using v1 API', async ({ request }) => {
     // First create a drop
-    const crypto = require('crypto');
     const dropName = `test-prod-history-${Date.now()}`;
-    const dropId = crypto.createHash('sha256').update(dropName).digest('hex');
-    const salt = Array.from(crypto.randomBytes(16))
-      .map((b: number) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const dropId = await sha256(dropName);
+    const salt = generateSalt();
 
     const contentPayload = { type: 'text', content: 'Production history test' };
     const payload = btoa(JSON.stringify(contentPayload));
-    const adminHash = crypto
-      .createHash('sha256')
-      .update('test-admin-123' + salt)
-      .digest('hex');
+    const adminHash = await sha256('test-admin-123' + salt);
 
     await request.post(`${PROD_API_URL}/api/v1/drops`, {
       headers: { 'Content-Type': 'application/json' },
@@ -105,11 +109,14 @@ test.describe('Production E2E - v1 API Verification', () => {
         salt,
         mimeType: 'text/plain',
         adminHash,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
     // Now fetch history
-    const historyResponse = await request.get(`${PROD_API_URL}/api/v1/drops/${dropId}/history`);
+    const historyResponse = await request.get(
+      `${PROD_API_URL}/api/v1/drops/${dropId}/history?I_agree_with_terms_and_conditions=true`
+    );
     expect(historyResponse.ok()).toBe(true);
 
     const historyData = await historyResponse.json();
@@ -166,7 +173,9 @@ test.describe('Production E2E - v1 API Verification', () => {
     expect(v1Requests.length).toBeGreaterThan(0);
 
     // Check no non-v1 requests
-    const nonV1Requests = apiRequests.filter((url) => url.includes('/api/') && !url.includes('/api/v1/'));
+    const nonV1Requests = apiRequests.filter(
+      (url) => url.includes('/api/') && !url.includes('/api/v1/')
+    );
     expect(nonV1Requests.length).toBe(0);
   });
 
@@ -200,11 +209,15 @@ test.describe('Production E2E - v1 API Verification', () => {
     expect(v1Requests.length).toBeGreaterThan(0);
 
     // Verify no non-v1 requests
-    const nonV1Requests = apiRequests.filter((url) => url.includes('/api/') && !url.includes('/api/v1/'));
+    const nonV1Requests = apiRequests.filter(
+      (url) => url.includes('/api/') && !url.includes('/api/v1/')
+    );
     expect(nonV1Requests.length).toBe(0);
 
     // Verify generate name endpoint was called
-    const generateRequests = v1Requests.filter((url) => url.includes('/api/v1/drops/generate-name'));
+    const generateRequests = v1Requests.filter((url) =>
+      url.includes('/api/v1/drops/generate-name')
+    );
     expect(generateRequests.length).toBeGreaterThan(0);
   });
 });

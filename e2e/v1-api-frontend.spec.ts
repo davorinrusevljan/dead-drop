@@ -1,5 +1,26 @@
 import { test, expect } from '@playwright/test';
 
+const API_URL = 'http://localhost:9090/api/v1';
+
+// Web Crypto helpers (works in both Node and browser)
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateSalt(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function btoaNode(str: string): string {
+  return btoa(str);
+}
+
 test.describe('Frontend E2E - v1 API Verification', () => {
   test.beforeEach(async ({ page, context }) => {
     // Monitor all API requests to verify they use v1
@@ -13,7 +34,7 @@ test.describe('Frontend E2E - v1 API Verification', () => {
     });
 
     // Store for verification
-    (page as any).apiRequests = apiRequests;
+    (page as unknown as Record<string, string[]>).apiRequests = apiRequests;
 
     await page.goto('http://localhost:3010');
     // Wait for client-side hydration
@@ -35,12 +56,14 @@ test.describe('Frontend E2E - v1 API Verification', () => {
     expect(name).toMatch(/^[a-z0-9-]+$/);
 
     // Check API requests
-    const apiRequests = (page as any).apiRequests as string[];
+    const apiRequests = (page as unknown as Record<string, string[]>).apiRequests as string[];
     const generateRequest = apiRequests.find((url) => url.includes('/api/v1/drops/generate-name'));
     expect(generateRequest).toBeDefined();
 
     // Verify no non-v1 requests
-    const nonV1Requests = apiRequests.filter((url) => url.includes('/api/') && !url.includes('/api/v1/'));
+    const nonV1Requests = apiRequests.filter(
+      (url) => url.includes('/api/') && !url.includes('/api/v1/')
+    );
     expect(nonV1Requests.length).toBe(0);
   });
 
@@ -51,28 +74,21 @@ test.describe('Frontend E2E - v1 API Verification', () => {
     await page.waitForTimeout(2000);
 
     // Check API requests
-    const apiRequests = (page as any).apiRequests as string[];
+    const apiRequests = (page as unknown as Record<string, string[]>).apiRequests as string[];
     const checkRequest = apiRequests.find((url) => url.includes('/api/v1/drops/check'));
     expect(checkRequest).toBeDefined();
   });
 
-  test('should create a public drop using v1 API', async ({ page, request }) => {
-    // Direct API test for create drop
-    const crypto = require('crypto');
+  test('should create a public drop using v1 API', async ({ request }) => {
     const dropName = `test-create-${Date.now()}`;
-    const dropId = crypto.createHash('sha256').update(dropName).digest('hex');
-    const salt = Array.from(crypto.randomBytes(16))
-      .map((b: number) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const dropId = await sha256(dropName);
+    const salt = generateSalt();
 
     const contentPayload = { type: 'text', content: 'Create test content' };
-    const payload = btoa(JSON.stringify(contentPayload));
-    const adminHash = crypto
-      .createHash('sha256')
-      .update('test-admin-123' + salt)
-      .digest('hex');
+    const payload = btoaNode(JSON.stringify(contentPayload));
+    const adminHash = await sha256('test-admin-123' + salt);
 
-    const response = await request.post('http://localhost:9090/api/v1/drops', {
+    const response = await request.post(`${API_URL}/drops`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         id: dropId,
@@ -83,6 +99,7 @@ test.describe('Frontend E2E - v1 API Verification', () => {
         salt,
         mimeType: 'text/plain',
         adminHash,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
@@ -96,21 +113,19 @@ test.describe('Frontend E2E - v1 API Verification', () => {
     expect(apiVersion).toBe('1.0.0');
   });
 
-  test('API responses should include X-API-Version header', async ({ page, request }) => {
-    // Make direct API requests
-    const healthResponse = await request.get('http://localhost:9090/api/v1/health');
+  test('API responses should include X-API-Version header', async ({ request }) => {
+    const healthResponse = await request.get(`${API_URL}/health`);
     expect(healthResponse.ok()).toBe(true);
     const apiVersion = healthResponse.headers()['x-api-version'];
     expect(apiVersion).toBe('1.0.0');
 
-    const dropsResponse = await request.get('http://localhost:9090/api/v1/drops/generate-name');
+    const dropsResponse = await request.get(`${API_URL}/drops/generate-name`);
     expect(dropsResponse.ok()).toBe(true);
     const dropsApiVersion = dropsResponse.headers()['x-api-version'];
     expect(dropsApiVersion).toBe('1.0.0');
   });
 
-  test('old API routes should return 404', async ({ page, request }) => {
-    // Old routes should return 404
+  test('old API routes should return 404', async ({ request }) => {
     const healthResponse = await request.get('http://localhost:9090/api/health');
     expect(healthResponse.status()).toBe(404);
 
@@ -118,23 +133,17 @@ test.describe('Frontend E2E - v1 API Verification', () => {
     expect(generateResponse.status()).toBe(404);
   });
 
-  test('should fetch drop history using v1 API', async ({ page, request }) => {
+  test('should fetch drop history using v1 API', async ({ request }) => {
     // First create a drop
-    const crypto = require('crypto');
     const dropName = `test-history-${Date.now()}`;
-    const dropId = crypto.createHash('sha256').update(dropName).digest('hex');
-    const salt = Array.from(crypto.randomBytes(16))
-      .map((b: number) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const dropId = await sha256(dropName);
+    const salt = generateSalt();
 
     const contentPayload = { type: 'text', content: 'History test content' };
-    const payload = btoa(JSON.stringify(contentPayload));
-    const adminHash = crypto
-      .createHash('sha256')
-      .update('test-admin-123' + salt)
-      .digest('hex');
+    const payload = btoaNode(JSON.stringify(contentPayload));
+    const adminHash = await sha256('test-admin-123' + salt);
 
-    await request.post('http://localhost:9090/api/v1/drops', {
+    await request.post(`${API_URL}/drops`, {
       headers: { 'Content-Type': 'application/json' },
       data: {
         id: dropId,
@@ -145,11 +154,14 @@ test.describe('Frontend E2E - v1 API Verification', () => {
         salt,
         mimeType: 'text/plain',
         adminHash,
+        I_agree_with_terms_and_conditions: true,
       },
     });
 
     // Now fetch history via API
-    const historyResponse = await request.get(`http://localhost:9090/api/v1/drops/${dropId}/history`);
+    const historyResponse = await request.get(
+      `${API_URL}/drops/${dropId}/history?I_agree_with_terms_and_conditions=true`
+    );
     expect(historyResponse.ok()).toBe(true);
 
     const historyData = await historyResponse.json();

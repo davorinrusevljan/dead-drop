@@ -6,7 +6,7 @@ test.describe('Public Drop UI - Full Flow', () => {
     const dropName = `test-public-ui-${Date.now()}`;
 
     // Navigate directly to create page with the drop name in the hash
-    await page.goto(`http://localhost:3010/create/#${dropName}`);
+    await page.goto(`/create/#${dropName}`);
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -61,7 +61,9 @@ test.describe('Public Drop UI - Full Flow', () => {
       const bodyText = await page.locator('body').textContent();
 
       // Try to find any error message
-      const errorElements = page.locator('.error-message, p:has-text("error"), p:has-text("Error")');
+      const errorElements = page.locator(
+        '.error-message, p:has-text("error"), p:has-text("Error")'
+      );
       const errorCount = await errorElements.count();
 
       for (let i = 0; i < errorCount; i++) {
@@ -75,7 +77,7 @@ test.describe('Public Drop UI - Full Flow', () => {
     await expect(successElement).toBeVisible();
 
     // Now try to view the drop to verify it was created
-    await page.goto(`http://localhost:3010/#${dropName}`);
+    await page.goto(`/#${dropName}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
 
@@ -96,7 +98,10 @@ test.describe('Public Drop UI - Full Flow', () => {
     }
 
     // Should see the content (public drop can be viewed without password)
-    const contentVisible = await page.locator(`text=${content}`).isVisible().catch(() => false);
+    const contentVisible = await page
+      .locator(`text=${content}`)
+      .isVisible()
+      .catch(() => false);
 
     if (!contentVisible) {
       const bodyText = await page.locator('body').textContent();

@@ -11,7 +11,7 @@ test.describe('Public Drop Edit/Delete UI', () => {
 
   test('should create a public drop', async ({ page }) => {
     // Navigate to create page
-    await page.goto(`http://localhost:3010/create/#${dropName}`);
+    await page.goto(`/create/#${dropName}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
 
@@ -44,7 +44,7 @@ test.describe('Public Drop Edit/Delete UI', () => {
 
   test('should view the created public drop', async ({ page }) => {
     // Navigate to view page
-    await page.goto(`http://localhost:3010/#${dropName}`);
+    await page.goto(`/#${dropName}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
 
@@ -62,7 +62,7 @@ test.describe('Public Drop Edit/Delete UI', () => {
 
   test('should edit the public drop with correct password', async ({ page }) => {
     // Navigate to view page
-    await page.goto(`http://localhost:3010/#${dropName}`);
+    await page.goto(`/#${dropName}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
 
@@ -88,7 +88,10 @@ test.describe('Public Drop Edit/Delete UI', () => {
     await page.waitForTimeout(3000);
 
     // Verify success - should be back in view mode with updated content
-    const contentVisible = await page.locator(`text=${updatedContent}`).isVisible().catch(() => false);
+    const contentVisible = await page
+      .locator(`text=${updatedContent}`)
+      .isVisible()
+      .catch(() => false);
 
     if (!contentVisible) {
       // Check if there's an error
@@ -100,7 +103,7 @@ test.describe('Public Drop Edit/Delete UI', () => {
 
   test('should fail to edit with wrong password', async ({ page }) => {
     // Navigate to view page
-    await page.goto(`http://localhost:3010/#${dropName}`);
+    await page.goto(`/#${dropName}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
 
@@ -126,13 +129,16 @@ test.describe('Public Drop Edit/Delete UI', () => {
     await page.waitForTimeout(2000);
 
     // Should see error message
-    const errorVisible = await page.locator('text=Invalid password').isVisible().catch(() => false);
+    const errorVisible = await page
+      .locator('text=Invalid password')
+      .isVisible()
+      .catch(() => false);
     expect(errorVisible).toBe(true);
   });
 
   test('should delete the public drop with correct password', async ({ page }) => {
     // Navigate to view page
-    await page.goto(`http://localhost:3010/#${dropName}`);
+    await page.goto(`/#${dropName}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
 
@@ -155,11 +161,11 @@ test.describe('Public Drop Edit/Delete UI', () => {
 
     // Should be redirected to home page
     const currentUrl = page.url();
-    expect(currentUrl).toBe('http://localhost:3010/');
+    expect(currentUrl).toMatch(/^https?:\/\/[^/]+\/?$/);
 
     // Verify the drop no longer exists by checking that the name is available
     // Enter the drop name in the create lane to check availability
-    await page.goto(`http://localhost:3010/`);
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
@@ -169,7 +175,10 @@ test.describe('Public Drop Edit/Delete UI', () => {
     await page.waitForTimeout(1500);
 
     // Should show "Name available" (meaning the drop was deleted)
-    const availableVisible = await page.locator('text=Name available').isVisible().catch(() => false);
+    const availableVisible = await page
+      .locator('text=Name available')
+      .isVisible()
+      .catch(() => false);
 
     expect(availableVisible).toBe(true);
   });
