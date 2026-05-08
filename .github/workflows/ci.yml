@@ -111,3 +111,7 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Build Pages (CF edge)
+        working-directory: apps/core
+        run: pnpm build:pages
