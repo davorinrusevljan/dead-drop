@@ -7,9 +7,15 @@
  */
 
 function getLocale(): string | string[] {
-  if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
-    if (navigator.languages?.length) return navigator.languages;
-    if (navigator.language) return navigator.language;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nav = (globalThis as any).navigator;
+    if (nav) {
+      if (nav.languages?.length) return nav.languages;
+      if (nav.language) return nav.language;
+    }
+  } catch {
+    // navigator not available (SSR / edge build)
   }
   return 'en-US';
 }
