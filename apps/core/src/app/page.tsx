@@ -13,6 +13,7 @@ import {
   type MimeType,
 } from '@dead-drop/engine';
 import { API_URL } from '../lib/config';
+import { formatDate, formatDateTime } from '../lib/date-format';
 import {
   fetchVersionList,
   fetchVersion,
@@ -1143,7 +1144,7 @@ export default function HomePage() {
                   marginBottom: '1rem',
                 }}
               >
-                Expires {new Date(dropData.expiresAt).toLocaleDateString()}
+                Expires {formatDate(dropData.expiresAt)}
               </p>
 
               {!isPublic && (
@@ -1313,7 +1314,7 @@ export default function HomePage() {
                   marginBottom: '1rem',
                 }}
               >
-                Expires {new Date(dropData.expiresAt).toLocaleDateString()}
+                Expires {formatDate(dropData.expiresAt)}
               </p>
 
               <div className="content-viewer">{decryptedContent}</div>
@@ -1396,7 +1397,7 @@ export default function HomePage() {
                             {v.version === versionList.current && ' (current)'}
                           </span>
                           <span style={{ color: 'var(--fg-muted)', fontSize: '0.75rem' }}>
-                            {new Date(v.createdAt).toLocaleString()}
+                            {formatDateTime(v.createdAt)}
                           </span>
                         </button>
                       ))}
@@ -1528,7 +1529,7 @@ export default function HomePage() {
                     marginBottom: '1rem',
                   }}
                 >
-                  {new Date(selectedVersion.createdAt).toLocaleString()}
+                  {formatDateTime(selectedVersion.createdAt)}
                 </p>
                 <div
                   style={{
