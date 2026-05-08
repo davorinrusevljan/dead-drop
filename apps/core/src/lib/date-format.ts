@@ -7,11 +7,9 @@
  */
 
 function getLocale(): string | string[] {
-  if (typeof navigator !== 'undefined' && navigator.languages?.length) {
-    return navigator.languages;
-  }
-  if (typeof navigator !== 'undefined' && navigator.language) {
-    return navigator.language;
+  if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+    if (navigator.languages?.length) return navigator.languages;
+    if (navigator.language) return navigator.language;
   }
   return 'en-US';
 }
