@@ -346,7 +346,11 @@ export default function CreatePage() {
                       setContent(e.target.value)
                     }
                     className="form-textarea"
-                    placeholder="Type your secret message here..."
+                    placeholder={
+                      visibility === 'private'
+                        ? 'Enter your private drop...'
+                        : 'Enter your public drop...'
+                    }
                     rows={6}
                     disabled={formDisabled}
                   />
