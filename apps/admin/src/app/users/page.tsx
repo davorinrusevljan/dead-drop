@@ -225,6 +225,9 @@ export default function UsersPage() {
           <a href="/users" className="admin-header-link active">
             Users
           </a>
+          <a href="/maintenance" className="admin-header-link">
+            Maintenance
+          </a>
         </nav>
         <div className="admin-header-user">
           <div className="admin-header-user-info">

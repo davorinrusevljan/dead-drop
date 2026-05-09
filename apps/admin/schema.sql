@@ -11,5 +11,19 @@ CREATE TABLE IF NOT EXISTS admin_users (
   last_login_at INTEGER
 );
 
+-- Backup history table - Tracks database backup operations
+CREATE TABLE IF NOT EXISTS backup_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  triggered_by INTEGER NOT NULL REFERENCES admin_users(id),
+  status TEXT NOT NULL DEFAULT 'pending',  -- 'pending' | 'running' | 'complete' | 'failed'
+  r2_key TEXT,                             -- R2 object key for the backup file
+  r2_size_bytes INTEGER,                   -- Size of backup file in bytes
+  cf_bookmark TEXT,                        -- Cloudflare export API polling bookmark
+  cf_export_id TEXT,                       -- Cloudflare export job identifier
+  error_message TEXT,                      -- Error details if status = 'failed'
+  started_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  completed_at INTEGER                    -- When backup finished (success or failure)
+);
+
 -- Create initial superadmin (to be updated with real credentials)
 -- Password should be set via bootstrap script

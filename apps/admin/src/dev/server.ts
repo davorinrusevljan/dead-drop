@@ -65,6 +65,17 @@ const mockEnv = {
   ADMIN_DB: adminDb,
   CORE_DB: coreDb,
   JWT_SECRET: jwtSecret,
+  // Mock R2 bucket for local development (no-op)
+  BACKUP_BUCKET: {
+    put: async () => ({}),
+    get: async () => null,
+    delete: async () => ({}),
+    list: async () => ({ objects: [] }),
+    head: async () => null,
+  } as unknown as R2Bucket,
+  CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN || '',
+  CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID || '',
+  CLOUDFLARE_CORE_DB_ID: process.env.CLOUDFLARE_CORE_DB_ID || '',
 };
 
 // Wrapper to inject our mock env into Hono's request

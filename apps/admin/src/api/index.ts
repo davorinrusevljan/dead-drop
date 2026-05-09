@@ -5,6 +5,7 @@ import { authRoutes } from './routes/auth.js';
 import { statsRoutes } from './routes/stats.js';
 import { usersRoutes } from './routes/users.js';
 import { securityHeaders } from './middleware-security.js';
+import { backupRoutes } from './routes/backup.js';
 
 /**
  * Allowed CORS origins for production
@@ -48,6 +49,14 @@ export type Env = {
   CORE_DB: D1Database;
   /** JWT secret for authentication */
   JWT_SECRET: string;
+  /** R2 bucket for database backups */
+  BACKUP_BUCKET: R2Bucket;
+  /** Cloudflare API token for D1 export */
+  CLOUDFLARE_API_TOKEN: string;
+  /** Cloudflare account ID */
+  CLOUDFLARE_ACCOUNT_ID: string;
+  /** Cloudflare D1 database UUID for core DB (for export API) */
+  CLOUDFLARE_CORE_DB_ID: string;
 };
 
 /**
@@ -116,6 +125,9 @@ export function createAdminApiApp(): Hono<AppEnv> {
 
   // User management routes (authentication required)
   app.route('/api/users', usersRoutes);
+
+  // Backup routes (superadmin only)
+  app.route('/api/maintenance/backup', backupRoutes);
 
   // Error handler
   app.onError((err, c) => {

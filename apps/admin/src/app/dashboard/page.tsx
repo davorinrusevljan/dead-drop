@@ -159,6 +159,11 @@ export default function DashboardPage() {
               Users
             </a>
           )}
+          {user?.role === 'superadmin' && (
+            <a href="/maintenance" className="admin-header-link">
+              Maintenance
+            </a>
+          )}
         </nav>
         <div className="admin-header-user">
           <div className="admin-header-user-info">
