@@ -6,6 +6,7 @@ import { statsRoutes } from './routes/stats.js';
 import { usersRoutes } from './routes/users.js';
 import { securityHeaders } from './middleware-security.js';
 import { backupRoutes } from './routes/backup.js';
+import { pruneRoutes } from './routes/prune.js';
 
 /**
  * Allowed CORS origins for production
@@ -128,6 +129,9 @@ export function createAdminApiApp(): Hono<AppEnv> {
 
   // Backup routes (superadmin only)
   app.route('/api/maintenance/backup', backupRoutes);
+
+  // Prune routes (superadmin only)
+  app.route('/api/maintenance/prune', pruneRoutes);
 
   // Error handler
   app.onError((err, c) => {

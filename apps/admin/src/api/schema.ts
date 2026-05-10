@@ -76,6 +76,44 @@ export interface BackupHistoryRecord {
 export type BackupStatus = BackupHistoryRecord['status'];
 
 /**
+ * Prune history table - Tracks prune operations
+ */
+export const pruneHistory = sqliteTable('prune_history', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  triggeredBy: integer('triggered_by')
+    .notNull()
+    .references(() => adminUsers.id),
+  toleranceDays: integer('tolerance_days').notNull().default(0),
+  prunedCount: integer('pruned_count').notNull().default(0),
+  backupId: integer('backup_id'),
+  status: text('status', {
+    enum: ['pending', 'running', 'complete', 'failed'],
+  })
+    .notNull()
+    .default('pending'),
+  errorMessage: text('error_message'),
+  startedAt: integer('started_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  completedAt: integer('completed_at', { mode: 'timestamp' }),
+});
+
+/**
+ * Prune history record type
+ */
+export interface PruneHistoryRecord {
+  id: number;
+  triggeredBy: number;
+  toleranceDays: number;
+  prunedCount: number;
+  backupId: number | null;
+  status: 'pending' | 'running' | 'complete' | 'failed';
+  errorMessage: string | null;
+  startedAt: Date;
+  completedAt: Date | null;
+}
+
+/**
  * Admin role type
  */
 export type AdminRole = 'admin' | 'superadmin';

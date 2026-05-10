@@ -25,5 +25,18 @@ CREATE TABLE IF NOT EXISTS backup_history (
   completed_at INTEGER                    -- When backup finished (success or failure)
 );
 
+-- Prune history table - Tracks prune operations
+CREATE TABLE IF NOT EXISTS prune_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  triggered_by INTEGER NOT NULL REFERENCES admin_users(id),
+  tolerance_days INTEGER NOT NULL DEFAULT 0,
+  pruned_count INTEGER NOT NULL DEFAULT 0,
+  backup_id INTEGER,
+  status TEXT NOT NULL DEFAULT 'pending',  -- 'pending' | 'running' | 'complete' | 'failed'
+  error_message TEXT,
+  started_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  completed_at INTEGER
+);
+
 -- Create initial superadmin (to be updated with real credentials)
 -- Password should be set via bootstrap script
