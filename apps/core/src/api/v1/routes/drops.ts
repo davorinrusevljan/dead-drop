@@ -250,7 +250,6 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     const db = c.env.DB;
     const drop = await getDropById(db, id);
     if (!drop || new Date() > drop.expiresAt) {
-      if (drop) c.executionCtx?.waitUntil?.(deleteDropFromDb(db, id));
       return c.json({ error: { code: 'NOT_FOUND', message: 'Drop not found' } }, 404);
     }
     return c.json(
@@ -396,7 +395,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     const db = c.env.DB;
     const pepper = c.env.ADMIN_HASH_PEPPER;
     const drop = await getDropById(db, id);
-    if (!drop) {
+    if (!drop || new Date() > drop.expiresAt) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Drop not found' } }, 404);
     }
 
@@ -499,7 +498,7 @@ export function registerDropsRoutes(app: OpenAPIHono<AppEnv>): void {
     const db = c.env.DB;
     const pepper = c.env.ADMIN_HASH_PEPPER;
     const drop = await getDropById(db, id);
-    if (!drop) {
+    if (!drop || new Date() > drop.expiresAt) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Drop not found' } }, 404);
     }
 
