@@ -49,7 +49,7 @@ const glossaryItems: GlossaryItem[] = [
   {
     term: 'Ephemeral',
     definition:
-      'Designed to be temporary. Standard drops have a 7-day lifespan. Deletion is not necessarily immediate and may occur later. In the future, we may introduce longer-lasting drop types.',
+      'Designed to be temporary. Standard drops have a 7-day lifespan. Deletion removes data from the active database but is not cryptographic erasure — residual copies may persist in backups, storage snapshots, or other infrastructure. This applies to both public and private drops.',
     category: 'security',
   },
   // Tier Terms

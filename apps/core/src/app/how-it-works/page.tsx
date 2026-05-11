@@ -98,7 +98,7 @@ const accessSteps: Step[] = [
     description: 'Read, edit, or delete the drop. All operations require password verification.',
     details: [
       'Edit: re-encrypts with same key, new IV',
-      'Delete: permanent removal, no recovery',
+      'Delete: removed from active database; residual copies may persist in backups or snapshots',
       'Content hash used for optimistic concurrency',
     ],
   },
@@ -266,8 +266,9 @@ export default function HowItWorksPage() {
               <div className="privacy-feature">
                 <h3>Auto-Expiring Drops</h3>
                 <p>
-                  Standard drops automatically expire after 7 days. Deletion is not necessarily
-                  immediate and may occur later. Deletion is final and cannot be undone.
+                  Standard drops automatically expire after 7 days. Deletion removes data from our
+                  active database but is not cryptographic erasure — residual copies may persist in
+                  backups, storage snapshots, or other infrastructure.
                 </p>
               </div>
             </div>

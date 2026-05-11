@@ -35,7 +35,7 @@ const sections: Section[] = [
   {
     title: '6. Data Retention and Deletion',
     content:
-      'Drops automatically expire after 7 days. Deletion is not necessarily immediate and may occur later. Once deleted, data cannot be recovered. We are not responsible for data loss due to expiration, deletion, or technical issues. You are responsible for backing up any important content.',
+      'Drops automatically expire after 7 days. Deletion removes data from our active database but is not cryptographic erasure — data is not securely overwritten on disk. Residual copies may persist in database backups, storage-level snapshots, or other infrastructure. Once removed from the active database, data cannot be recovered through the Service. We are not responsible for data loss due to expiration, deletion, or technical issues. You are responsible for backing up any important content.',
   },
   {
     title: '7. User-Generated Content',

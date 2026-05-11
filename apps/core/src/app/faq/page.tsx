@@ -10,7 +10,7 @@ const faqItems: FAQItem[] = [
   {
     question: 'What is a drop?',
     answer:
-      'A drop is an ephemeral container for text content. You create it with a unique name (like "my-secret-project"), optionally protect it with a password, and share the URL. Drops automatically expire and are permanently deleted after 7 days.',
+      'A drop is an ephemeral container for text content. You create it with a unique name (like "my-secret-project"), optionally protect it with a password, and share the URL. Drops automatically expire and are removed from our database after 7 days.',
   },
   {
     question: 'What is the difference between Private and Public drops?',
@@ -30,7 +30,7 @@ const faqItems: FAQItem[] = [
   {
     question: 'How long do drops last?',
     answer:
-      'Standard drops automatically expire after 7 days. Deletion is not necessarily immediate and may occur later. Once deleted, data cannot be recovered.',
+      'Standard drops automatically expire after 7 days. Deletion removes the data from our active database, but is not necessarily immediate and may occur later. Residual copies may persist in database backups, storage snapshots, or other infrastructure.',
   },
   {
     question: 'How secure is the encryption?',
@@ -40,7 +40,7 @@ const faqItems: FAQItem[] = [
   {
     question: 'Can I delete a drop before it expires?',
     answer:
-      'Yes. For private drops, you need the content password to delete. For public drops, you need the admin password you set during creation. Once deleted, the drop is gone permanently.',
+      'Yes. For private drops, you need the content password to delete. For public drops, you need the admin password you set during creation. Deletion removes the drop from our active database, though residual copies may exist in backups or storage snapshots (see below).',
   },
   {
     question: 'What happens if I forget my password?',
@@ -95,6 +95,11 @@ const faqItems: FAQItem[] = [
     question: 'Where is dead-drop hosted?',
     answer:
       'dead-drop.xyz is hosted entirely on Cloudflare infrastructure—Pages for the frontend, Workers for the API, and D1 (SQLite) for storage. This provides global edge performance and enterprise-grade reliability.',
+  },
+  {
+    question: 'Is deleted data truly gone?',
+    answer:
+      'When a drop is deleted or expires, we remove it from our active database. However, this is not cryptographic erasure — the data is not securely overwritten on disk. Residual copies may exist in database backups, storage-level snapshots, or other Cloudflare infrastructure. This applies to both public and private drops — encrypted data that persists could theoretically be decrypted in the future if cryptographic weaknesses are discovered.',
   },
   {
     question: 'What data do you collect?',
