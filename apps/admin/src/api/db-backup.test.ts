@@ -7,7 +7,7 @@ import {
   getLatestBackupRecord,
   isBackupRunning,
 } from './db-backup.js';
-import { createLocalD1Database, type D1Database } from '@dead-drop/engine/dev/d1-adapter';
+import { createLocalD1Database } from '@dead-drop/engine/dev/d1-adapter';
 import { readFileSync, unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -25,7 +25,8 @@ function createTestDb(): { db: D1Database; cleanup: () => void } {
   const schemaPath = join(__dirname, '../../schema.sql');
   const dbPath = join(tmpdir(), `test-backup-${randomUUID()}.db`);
 
-  const db = createLocalD1Database(dbPath, schemaPath);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = createLocalD1Database(dbPath, schemaPath) as any;
 
   // Seed test admin user
   db.prepare(

@@ -12,13 +12,15 @@ import { dirname } from 'path';
  */
 interface D1Result<T> {
   results: T[];
-  success: boolean;
+  success: true;
   meta: {
     duration: number;
     changes: number;
     last_row_id: number;
     rows_read: number;
     rows_written: number;
+    size_after: number;
+    changed_db: boolean;
   };
 }
 
@@ -37,13 +39,15 @@ interface D1Statement {
  * D1-style prepared statement result
  */
 interface D1StatementResult {
-  success: boolean;
+  success: true;
   meta: {
     duration: number;
     changes: number;
     last_row_id: number;
     rows_read: number;
     rows_written: number;
+    size_after: number;
+    changed_db: boolean;
   };
 }
 
@@ -74,13 +78,15 @@ class D1PreparedStatement implements D1Statement {
     const info = this.stmt.run(...this.boundValues);
     this.boundValues = [];
     return {
-      success: true,
+      success: true as const,
       meta: {
         duration: Date.now() - start,
         changes: info.changes,
         last_row_id: Number(info.lastInsertRowid),
         rows_read: 0,
         rows_written: info.changes,
+        size_after: 0,
+        changed_db: true as const,
       },
     };
   }
@@ -91,13 +97,15 @@ class D1PreparedStatement implements D1Statement {
     this.boundValues = [];
     return {
       results,
-      success: true,
+      success: true as const,
       meta: {
         duration: Date.now() - start,
         changes: 0,
         last_row_id: 0,
         rows_read: results.length,
         rows_written: 0,
+        size_after: 0,
+        changed_db: true as const,
       },
     };
   }
@@ -175,13 +183,15 @@ class D1DatabaseImpl {
     this.db.exec(sql);
     return {
       results: [],
-      success: true,
+      success: true as const,
       meta: {
         duration: Date.now() - start,
         changes: 0,
         last_row_id: 0,
         rows_read: 0,
         rows_written: 0,
+        size_after: 0,
+        changed_db: true as const,
       },
     };
   }
@@ -199,6 +209,9 @@ export type D1Database = D1DatabaseImpl & {
   prepare(sql: string): D1Statement;
   batch<T>(statements: D1Statement[]): Promise<D1BatchResult<T>>;
   exec(sql: string): Promise<D1Result<unknown>>;
+  // Stub methods for Cloudflare D1 type compatibility
+  withSession: never;
+  dump: () => Promise<ArrayBuffer>;
 };
 
 /**

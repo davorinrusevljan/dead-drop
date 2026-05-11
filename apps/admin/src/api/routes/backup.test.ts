@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createAdminApiApp } from '../index.js';
 import { createLocalD1Database, type D1Database } from '@dead-drop/engine/dev/d1-adapter';
@@ -154,7 +155,7 @@ describe('backup routes', () => {
         noCredEnv
       );
       expect(res.status).toBe(503);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.error.code).toBe('BACKUP_NOT_CONFIGURED');
     });
   });
@@ -191,7 +192,7 @@ describe('backup routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.backups).toEqual([]);
     });
   });
@@ -207,7 +208,7 @@ describe('backup routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(404);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.error.code).toBe('NOT_FOUND');
     });
   });

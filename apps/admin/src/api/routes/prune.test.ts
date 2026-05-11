@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createAdminApiApp } from '../index.js';
 import { createLocalD1Database, type D1Database } from '@dead-drop/engine/dev/d1-adapter';
@@ -195,7 +196,7 @@ describe('prune routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.eligibleCount).toBe(2);
     });
 
@@ -211,7 +212,7 @@ describe('prune routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.backupWarning).toContain('No successful backup');
     });
 
@@ -267,7 +268,7 @@ describe('prune routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.prunedCount).toBe(2);
       expect(body.status).toBe('complete');
     });
@@ -285,7 +286,7 @@ describe('prune routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.prunedCount).toBe(0);
     });
 
@@ -329,7 +330,7 @@ describe('prune routes', () => {
         testEnv.env
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = (await res.json()) as Record<string, any>;
       expect(body.prunes.length).toBe(1);
       expect(body.prunes[0].status).toBe('complete');
       expect(body.prunes[0].prunedCount).toBe(1);

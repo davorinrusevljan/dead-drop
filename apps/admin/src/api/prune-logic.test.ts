@@ -9,7 +9,7 @@ import {
   FREE_TIER_EXPIRATION_DAYS,
   MAX_TOLERANCE_DAYS,
 } from './prune-logic.js';
-import { createLocalD1Database, type D1Database } from '@dead-drop/engine/dev/d1-adapter';
+import { createLocalD1Database } from '@dead-drop/engine/dev/d1-adapter';
 import { existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -25,7 +25,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 function createTestDb(): { db: D1Database; cleanup: () => void } {
   const dbPath = join(tmpdir(), `test-prune-${randomUUID()}.db`);
 
-  const db = createLocalD1Database(dbPath);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = createLocalD1Database(dbPath) as any;
 
   // Create core schema
   db.exec(`
