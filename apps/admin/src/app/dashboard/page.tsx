@@ -6,6 +6,7 @@ import { API_BASE_URL } from '@/lib/api-config';
 interface OverviewStats {
   totalDrops: number;
   activeDrops: number;
+  expiredDrops: number;
 }
 
 interface PeriodCounts {
@@ -202,6 +203,10 @@ export default function DashboardPage() {
           <div className="admin-stat-card">
             <div className="admin-stat-label">Active Drops</div>
             <div className="admin-stat-value success">{overview?.activeDrops ?? 0}</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Expired Drops</div>
+            <div className="admin-stat-value danger">{overview?.expiredDrops ?? 0}</div>
           </div>
           <div className="admin-stat-card">
             <div className="admin-stat-label">Created Today</div>

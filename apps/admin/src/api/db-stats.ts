@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1';
-import { sql, and, gte, lte } from 'drizzle-orm';
+import { sql, and, gte, lt, lte } from 'drizzle-orm';
 import { drops, dropAuditLog } from '@dead-drop/engine/db';
 
 /**
@@ -50,6 +50,7 @@ export interface RecentActivity {
 export async function getOverviewStats(db: D1Database): Promise<{
   totalDrops: number;
   activeDrops: number;
+  expiredDrops: number;
 }> {
   const orm = drizzle(db);
   const now = new Date();
@@ -63,7 +64,13 @@ export async function getOverviewStats(db: D1Database): Promise<{
     .where(gte(drops.expiresAt, now));
   const activeDrops = activeResult[0]?.count ?? 0;
 
-  return { totalDrops, activeDrops };
+  const expiredResult = await orm
+    .select({ count: sql<number>`count(*)` })
+    .from(drops)
+    .where(lt(drops.expiresAt, now));
+  const expiredDrops = expiredResult[0]?.count ?? 0;
+
+  return { totalDrops, activeDrops, expiredDrops };
 }
 
 /**
