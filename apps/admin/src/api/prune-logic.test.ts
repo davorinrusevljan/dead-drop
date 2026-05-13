@@ -6,7 +6,6 @@ import {
   countExpiredFreeDrops,
   pruneDropBatch,
   executePrune,
-  FREE_TIER_EXPIRATION_DAYS,
   MAX_TOLERANCE_DAYS,
 } from './prune-logic.js';
 import { createLocalD1Database } from '@dead-drop/engine/dev/d1-adapter';
@@ -152,18 +151,17 @@ async function countAuditLog(db: D1Database): Promise<number> {
 
 describe('prune-logic', () => {
   describe('calculatePruneCutoff', () => {
-    it('should return cutoff 7 days ago by default', () => {
+    it('should return now by default (tolerance=0)', () => {
       const cutoff = calculatePruneCutoff(0);
-      const expected = new Date();
-      expected.setDate(expected.getDate() - 7);
+      const now = new Date();
       // Allow 1 second tolerance
-      expect(Math.abs(cutoff.getTime() - expected.getTime())).toBeLessThan(1000);
+      expect(Math.abs(cutoff.getTime() - now.getTime())).toBeLessThan(1000);
     });
 
-    it('should include tolerance days', () => {
+    it('should subtract tolerance days', () => {
       const cutoff = calculatePruneCutoff(2);
       const expected = new Date();
-      expected.setDate(expected.getDate() - 9);
+      expected.setDate(expected.getDate() - 2);
       expect(Math.abs(cutoff.getTime() - expected.getTime())).toBeLessThan(1000);
     });
   });
@@ -369,18 +367,16 @@ describe('prune-logic', () => {
     });
 
     it('should respect tolerance days', async () => {
-      // Drop expired 8 days ago (within tolerance of +1)
-      const eightDaysAgo = new Date();
-      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+      // Drop expired 1 day ago — within tolerance of 1, NOT pruned (cutoff = now - 1 day)
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      const nineDaysAgo = new Date();
-      nineDaysAgo.setDate(nineDaysAgo.getDate() - 9);
+      // Drop expired 3 days ago — outside tolerance of 1, IS pruned (cutoff = now - 1 day)
+      const threeDaysAgo = new Date();
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-      // Expired 8 days ago — NOT pruned with tolerance=1 (cutoff = 8 days ago)
-      insertDrop(db, { id: 'tolerance-1', tier: 'free', expiresAt: eightDaysAgo });
-
-      // Expired 9 days ago — IS pruned with tolerance=1 (cutoff = 8 days ago)
-      insertDrop(db, { id: 'old-1', tier: 'free', expiresAt: nineDaysAgo });
+      insertDrop(db, { id: 'tolerance-1', tier: 'free', expiresAt: oneDayAgo });
+      insertDrop(db, { id: 'old-1', tier: 'free', expiresAt: threeDaysAgo });
 
       const result = await executePrune(db, 1);
       expect(result.prunedCount).toBe(1);

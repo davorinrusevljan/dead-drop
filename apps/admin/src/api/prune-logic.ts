@@ -13,11 +13,6 @@ import { and, lt, eq, sql, inArray } from 'drizzle-orm';
 import { drops, dropHistory } from '@dead-drop/engine/db';
 
 /**
- * Default free-tier expiration in days
- */
-export const FREE_TIER_EXPIRATION_DAYS = 7;
-
-/**
  * Maximum tolerance days allowed
  */
 export const MAX_TOLERANCE_DAYS = 2;
@@ -30,12 +25,12 @@ export const PRUNE_BATCH_SIZE = 100;
 /**
  * Calculate the cutoff timestamp for pruning
  * Drops with expiresAt before this timestamp are eligible
+ * toleranceDays provides a grace period after expiry (e.g. 2 = prune only drops expired 2+ days ago)
  */
 export function calculatePruneCutoff(toleranceDays: number = 0): Date {
-  const now = new Date();
-  const daysAgo = FREE_TIER_EXPIRATION_DAYS + toleranceDays;
-  now.setDate(now.getDate() - daysAgo);
-  return now;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - toleranceDays);
+  return cutoff;
 }
 
 /**
