@@ -15,7 +15,7 @@ import {
   normalizeDropName,
   computePublicAdminHash,
 } from '@dead-drop/engine';
-import { decodePublicDrop, unwrapContent } from '../../lib/drop-client';
+import { decodePublicDrop } from '../../lib/drop-client';
 
 describe('Public Drop Creation', () => {
   it('should create a public drop with valid admin hash', async () => {
@@ -154,7 +154,7 @@ describe('Public Drop Delete Flow', () => {
 });
 
 describe('Public Drop Content Handling', () => {
-  it('should handle new format: raw content string', () => {
+  it('should return raw content string as-is', () => {
     const payload = 'Hello, World!';
     const content = decodePublicDrop(payload);
     expect(content).toBe('Hello, World!');
@@ -164,37 +164,6 @@ describe('Public Drop Content Handling', () => {
     const payload = 'Special: @#$%^&*() <html> "quotes"';
     const content = decodePublicDrop(payload);
     expect(content).toBe(payload);
-  });
-
-  it('should handle legacy base64 + wrapper format', () => {
-    const oldContent = { type: 'text', content: 'Hello from legacy!' };
-    const payload = btoa(JSON.stringify(oldContent));
-    const content = decodePublicDrop(payload);
-    expect(content).toBe('Hello from legacy!');
-  });
-
-  it('should handle legacy raw JSON wrapper format', () => {
-    const oldContent = { type: 'text', content: 'Raw JSON legacy!' };
-    const payload = JSON.stringify(oldContent);
-    const content = decodePublicDrop(payload);
-    expect(content).toBe('Raw JSON legacy!');
-  });
-});
-
-describe('unwrapContent compat helper', () => {
-  it('should extract content from old wrapper', () => {
-    const result = unwrapContent('{"type":"text","content":"hello"}');
-    expect(result).toBe('hello');
-  });
-
-  it('should return raw string for non-wrapper JSON', () => {
-    const result = unwrapContent('{"some":"json"}');
-    expect(result).toBe('{"some":"json"}');
-  });
-
-  it('should return raw string for plain text', () => {
-    const result = unwrapContent('just plain text');
-    expect(result).toBe('just plain text');
   });
 });
 

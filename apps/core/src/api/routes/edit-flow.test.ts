@@ -343,16 +343,9 @@ describe('Private Drop Edit Flow - E2E Test', () => {
     expect(result2.success).toBe(true);
   });
 
-  it('handles legacy wrapper format in decrypted content', async () => {
-    // Old drops store { type: "text", content: "..." } in the encrypted payload.
-    // decodePrivateDrop should extract the content from the wrapper.
-    const legacyPayload = '{"type":"text","content":"legacy secret"}';
-    const decoded = decodePrivateDrop(legacyPayload);
-    expect(decoded).toBe('legacy secret');
-
-    // New format: raw text
-    const newPayload = 'new secret';
-    const newDecoded = decodePrivateDrop(newPayload);
-    expect(newDecoded).toBe('new secret');
+  it('decodePrivateDrop returns decrypted payload as-is', () => {
+    const payload = 'raw content string';
+    const decoded = decodePrivateDrop(payload);
+    expect(decoded).toBe('raw content string');
   });
 });

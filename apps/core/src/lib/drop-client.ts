@@ -45,64 +45,19 @@ export interface PublicDropData {
 }
 
 /**
- * Check if a string looks like the old { type: "text", content: "..." } wrapper.
- * Returns the extracted content if it is, or null otherwise.
- */
-function tryUnwrapOldFormat(raw: string): string | null {
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === 'object' && 'type' in parsed && 'content' in parsed) {
-      return parsed.content as string;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Extract content from a possibly-wrapped payload value.
- * Old format: JSON.parse gives { type: "text", content: "..." }
- * New format: raw string
- * TODO: Remove after 2026-05-11 (all old drops will have expired)
- */
-export function unwrapContent(raw: string): string {
-  return tryUnwrapOldFormat(raw) ?? raw;
-}
-
-/**
- * Decode a public drop payload, handling all legacy formats.
- * - Old base64 + wrapper: atob → unwrap
- * - Old raw JSON + wrapper: unwrap
- * - New format: raw content string
- * TODO: Simplify after 2026-05-11 (all old drops will have expired)
+ * Decode a public drop payload.
+ * Public drops store raw content directly.
  */
 export function decodePublicDrop(payload: string): string {
-  // Try base64 decode first (oldest format: btoa of JSON wrapper)
-  try {
-    const decoded = atob(payload);
-    const unwrapped = tryUnwrapOldFormat(decoded);
-    if (unwrapped !== null) {
-      return unwrapped;
-    }
-    // atob succeeded but result is not the old wrapper — check if original
-    // payload was raw JSON wrapper (not base64)
-  } catch {
-    // Not valid base64
-  }
-
-  // Try raw JSON wrapper or return as-is
-  return unwrapContent(payload);
+  return payload;
 }
 
 /**
- * Decode a decrypted private drop payload, handling old wrapper format.
- * - Old format: decrypted string is JSON.stringify({ type, content })
- * - New format: decrypted string is raw content
- * TODO: Simplify after 2026-05-11 (all old drops will have expired)
+ * Decode a decrypted private drop payload.
+ * Private drops encrypt raw content directly.
  */
 export function decodePrivateDrop(decryptedPayload: string): string {
-  return unwrapContent(decryptedPayload);
+  return decryptedPayload;
 }
 
 /**
