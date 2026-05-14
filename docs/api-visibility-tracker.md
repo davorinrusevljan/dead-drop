@@ -90,7 +90,14 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 |-------|-------|
 | **Name** | `dead-drop` |
 | **URL** | `https://dead-drop.xyz` |
-| **Description** | Privacy-focused, ephemeral data sharing with zero-knowledge client-side AES-256-GCM encryption. Share encrypted secrets that self-destruct after 7 days. No account needed. Open source. |
+| **Description (short)** | Privacy-focused, ephemeral data sharing with zero-knowledge client-side AES-256-GCM encryption. Share encrypted secrets that self-destruct after 7 days. No account needed. Open source. |
+| **Full Description** | dead-drop is a privacy-focused, ephemeral data sharing tool that lets you share encrypted text snippets which automatically self-destruct after 7 days.
+
+How it works: Each drop gets a memorable 4-word name (like "abacus-abide-ablaze-able") instead of a random URL. The name stays in the browser's URL fragment and is never sent to the server — only its SHA-256 hash reaches the backend. You choose a passphrase to encrypt the content client-side using AES-256-GCM with PBKDF2 key derivation (100,000 iterations). The server never sees plaintext. After 7 days, the drop is permanently deleted.
+
+Unlike One-Time Secret, Privnote, or similar tools that give you an unpronounceable URL plus a separate random password (requiring two channels to share), dead-drop gives you a human-readable name. You can tell someone in person or over the phone: "Go to dead-drop.xyz and type abacus-abide-ablaze-able." Both the drop name and your passphrase are speakable — no copy-paste required.
+
+Key features: Zero-knowledge client-side encryption (AES-256-GCM + PBKDF2), auto-destruct after 7 days, version history (up to 5 versions per drop), no account/signup/tracking, public and private drops, public API with OpenAPI spec, open source (MIT). |
 | **Category** | `Security & Privacy` (Privnote uses Office & Productivity — either works) |
 | **Platform** | `Online` |
 | **License** | `MIT` (Open Source) |
