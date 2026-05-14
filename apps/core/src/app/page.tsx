@@ -89,6 +89,8 @@ export default function HomePage() {
   const [contentHash, setContentHash] = useState<string | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [agreedToViewTerms, setAgreedToViewTerms] = useState(false);
+  const [editAdminPassword, setEditAdminPassword] = useState('');
+  const [deleteAdminPassword, setDeleteAdminPassword] = useState('');
 
   // Version history state
   const [versionList, setVersionList] = useState<VersionListResponse | null>(null);
@@ -1638,7 +1640,15 @@ export default function HomePage() {
               </p>
 
               {dropData.visibility === 'public' && (
-                <PasswordInput label="Admin Password" id="edit-pwd" placeholder="required" />
+                <PasswordInput
+                  label="Admin Password"
+                  id="edit-pwd"
+                  placeholder="required"
+                  value={editAdminPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setEditAdminPassword(e.target.value)
+                  }
+                />
               )}
 
               <div className="form-group">
@@ -1658,13 +1668,10 @@ export default function HomePage() {
                   onClick={() => {
                     const newContent =
                       (document.getElementById('edit-content') as HTMLTextAreaElement)?.value || '';
-                    const pwd =
-                      dropData.visibility === 'public'
-                        ? (document.getElementById('edit-pwd') as HTMLInputElement)?.value
-                        : undefined;
+                    const pwd = dropData.visibility === 'public' ? editAdminPassword : undefined;
                     handleSaveEdit(newContent, pwd);
                   }}
-                  disabled={isLoading}
+                  disabled={isLoading || (dropData.visibility === 'public' && !editAdminPassword)}
                   className="action-btn amber"
                 >
                   {isLoading ? 'SAVING...' : 'SAVE'}
@@ -1752,7 +1759,15 @@ export default function HomePage() {
               </p>
 
               {dropData.visibility === 'public' && (
-                <PasswordInput label="Admin Password" id="delete-pwd" placeholder="required" />
+                <PasswordInput
+                  label="Admin Password"
+                  id="delete-pwd"
+                  placeholder="required"
+                  value={deleteAdminPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setDeleteAdminPassword(e.target.value)
+                  }
+                />
               )}
 
               {error && <p className="error-message">{error}</p>}
@@ -1760,13 +1775,10 @@ export default function HomePage() {
               <div className="btn-group" style={{ marginTop: '1.5rem' }}>
                 <button
                   onClick={() => {
-                    const pwd =
-                      dropData.visibility === 'public'
-                        ? (document.getElementById('delete-pwd') as HTMLInputElement)?.value
-                        : undefined;
+                    const pwd = dropData.visibility === 'public' ? deleteAdminPassword : undefined;
                     handleDelete(pwd);
                   }}
-                  disabled={isLoading}
+                  disabled={isLoading || (dropData.visibility === 'public' && !deleteAdminPassword)}
                   className="action-btn"
                   style={{ background: 'var(--danger)' }}
                 >
