@@ -20,7 +20,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | Platform | URL | Submitted | Status | Links |
 |---|----------|-----|-----------|--------|-------|
-| 1 | APIs.guru (openapi-directory) | [apis.guru](https://apis.guru) | 2026-04-21 | 🟡 Pending review (0 comments) | [Issue #2438](https://github.com/APIs-guru/openapi-directory/issues/2438) |
+| 1 | APIs.guru (openapi-directory) | [apis.guru](https://apis.guru) | 2026-04-21 | 🟡 Pending review (1 comment — nudge posted 2026-05-15) | [Issue #2438](https://github.com/APIs-guru/openapi-directory/issues/2438) |
 | 2 | Public APIs (GitHub) | [public-apis/public-apis](https://github.com/public-apis/public-apis) | 2026-05-05 | ✅ Merged | [PR #6062](https://github.com/public-apis/public-apis/pull/6062) — Dofollow backlink from 290k⭐ repo |
 | 3 | RapidAPI Hub | [rapidapi.com](https://rapidapi.com) | 2026-05-04 | ✅ Live | [dead-drop on RapidAPI](https://rapidapi.com/davorinrusevljan/api/dead-drop1) |
 | 4 | Postman API Network | [postman.com/api-network](https://www.postman.com/api-network) | — | 🔒 Paid plan required | Public workspaces need $29/user/month Professional plan. Collection available as [GitHub Gist](https://gist.github.com/davorinrusevljan/679dca83547c148e5364d268a2440f87) for import |
