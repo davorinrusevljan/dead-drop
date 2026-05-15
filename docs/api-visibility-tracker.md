@@ -10,7 +10,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | What | When | Details |
 |---|------|------|---------|
-| 1 | **AlternativeTo — submit app** | After 2026-05-12 (7-day cooldown since registration) | See §AlternativeTo Submission below |
+| 1 | **AlternativeTo — check acceptance** | A few days after 2026-05-14 | Submitted, awaiting review |
 | 2 | **Privacy Guides Forum — post showcase** | After UI compatibility layer is removed (no more "old" drops) | See §Privacy Guides Draft Post below |
 | 3 | **SourceForge — fill in additional info** | Anytime | Screenshots, tags, features, detailed description at sourceforge.net/projects/dead-drop |
 
@@ -21,7 +21,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | # | Platform | URL | Submitted | Status | Links |
 |---|----------|-----|-----------|--------|-------|
 | 1 | APIs.guru (openapi-directory) | [apis.guru](https://apis.guru) | 2026-04-21 | 🟡 Pending review (0 comments) | [Issue #2438](https://github.com/APIs-guru/openapi-directory/issues/2438) |
-| 2 | Public APIs (GitHub) | [public-apis/public-apis](https://github.com/public-apis/public-apis) | 2026-05-05 | 🟡 Pending review (resubmitted with alphabetical fix) | [PR #6062](https://github.com/public-apis/public-apis/pull/6062) (old [PR #6011](https://github.com/public-apis/public-apis/pull/6011) closed — reviewer asked for alphabetical order) |
+| 2 | Public APIs (GitHub) | [public-apis/public-apis](https://github.com/public-apis/public-apis) | 2026-05-05 | ✅ Merged | [PR #6062](https://github.com/public-apis/public-apis/pull/6062) — Dofollow backlink from 290k⭐ repo |
 | 3 | RapidAPI Hub | [rapidapi.com](https://rapidapi.com) | 2026-05-04 | ✅ Live | [dead-drop on RapidAPI](https://rapidapi.com/davorinrusevljan/api/dead-drop1) |
 | 4 | Postman API Network | [postman.com/api-network](https://www.postman.com/api-network) | — | 🔒 Paid plan required | Public workspaces need $29/user/month Professional plan. Collection available as [GitHub Gist](https://gist.github.com/davorinrusevljan/679dca83547c148e5364d268a2440f87) for import |
 | 5 | APIs.io | [apis.io](https://apis.io) | 2026-05-05 | 🟡 Pending review | [Issue #24](https://github.com/api-search/network/issues/24) |
@@ -32,7 +32,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | Platform | URL | Submitted | Status | Notes |
 |---|----------|-----|-----------|--------|-------|
-| 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | 2026-05-05 | ⏳ Registered, 7-day cooling period | Submit after 2026-05-12. See §AlternativeTo Submission below |
+| 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | 2026-05-14 | 🟡 Submitted, awaiting review | Submitted 2026-05-14. Can take a few days to be accepted or rejected. |
 | 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | 2026-05-05 | 🟡 Pending review | [PR #802](https://github.com/pluja/awesome-privacy/pull/802) — Pastebin and Secret Sharing section |
 | 10 | ~~awesome-selfhosted~~ | — | — | 🔴 Not eligible | dead-drop is a hosted SaaS, not self-hostable. Requires own server deployment to qualify |
 | 11 | SaaSHub | [saashub.com](https://www.saashub.com) | 2026-05-05 | ✅ Accepted | Still need screenshots. Consider $99 promotion plan. |
