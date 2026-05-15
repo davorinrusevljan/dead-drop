@@ -465,6 +465,7 @@ export default function CreatePage() {
           <nav className="footer-nav">
             <a href="/">Home</a>
             <a href="/how-it-works">How It Works</a>
+            <a href="/gallery">Gallery</a>
             <a href="/glossary">Glossary</a>
             <a href="/faq">F.A.Q.</a>
             <a href="/terms">Terms of Service</a>

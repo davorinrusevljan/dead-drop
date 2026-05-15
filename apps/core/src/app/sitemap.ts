@@ -22,6 +22,30 @@ const staticPages = [
     priority: 0.8,
   },
   {
+    url: `${BASE_URL}/gallery`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  },
+  {
+    url: `${BASE_URL}/gallery/homepage`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  },
+  {
+    url: `${BASE_URL}/gallery/create-drop`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  },
+  {
+    url: `${BASE_URL}/gallery/view-drop`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  },
+  {
     url: `${BASE_URL}/faq`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
