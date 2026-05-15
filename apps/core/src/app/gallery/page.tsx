@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import './gallery.css';
 
 export const metadata: Metadata = {
   title: 'Gallery — dead-drop.xyz',
@@ -37,127 +38,65 @@ export default function GalleryPage() {
         <Link href="/">dead-drop.xyz</Link>
       </header>
       <main className="main-container" style={{ paddingTop: '2rem' }}>
-        <div className="animate-fade-in-up" style={{ width: '100%' }}>
-          <h1
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-              fontWeight: 700,
-              color: 'var(--accent)',
-              textAlign: 'center',
-              marginBottom: '0.5rem',
-            }}
-          >
-            Gallery
-          </h1>
-          <p
-            style={{
-              textAlign: 'center',
-              color: 'var(--fg-muted)',
-              marginBottom: '3rem',
-              fontSize: '1.125rem',
-            }}
-          >
-            See how dead-drop works — from creation to viewing.
-          </p>
+        <div className="animate-fade-in-up gallery-container">
+          <div className="gallery-header">
+            <h1 className="gallery-title">Gallery</h1>
+            <p className="gallery-subtitle">See how dead-drop works — from creation to viewing.</p>
+          </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-              gap: '2rem',
-              maxWidth: '1200px',
-              margin: '0 auto',
-            }}
-          >
+          <div className="gallery-grid">
             {screenshots.map((shot) => (
-              <Link
-                key={shot.slug}
-                href={`/gallery/${shot.slug}`}
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '0.75rem',
-                  overflow: 'hidden',
-                  transition: 'border-color 0.2s, transform 0.2s',
-                }}
-                className="gallery-card"
-              >
-                <div
-                  style={{
-                    width: '100%',
-                    aspectRatio: '16/10',
-                    overflow: 'hidden',
-                    background: 'var(--bg)',
-                  }}
-                >
-                  <img
-                    src={shot.src}
-                    alt={shot.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'top',
-                    }}
-                  />
+              <Link key={shot.slug} href={`/gallery/${shot.slug}`} className="gallery-card">
+                <div className="gallery-card-image">
+                  <img src={shot.src} alt={shot.title} />
                 </div>
-                <div style={{ padding: '1.25rem' }}>
-                  <h2
-                    style={{
-                      fontSize: '1.125rem',
-                      fontWeight: 600,
-                      color: 'var(--fg)',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    {shot.title}
-                  </h2>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--fg-muted)', lineHeight: 1.6 }}>
-                    {shot.description}
-                  </p>
+                <div className="gallery-card-body">
+                  <div className="gallery-card-text">
+                    <div className="gallery-card-title">{shot.title}</div>
+                    <div className="gallery-card-desc">{shot.description}</div>
+                  </div>
+                  <span className="gallery-card-arrow">→</span>
                 </div>
               </Link>
             ))}
           </div>
         </div>
-        <footer className="footer">
-          <nav className="footer-nav">
-            <a href="/how-it-works">How It Works</a>
-            <a href="/gallery">Gallery</a>
-            <a href="/glossary">Glossary</a>
-            <a href="/faq">F.A.Q.</a>
-            <a href="/terms">Terms of Service</a>
-            <a
-              href="https://davorinrusevljan.github.io/dead-drop/latest/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              API Documentation
-            </a>
-            <a
-              href="https://github.com/davorinrusevljan/dead-drop"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub
-            </a>
-          </nav>
-          <span style={{ opacity: 0.7 }}>
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
-          </span>
-        </footer>
       </main>
+      <footer className="footer">
+        <nav className="footer-nav">
+          <Link href="/">Home</Link>
+          <Link href="/how-it-works">How It Works</Link>
+          <Link href="/gallery">Gallery</Link>
+          <Link href="/glossary">Glossary</Link>
+          <Link href="/faq">F.A.Q.</Link>
+          <Link href="/terms">Terms of Service</Link>
+          <Link
+            href="https://davorinrusevljan.github.io/dead-drop/latest/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            API Documentation
+          </Link>
+          <Link
+            href="https://github.com/davorinrusevljan/dead-drop"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </Link>
+        </nav>
+        <p style={{ marginTop: '1rem', opacity: 0.7 }}>
+          ©{' '}
+          <a
+            href="https://ghostgrammer.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'inherit' }}
+          >
+            ghostgrammer.xyz
+          </a>
+        </p>
+      </footer>
     </>
   );
 }

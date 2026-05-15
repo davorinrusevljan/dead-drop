@@ -158,6 +158,7 @@ export default function FAQPage() {
         <nav className="footer-nav">
           <Link href="/">Home</Link>
           <Link href="/how-it-works">How It Works</Link>
+          <Link href="/gallery">Gallery</Link>
           <Link href="/glossary">Glossary</Link>
           <Link href="/faq">F.A.Q.</Link>
           <Link href="/terms">Terms of Service</Link>

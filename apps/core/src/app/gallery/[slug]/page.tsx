@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import '../gallery.css';
 
 export const dynamicParams = true;
 
@@ -8,10 +9,7 @@ interface Screenshot {
   slug: string;
   title: string;
   description: string;
-  src:
-    | '/screenshots/homepage.png'
-    | '/screenshots/create-drop-filled.png'
-    | '/screenshots/view-drop-landing.png';
+  src: string;
   alt: string;
 }
 
@@ -80,153 +78,83 @@ export default async function ScreenshotPage({ params }: { params: Promise<{ slu
         <Link href="/">dead-drop.xyz</Link>
       </header>
       <main className="main-container" style={{ paddingTop: '2rem' }}>
-        <div className="animate-fade-in-up" style={{ width: '100%', maxWidth: '56rem' }}>
+        <div className="animate-fade-in-up gallery-container">
           {/* Breadcrumb */}
-          <nav
-            style={{
-              fontSize: '0.875rem',
-              color: 'var(--fg-muted)',
-              marginBottom: '2rem',
-            }}
-          >
-            <Link href="/" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }}>
-              Home
-            </Link>
-            <span style={{ margin: '0 0.5rem' }}>/</span>
-            <Link href="/gallery" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }}>
-              Gallery
-            </Link>
-            <span style={{ margin: '0 0.5rem' }}>/</span>
+          <div className="gallery-breadcrumb">
+            <Link href="/">Home</Link>
+            <span>/</span>
+            <Link href="/gallery">Gallery</Link>
+            <span>/</span>
             <span style={{ color: 'var(--fg)' }}>{shot.title}</span>
-          </nav>
+          </div>
 
           {/* Title */}
-          <h1
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
-              fontWeight: 700,
-              color: 'var(--accent)',
-              marginBottom: '1rem',
-            }}
-          >
-            {shot.title}
-          </h1>
+          <h1 className="gallery-detail-title">{shot.title}</h1>
 
           {/* Description */}
-          <p
-            style={{
-              color: 'var(--fg-muted)',
-              fontSize: '1.0625rem',
-              lineHeight: 1.7,
-              marginBottom: '2rem',
-            }}
-          >
-            {shot.description}
-          </p>
+          <p className="gallery-detail-desc">{shot.description}</p>
 
           {/* Image */}
-          <div
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border)',
-              borderRadius: '0.75rem',
-              overflow: 'hidden',
-              marginBottom: '2rem',
-            }}
-          >
-            <img
-              src={shot.src}
-              alt={shot.alt}
-              style={{
-                width: '100%',
-                display: 'block',
-              }}
-            />
+          <div className="gallery-detail-image">
+            <img src={shot.src} alt={shot.alt} />
           </div>
 
           {/* Prev/Next navigation */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              borderTop: '1px solid var(--border)',
-              paddingTop: '1.5rem',
-            }}
-          >
+          <div className="gallery-nav">
             {prev ? (
-              <Link
-                href={`/gallery/${prev.slug}`}
-                style={{
-                  textDecoration: 'none',
-                  color: 'var(--fg)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.25rem',
-                }}
-              >
-                <span style={{ fontSize: '0.75rem', color: 'var(--fg-muted)' }}>← Previous</span>
-                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{prev.title}</span>
+              <Link href={`/gallery/${prev.slug}`} className="gallery-nav-link">
+                <span className="gallery-nav-label">← Previous</span>
+                <span className="gallery-nav-title">{prev.title}</span>
               </Link>
             ) : (
               <div />
             )}
             {next ? (
-              <Link
-                href={`/gallery/${next.slug}`}
-                style={{
-                  textDecoration: 'none',
-                  color: 'var(--fg)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  gap: '0.25rem',
-                }}
-              >
-                <span style={{ fontSize: '0.75rem', color: 'var(--fg-muted)' }}>Next →</span>
-                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{next.title}</span>
+              <Link href={`/gallery/${next.slug}`} className="gallery-nav-link next">
+                <span className="gallery-nav-label">Next →</span>
+                <span className="gallery-nav-title">{next.title}</span>
               </Link>
             ) : (
               <div />
             )}
           </div>
         </div>
-        <footer className="footer">
-          <nav className="footer-nav">
-            <a href="/how-it-works">How It Works</a>
-            <a href="/gallery">Gallery</a>
-            <a href="/glossary">Glossary</a>
-            <a href="/faq">F.A.Q.</a>
-            <a href="/terms">Terms of Service</a>
-            <a
-              href="https://davorinrusevljan.github.io/dead-drop/latest/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              API Documentation
-            </a>
-            <a
-              href="https://github.com/davorinrusevljan/dead-drop"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub
-            </a>
-          </nav>
-          <span style={{ opacity: 0.7 }}>
-            ©{' '}
-            <a
-              href="https://ghostgrammer.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit' }}
-            >
-              ghostgrammer.xyz
-            </a>
-          </span>
-        </footer>
       </main>
+      <footer className="footer">
+        <nav className="footer-nav">
+          <Link href="/">Home</Link>
+          <Link href="/how-it-works">How It Works</Link>
+          <Link href="/gallery">Gallery</Link>
+          <Link href="/glossary">Glossary</Link>
+          <Link href="/faq">F.A.Q.</Link>
+          <Link href="/terms">Terms of Service</Link>
+          <Link
+            href="https://davorinrusevljan.github.io/dead-drop/latest/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            API Documentation
+          </Link>
+          <Link
+            href="https://github.com/davorinrusevljan/dead-drop"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </Link>
+        </nav>
+        <p style={{ marginTop: '1rem', opacity: 0.7 }}>
+          ©{' '}
+          <a
+            href="https://ghostgrammer.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'inherit' }}
+          >
+            ghostgrammer.xyz
+          </a>
+        </p>
+      </footer>
     </>
   );
 }
