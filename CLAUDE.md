@@ -105,6 +105,23 @@ pnpm deploy:pages    # Frontend pages
   - Core UI: 3010
   - Admin UI: 3011
 
+### ⛔ NEVER Modify These Files
+
+These files control server configuration and must **NEVER** be modified without explicit user instruction:
+
+- `apps/core/.env.local` — API URL config, always `http://localhost:9090`
+- `apps/core/next.config.mjs` — Next.js build/deploy config
+- `apps/core/src/lib/config.ts` — API URL resolution logic
+- `apps/core/src/dev/server.ts` — Local API dev server
+
+**If a server won't start or the UI shows "Server unreachable":**
+1. Kill all processes: `kill -9 $(ps aux | grep -E 'turbo|next|node.*9090' | grep -v grep | awk '{print $2}')`
+2. Clean build cache: `rm -rf apps/core/.next`
+3. Start API: `cd apps/core && pnpm dev:api &`
+4. Start UI: `cd /workspaces/dead-drop && pnpm dev &`
+5. Verify: `curl http://localhost:9090/api/v1/health && curl http://localhost:3010`
+6. **Do NOT touch config files.** The problem is always a stale cache or process conflict.
+
 ## Memory
 
 See `/root/.claude/projects/-workspaces-dead-drop/memory/` for project-specific context and learnings.
