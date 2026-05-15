@@ -99,6 +99,7 @@ pnpm deploy:pages    # Frontend pages
 - **Never use `--force` when pushing** git (user requirement)
 - **Never deploy to Cloudflare without explicit request** - Do not run `pnpm deploy:api` or `pnpm deploy:pages` unless the user explicitly requests deployment
 - **Always check ports** before starting dev servers to avoid conflicts
+- **After every `git push`** — run `gh run list --limit 1` and wait for CI to complete. Report result to user. If CI fails, investigate and fix before proceeding.
 - **Port allocation**:
   - Core API: 9090
   - Admin API: 9091
