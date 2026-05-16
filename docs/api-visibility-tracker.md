@@ -10,7 +10,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | What | When | Details |
 |---|------|------|---------|
-| 1 | **AlternativeTo — check acceptance** | A few days after 2026-05-14 | Submitted, awaiting review |
+| 1 | **AlternativeTo — add more details** | Anytime | Add full description, screenshots, features list, tags at alternativeto.net/software/dead-drop |
 | 2 | **Privacy Guides Forum — post showcase** | After UI compatibility layer is removed (no more "old" drops) | See §Privacy Guides Draft Post below |
 | 3 | **SourceForge — fill in additional info** | Anytime | Screenshots, tags, features, detailed description at sourceforge.net/projects/dead-drop |
 
@@ -32,7 +32,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 
 | # | Platform | URL | Submitted | Status | Notes |
 |---|----------|-----|-----------|--------|-------|
-| 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | 2026-05-14 | 🟡 Submitted, awaiting review | Submitted 2026-05-14. Can take a few days to be accepted or rejected. |
+| 8 | AlternativeTo | [alternativeto.net](https://alternativeto.net) | 2026-05-14 | ✅ Live | [dead-drop on AlternativeTo](https://alternativeto.net/software/dead-drop/) — Category: Security & Privacy, Platform: Online, License: MIT. 5 alternatives listed. Links are nofollow. |
 | 9 | pluja/awesome-privacy (⭐18.6k) | [github.com/pluja/awesome-privacy](https://github.com/pluja/awesome-privacy) | 2026-05-05 | 🟡 Pending review | [PR #802](https://github.com/pluja/awesome-privacy/pull/802) — Pastebin and Secret Sharing section |
 | 10 | ~~awesome-selfhosted~~ | — | — | 🔴 Not eligible | dead-drop is a hosted SaaS, not self-hostable. Requires own server deployment to qualify |
 | 11 | SaaSHub | [saashub.com](https://www.saashub.com) | 2026-05-05 | ✅ Accepted | Still need screenshots. Consider $99 promotion plan. |
