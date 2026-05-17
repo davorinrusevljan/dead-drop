@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     title: 'dead-drop.xyz',
     description: 'Share secrets. Leave no trace.',
     type: 'website',
+    images: ['/screenshots/homepage.png'],
   },
 };
 
