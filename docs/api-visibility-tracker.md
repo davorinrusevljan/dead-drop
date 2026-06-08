@@ -24,7 +24,7 @@ Tracking all platforms where the dead-drop API has been submitted for discovery 
 | 2 | Public APIs (GitHub) | [public-apis/public-apis](https://github.com/public-apis/public-apis) | 2026-05-05 | ✅ Merged | [PR #6062](https://github.com/public-apis/public-apis/pull/6062) — Dofollow backlink from 290k⭐ repo |
 | 3 | RapidAPI Hub | [rapidapi.com](https://rapidapi.com) | 2026-05-04 | ✅ Live | [dead-drop on RapidAPI](https://rapidapi.com/davorinrusevljan/api/dead-drop1) |
 | 4 | Postman API Network | [postman.com/api-network](https://www.postman.com/api-network) | — | 🔒 Paid plan required | Public workspaces need $29/user/month Professional plan. Collection available as [GitHub Gist](https://gist.github.com/davorinrusevljan/679dca83547c148e5364d268a2440f87) for import |
-| 5 | APIs.io | [apis.io](https://apis.io) | 2026-05-05 | 🟡 Pending review | [Issue #24](https://github.com/api-search/network/issues/24) |
+| 5 | APIs.io | [apis.io](https://apis.io) | 2026-05-05 | 🔴 Repo deleted | `api-search/network` repo no longer exists (404). Site still up but no submission mechanism. Original [Issue #24](https://github.com/api-search/network/issues/24) is gone. |
 | 6 | API List | [apilist.fun](https://apilist.fun) | — | 🔴 Site down (521) | Site appears inactive, skipping |
 | 7 | Apidog Hub | [apidog.com/hub](https://apidog.com/hub) | 2026-05-05 | ✅ Live | [dead-drop API on Apidog](https://fco1nz9fq3.apidog.io) |
 
