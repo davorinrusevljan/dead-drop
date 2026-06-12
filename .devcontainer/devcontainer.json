@@ -33,7 +33,7 @@
     }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "forwardPorts": [3000, 8787, 8788],
+  "forwardPorts": [3000, 3010, 8787, 8788, 9090, 9091, 3011],
   "remoteEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096"
   },

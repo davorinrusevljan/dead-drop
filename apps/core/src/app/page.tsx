@@ -970,6 +970,7 @@ export default function HomePage() {
               <a href="/gallery">Gallery</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/blog">Blog</a>
               <a href="/terms">Terms of Service</a>
               <a
                 href="https://davorinrusevljan.github.io/dead-drop/latest/"
@@ -1078,6 +1079,7 @@ export default function HomePage() {
               <a href="/gallery">Gallery</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/blog">Blog</a>
               <a href="/terms">Terms of Service</a>
               <a
                 href="https://davorinrusevljan.github.io/dead-drop/latest/"
@@ -1248,6 +1250,7 @@ export default function HomePage() {
               <a href="/gallery">Gallery</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/blog">Blog</a>
               <a href="/terms">Terms of Service</a>
               <a
                 href="https://davorinrusevljan.github.io/dead-drop/latest/"
@@ -1437,6 +1440,7 @@ export default function HomePage() {
               <a href="/gallery">Gallery</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/blog">Blog</a>
               <a href="/terms">Terms of Service</a>
               <a
                 href="https://davorinrusevljan.github.io/dead-drop/latest/"
@@ -1689,6 +1693,7 @@ export default function HomePage() {
               <a href="/gallery">Gallery</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/blog">Blog</a>
               <a href="/terms">Terms of Service</a>
               <a
                 href="https://davorinrusevljan.github.io/dead-drop/latest/"
@@ -1807,6 +1812,7 @@ export default function HomePage() {
               <a href="/gallery">Gallery</a>
               <a href="/glossary">Glossary</a>
               <a href="/faq">F.A.Q.</a>
+              <a href="/blog">Blog</a>
               <a href="/terms">Terms of Service</a>
               <a
                 href="https://davorinrusevljan.github.io/dead-drop/latest/"
