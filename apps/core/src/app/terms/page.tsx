@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import './terms.css';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/terms' },
+};
 
 interface Section {
   title: string;

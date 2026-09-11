@@ -55,6 +55,7 @@ export async function generateMetadata({
   return {
     title: `${shot.title} — dead-drop.xyz Gallery`,
     description: shot.description,
+    alternates: { canonical: `/gallery/${slug}` },
     openGraph: {
       title: `${shot.title} — dead-drop.xyz`,
       description: shot.description,

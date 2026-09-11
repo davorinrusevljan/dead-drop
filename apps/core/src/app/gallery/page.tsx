@@ -5,6 +5,7 @@ import './gallery.css';
 export const metadata: Metadata = {
   title: 'Gallery — dead-drop.xyz',
   description: 'Screenshots of dead-drop.xyz — see how to create, view, and share encrypted drops.',
+  alternates: { canonical: '/gallery' },
 };
 
 const screenshots = [

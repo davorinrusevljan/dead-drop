@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import './how-it-works.css';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/how-it-works' },
+};
 
 interface Step {
   number: string;

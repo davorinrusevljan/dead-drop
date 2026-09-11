@@ -3,6 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://dead-drop.xyz'),
+  alternates: { canonical: '/' },
   title: 'dead-drop.xyz — Share secrets. Leave no trace.',
   description:
     'Privacy-focused, ephemeral data sharing. End-to-end encrypted drops that self-destruct.',

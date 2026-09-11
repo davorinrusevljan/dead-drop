@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import './glossary.css';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/glossary' },
+};
 
 interface GlossaryItem {
   term: string;

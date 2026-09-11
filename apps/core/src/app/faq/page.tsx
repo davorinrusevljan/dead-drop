@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import './faq.css';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/faq' },
+};
 
 interface FAQItem {
   question: string;
