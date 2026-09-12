@@ -20,15 +20,17 @@ Cloudflare D1 + Workers/Pages · Drizzle, Zod, Vitest, Playwright.
 
 ## Hard rules
 
-1. **Never `git push --force`** (user requirement).
-2. **Never deploy** (`pnpm deploy:api`/`deploy:pages`, wrangler) unless the
+1. **Never `git commit` or `git push` unless the user explicitly says so in
+   the current turn.** Showing a proposed commit/diff and asking is always OK.
+2. **Never `git push --force`** (user requirement).
+3. **Never deploy** (`pnpm deploy:api`/`deploy:pages`, wrangler) unless the
    user explicitly requests it this session.
-3. **After every `git push`**: run `gh run list --limit 1`, wait for CI, report
+4. **After every `git push`**: run `gh run list --limit 1`, wait for CI, report
    result; fix failures before proceeding.
-4. **Never modify** without explicit instruction:
+5. **Never modify** without explicit instruction:
    `apps/core/.env.local`, `apps/core/next.config.mjs`,
    `apps/core/src/lib/config.ts`, `apps/core/src/dev/server.ts`.
-5. Check ports are free before starting servers (see runbook).
+6. Check ports are free before starting servers (see runbook).
 
 ## Everyday commands
 
