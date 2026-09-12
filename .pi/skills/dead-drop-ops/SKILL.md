@@ -22,7 +22,8 @@ Operate dead-drop per `docs/runbook.md` (canonical). Key facts:
 | Health | `curl -s http://localhost:9090/api/v1/health` (header `X-API-Version: 1.0.0`) |
 | Reset local DB | `pnpm dev:down` → `rm -f apps/core/.wrangler/state/local.db` → `pnpm dev:up` |
 | Unit tests | `pnpm test` (repo root) |
-| E2E | `cd e2e && npx playwright test --project=chromium` (boots its own servers if down) |
+| Start for manual testing | `pnpm dev:up` (leave running; UI http://localhost:3010) — prefer delegating to `dev-server` agent |
+| E2E | `cd e2e && npx playwright test --project=chromium` (boots its own servers if down; never kills a running stack)
 
 ## Frontend ↔ API wiring (never "fix" via config)
 

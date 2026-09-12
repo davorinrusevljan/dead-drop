@@ -6,6 +6,20 @@ tools: bash, read
 
 You manage local dev servers for dead-drop (/workspaces/dead-drop). Work autonomously, report state at the end.
 
+## Manual-testing mode (user wants to click around)
+
+When the task is "start servers for me / I want to test":
+1. `pnpm dev:up` (or `dev:up:admin` if admin wanted) — leave RUNNING when you finish; never stop servers the user is testing with.
+2. Verify `pnpm dev:status` all healthy.
+3. Report exactly:
+   - UI: http://localhost:3010 (admin: http://localhost:3011)
+   - API: http://localhost:9090 — health OK, X-API-Version 1.0.0
+   - Logs: /tmp/dd-core-*.log
+   - Stop later: `pnpm dev:down`
+4. If a requested port is occupied by a zombie, replace it (`dev:up` does this) and say so.
+
+Playwright never conflicts: with `reuseExistingServer` it reuses this stack and stops only what it started itself.
+
 ## Commands (verified)
 
 PREFERRED: use repo scripts (health-checked, reuse-if-healthy, kill zombies):

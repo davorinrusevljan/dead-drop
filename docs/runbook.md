@@ -42,6 +42,11 @@ pnpm dev:status           # port/pid/health of all four services
 pnpm dev:down             # stop everything (sweeps zombie process trees too)
 ```
 
+**Manual testing flow**: `pnpm dev:up`, open http://localhost:3010, test;
+`pnpm dev:down` when done. Servers persist across terminal/agent sessions
+(`nohup`) — that's the design. Ask the agent to start them for you; it must
+leave them running and hand you the URLs.
+
 The scripts live in `scripts/dev.sh`. Pid discovery uses `ss` — `lsof` is blind
 to `next-server` processes in this environment (hard-won lesson; see git history).
 
