@@ -19,7 +19,6 @@ import { PasswordInput } from '@dead-drop/ui';
 type CreateState = 'form' | 'success' | 'error';
 
 export default function CreatePage() {
-  const [mounted, setMounted] = useState(false);
   const [dropName, setDropName] = useState('');
   const [state, setState] = useState<CreateState>('form');
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +40,6 @@ export default function CreatePage() {
       setDropName(normalized);
       window.history.replaceState(null, '', `#${normalized}`);
     }
-    setMounted(true);
   }, []);
 
   // Check availability when drop name changes
@@ -197,23 +195,47 @@ export default function CreatePage() {
     navigator.clipboard.writeText(normalizedName);
   }, [normalizedName]);
 
-  if (!mounted) {
+  // Deterministic SSR fallback: drop name arrives from the URL fragment
+  // after hydration, so initial render (server + first client render)
+  // shows a static, SEO-meaningful block instead of a spinner.
+  if (!dropName) {
     return (
       <>
         <header className="page-header">
           <a href="/">dead-drop.xyz</a>
         </header>
         <main className="main-container">
-          <div className="loader animate-fade-in">
-            <div className="loader-spinner" />
-            <span>Loading...</span>
+          <div className="terminal-container animate-fade-in-up" style={{ maxWidth: '32rem' }}>
+            <h2
+              style={{
+                fontSize: '1.5rem',
+                marginBottom: '0.75rem',
+                fontFamily: 'JetBrains Mono',
+              }}
+            >
+              Create a Drop
+            </h2>
+            <p style={{ color: 'var(--fg-muted)', marginBottom: '1rem' }}>
+              Create an ephemeral, end-to-end encrypted drop at a name of your choice. Private drops
+              are encrypted in your browser with AES-256-GCM — the server never sees your passphrase
+              or plaintext. Drops self-destruct after expiry or deletion.
+            </p>
+            <p style={{ color: 'var(--fg-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              The drop name is supplied in the URL fragment, e.g.{' '}
+              <span style={{ color: 'var(--accent)' }}>dead-drop.xyz/create/#my-drop-name</span>.
+              Name a drop from the{' '}
+              <a href="/" style={{ color: 'var(--accent)' }}>
+                homepage
+              </a>{' '}
+              or open a create link directly. Loading your drop name&hellip;
+            </p>
           </div>
         </main>
       </>
     );
   }
 
-  if (!dropName || !validation.valid) {
+  if (!validation.valid) {
     return (
       <>
         <header className="page-header">

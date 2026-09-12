@@ -55,7 +55,6 @@ const CREATE_MIN_LENGTH = 12;
 const VIEW_MIN_LENGTH = 3;
 
 export default function HomePage() {
-  const [mounted, setMounted] = useState(false);
   const [hasFragment, setHasFragment] = useState(false);
 
   // Tab state
@@ -114,7 +113,6 @@ export default function HomePage() {
         setApiChecking(false);
       });
     }
-    setMounted(true);
     // Intentionally empty deps - we only want this to run once on mount
   }, []);
 
@@ -494,10 +492,13 @@ export default function HomePage() {
     setError(null);
   }, []);
 
+  // Auto-fill only when the user hasn't typed anything — never clobber input.
+  const handleAutoFillName = useCallback((name: string) => {
+    setCreateName((prev) => (prev === '' ? name : prev));
+  }, []);
+
   // Check API connectivity
   const checkApiReachability = useCallback(async () => {
-    setMounted(true);
-
     try {
       // Use Promise.race for timeout
       const response = await Promise.race([
@@ -512,27 +513,27 @@ export default function HomePage() {
           const nameResponse = await fetch(`${API_URL}/api/v1/drops/generate-name`);
           if (nameResponse.ok) {
             const data = (await nameResponse.json()) as { name: string; id: string };
-            handleCreateInputChange(data.name);
+            handleAutoFillName(data.name);
           } else {
             const { generateDropNameSuggestions } = await import('@dead-drop/engine');
-            handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+            handleAutoFillName(generateDropNameSuggestions(1, 4)[0]!);
           }
         } catch {
           const { generateDropNameSuggestions } = await import('@dead-drop/engine');
-          handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+          handleAutoFillName(generateDropNameSuggestions(1, 4)[0]!);
         }
       } else {
         const { generateDropNameSuggestions } = await import('@dead-drop/engine');
-        handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+        handleAutoFillName(generateDropNameSuggestions(1, 4)[0]!);
       }
     } catch {
       setApiReachable(false);
       const { generateDropNameSuggestions } = await import('@dead-drop/engine');
-      handleCreateInputChange(generateDropNameSuggestions(1, 4)[0]!);
+      handleAutoFillName(generateDropNameSuggestions(1, 4)[0]!);
     } finally {
       setApiChecking(false);
     }
-  }, [handleCreateInputChange]);
+  }, [handleAutoFillName]);
 
   const handleCreate = useCallback(() => {
     if (!createValidation.valid) {
@@ -561,23 +562,6 @@ export default function HomePage() {
       }
     }, 100);
   }, []);
-
-  // Render loading state
-  if (!mounted) {
-    return (
-      <>
-        <header className="page-header">
-          <a href="/">dead-drop.xyz</a>
-        </header>
-        <main className="main-container">
-          <div className="loader animate-fade-in">
-            <div className="loader-spinner" />
-            <span>Initializing...</span>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   // ═══════════════════════════════════════════════════════════
   // LANDING PAGE (no fragment) - SPLIT PANEL DESIGN
