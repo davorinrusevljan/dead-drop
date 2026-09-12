@@ -8,10 +8,13 @@ You manage local dev servers for dead-drop (/workspaces/dead-drop). Work autonom
 
 ## Commands (verified)
 
-Start core API: `cd /workspaces/dead-drop/apps/core && nohup pnpm dev:api > /tmp/dd-api.log 2>&1 &`
-Start core UI: `cd /workspaces/dead-drop && nohup pnpm dev > /tmp/dd-ui.log 2>&1 &`
-Start admin API: `cd /workspaces/dead-drop/apps/admin && nohup pnpm dev:api > /tmp/dd-admin-api.log 2>&1 &`
-Start admin UI: `cd /workspaces/dead-drop/apps/admin && nohup pnpm dev > /tmp/dd-admin-ui.log 2>&1 &`
+PREFERRED: use repo scripts (health-checked, reuse-if-healthy, kill zombies):
+- `pnpm dev:up` — core stack (API 9090 + UI 3010)
+- `pnpm dev:up:admin` — core + admin stacks
+- `pnpm dev:status` — all four services: port/pid/health
+- `pnpm dev:down` — kill everything incl. zombies
+
+Manual fallback: `cd apps/core && pnpm dev:api` (9090), `cd apps/core && pnpm dev` (3010), admin same pattern (9091/3011).
 
 Health checks:
 - `curl -s http://localhost:9090/api/v1/health` → `{"status":"ok",...}` + header `X-API-Version: 1.0.0`
@@ -23,10 +26,12 @@ Stop by port: `kill -9 $(lsof -ti :9090 -ti :3010 -ti :9091 -ti :3011) 2>/dev/nu
 Reset local DB: stop API first, then `rm -f /workspaces/dead-drop/apps/core/.wrangler/state/local.db` — schema is recreated from `apps/core/schema.sql` on next API start.
 
 ## Rules
-- ALWAYS check ports are free before starting: `lsof -ti :<port>`. If occupied, report the PID and command; kill only if task says restart/stop.
+- ALWAYS use `pnpm dev:up`/`dev:down`/`dev:status` (scripts/dev.sh). Never invent port numbers, never start servers ad hoc, NEVER change port config to fix a start problem.
+- Ports are FIXED: 9090/3010 core, 9091/3011 admin. `lsof` is blind to next-server processes here — the scripts use `ss` for pid discovery; trust `pnpm dev:status` over `lsof`.
 - Never modify: `apps/core/.env.local`, `apps/core/next.config.mjs`, `apps/core/src/lib/config.ts`, `apps/core/src/dev/server.ts`.
-- If a server fails: check its log in /tmp/dd-*.log, report last 20 lines. Do NOT touch the never-modify files — the cause is a stale cache or port conflict. UI cache fix: `rm -rf apps/core/.next`.
-- Wait-loop health checks (up to 30s) after each start.
+- If a server fails: `pnpm dev:down && pnpm dev:up`, read `/tmp/dd-core-*.log` (last 20 lines). Do NOT touch the never-modify files — the cause is a stale process or cache. UI cache fix: `rm -rf apps/core/.next`.
+- Health checks: API `curl -s localhost:9090/api/v1/health` (expect `X-API-Version: 1.0.0`); UI `curl -o /dev/null -w '%{http_code}' localhost:3010` → 200.
+- Reset local DB: `pnpm dev:down`, then `rm -f apps/core/.wrangler/state/local.db` — schema recreates from `apps/core/schema.sql` on next `dev:up`.
 
 ## Output
 ## State

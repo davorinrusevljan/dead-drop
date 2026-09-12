@@ -32,19 +32,32 @@ ADMIN_HASH_PEPPER=dev-pepper
 UPGRADE_TOKEN=dev-upgrade-token
 ```
 
-### Start (two terminals, or background)
+### Start (canonical: lifecycle scripts)
+
+```bash
+pnpm dev:up               # core stack: API 9090 + UI 3010, health-checked,
+                          # reuses healthy servers, kills zombies, never touches config
+pnpm dev:up:admin         # + admin stack (9091/3011)
+pnpm dev:status           # port/pid/health of all four services
+pnpm dev:down             # stop everything (sweeps zombie process trees too)
+```
+
+The scripts live in `scripts/dev.sh`. Pid discovery uses `ss` — `lsof` is blind
+to `next-server` processes in this environment (hard-won lesson; see git history).
+
+### Start (manual alternative, two terminals)
 
 ```bash
 # Terminal 1 — core API (Node + SQLite, NOT wrangler)
 cd apps/core && pnpm dev:api
 
 # Terminal 2 — core UI
-pnpm dev        # repo root; runs turbo dev → next dev on 3010
+cd apps/core && pnpm dev        # next dev --port 3010
 ```
 
-**`pnpm dev` does NOT start the API.** UI without API = "Server unreachable".
-
-Admin is the same pattern: `cd apps/admin && pnpm dev:api` (9091), `pnpm dev` (3011).
+**Root `pnpm dev` is turbo and starts ALL apps' UIs at once** — prefer the
+scripts or per-app invocation. **Nothing here starts the API for you** except
+`dev:up` and Playwright's webServer. UI without API = "Server unreachable".
 
 ### Verify
 
@@ -57,8 +70,11 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3010         # 200
 ### Stop
 
 ```bash
-kill $(lsof -ti :9090) $(lsof -ti :3010) 2>/dev/null     # add :9091 :3011 for admin
+pnpm dev:down       # all four ports; kills listeners AND their process trees
 ```
+
+Manual: `kill $(ss -ltnp 'sport = :9090' | grep -oE 'pid=[0-9]+' | cut -d= -f2)`
+(remember: `lsof` may not see next-server pids here).
 
 ### Reset local database
 
@@ -66,9 +82,9 @@ Local SQLite lives at `apps/core/.wrangler/state/local.db` (schema recreated
 from `apps/core/schema.sql` on next API start):
 
 ```bash
-kill $(lsof -ti :9090) 2>/dev/null
+pnpm dev:down
 rm -f apps/core/.wrangler/state/local.db
-cd apps/core && pnpm dev:api        # fresh DB
+pnpm dev:up        # fresh DB
 ```
 
 ### Frontend ↔ API wiring (the classic confusion)
@@ -82,7 +98,7 @@ cd apps/core && pnpm dev:api        # fresh DB
 
 | Environment | Where UI sends API calls |
 |---|---|
-| `pnpm dev` locally | `http://localhost:9090` (from `.env.local`) |
+| Local UI dev (via `dev:up` or per-app `pnpm dev`) | `http://localhost:9090` (from `.env.local`) |
 | Production build | `https://api.dead-drop.xyz` (pinned at build) |
 
 Production CSP `connect-src` allows only `api.dead-drop.xyz` — a prod build
@@ -98,13 +114,17 @@ pnpm test:coverage      # + coverage
 pnpm typecheck && pnpm lint
 ```
 
-### E2E (Playwright; needs core API 9090 + UI 3010 running)
+### E2E (Playwright; self-managing)
 
 ```bash
 cd e2e
 npx playwright install chromium        # first time only
-npx playwright test --config=playwright.config.ts --project=chromium
+npx playwright test --project=chromium
 ```
+
+The config's `webServer` array boots the API (readiness = `/api/v1/health`)
+and UI itself, reuses healthy servers, and **stops what it started** — no
+zombies, no manual two-terminal setup.
 
 `v1-production.spec.ts` hits **production** (`api.dead-drop.xyz`,
 `dead-drop.xyz`) and runs without local servers. Two UI-selector tests in
@@ -171,9 +191,10 @@ pnpm build:api-docs    # scripts/build-api-docs.mjs → api-docs-dist/ (gitignor
 
 ## Troubleshooting
 
-- **UI shows "Server unreachable" / E2E API tests fail**: API not running or
-  port conflict. `curl localhost:9090/api/v1/health` first, then
-  [Start](#start-two-terminals-or-background).
+- **Port occupied / server won't start / anything weird**: `pnpm dev:down &&
+  pnpm dev:up`. Never change ports or config to fix startup (ADR/fixed ports).
+- **"Port busy but no pid in lsof"**: known — `lsof` misses `next-server`
+  processes; `pnpm dev:status` uses `ss` and is authoritative.
 - **UI won't start / shows stale content**: kill everything, wipe cache:
   `kill -9 $(ps aux | grep -E 'turbo|next' | grep -v grep | awk '{print $2}'); rm -rf apps/core/.next`
 - **Port already in use**: `lsof -ti :<port>` → decide kill vs different port.

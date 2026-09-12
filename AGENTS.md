@@ -35,13 +35,18 @@ Cloudflare D1 + Workers/Pages · Drizzle, Zod, Vitest, Playwright.
 Full detail in [docs/runbook.md](docs/runbook.md).
 
 ```bash
-# Dev: API and UI are SEPARATE processes
-cd apps/core && pnpm dev:api     # API  :9090
-pnpm dev                          # UI   :3010 (repo root)
+# Dev servers — THE way (health-checked, reuse-if-healthy, zombie-sweeping):
+pnpm dev:up               # core stack (add ` admin` via `pnpm dev:up:admin` for both)
+pnpm dev:status           # port/pid/health of all four services
+pnpm dev:down             # stop everything, including zombies
 
 pnpm test | test:coverage | typecheck | lint
-cd e2e && npx playwright test --config=playwright.config.ts --project=chromium
+cd e2e && npx playwright test --project=chromium   # starts its own servers if down
 ```
+
+**Never** start dev servers by ad-hoc commands, never change ports or port-bearing
+config to fix startup problems (see rule 5). Root `pnpm dev` = turbo = starts ALL
+apps' UIs at once — avoid; use `dev:up`.
 
 API health: `curl http://localhost:9090/api/v1/health`.
 

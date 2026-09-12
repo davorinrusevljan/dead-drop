@@ -7,6 +7,10 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:up": "sh scripts/dev.sh up",
+    "dev:up:admin": "sh scripts/dev.sh up admin",
+    "dev:down": "sh scripts/dev.sh down",
+    "dev:status": "sh scripts/dev.sh status",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
