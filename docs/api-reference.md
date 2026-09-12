@@ -2,7 +2,13 @@
 
 **Version:** 1.0.0
 **Base URL:** `https://api.dead-drop.xyz`
-**Documentation UI:** `https://api.dead-drop.xyz/api/docs`
+**Documentation UI:** `https://api.dead-drop.xyz/api/v1/docs`
+
+> The machine-readable OpenAPI spec at
+> [`/api/v1/docs/openapi.json`](https://api.dead-drop.xyz/api/v1/docs/openapi.json)
+> is **canonical**. This page is a human convenience copy — on any conflict,
+> the spec and code (`apps/core/src/api/v1/`) win. All routes below are under
+> `/api/v1/`; unversioned `/api/*` routes return 404.
 
 ---
 
@@ -16,7 +22,7 @@ The dead-drop.xyz API is a RESTful service for creating and managing ephemeral, 
 - **Encryption**: Client-side encryption using Web Crypto API (AES-256-GCM)
 - **Authentication**: Hash-based authentication for edit/delete operations
 - **Visibility**: Private drops (encrypted) vs Public drops (plaintext)
-- **Tiers**: Free (10KB, 7 days) vs Deep (4MB, 90 days)
+- **Tiers**: Free (10KB, 7 days — implemented) vs Deep (4MB, 90 days — constants only, not yet implemented)
 
 ### Authentication
 
@@ -43,7 +49,7 @@ All API responses include rate limit headers for forward compatibility. In v1.0,
 
 ### Health Check
 
-#### GET /api/health
+#### GET /api/v1/health
 
 Check API health and availability.
 
@@ -59,12 +65,13 @@ Check API health and availability.
 
 ### Drops
 
-#### GET /api/drops/:id
+#### GET /api/v1/drops/:id
 
 Retrieve a drop by ID.
 
 **Parameters:**
 - `id` (path, required): SHA-256 hash of normalized drop name
+- `I_agree_with_terms_and_conditions` (query, required): must be `true` — explicit terms acceptance on every read
 
 **Response (200 OK):**
 ```json
@@ -100,7 +107,7 @@ Retrieve a drop by ID.
 
 ---
 
-#### POST /api/drops
+#### POST /api/v1/drops
 
 Create a new drop.
 
@@ -149,7 +156,7 @@ Create a new drop.
 
 ---
 
-#### PUT /api/drops/:id
+#### PUT /api/v1/drops/:id
 
 Update an existing drop.
 
@@ -186,7 +193,7 @@ Update an existing drop.
 
 ---
 
-#### DELETE /api/drops/:id
+#### DELETE /api/v1/drops/:id
 
 Delete a drop.
 
@@ -221,7 +228,7 @@ Delete a drop.
 
 ### Drop History
 
-#### GET /api/drops/:id/history
+#### GET /api/v1/drops/:id/history
 
 List all versions of a drop.
 
@@ -247,7 +254,7 @@ List all versions of a drop.
 
 ---
 
-#### GET /api/drops/:id/history/:version
+#### GET /api/v1/drops/:id/history/:version
 
 Get a specific version of a drop.
 
@@ -270,35 +277,9 @@ Get a specific version of a drop.
 
 ---
 
-### Drop Upgrade
-
-#### POST /api/drops/:id/upgrade
-
-Upgrade a drop from free to deep tier.
-
-**Parameters:**
-- `id` (path, required): SHA-256 hash of normalized drop name
-
-**Request Body:**
-```json
-{
-  "upgradeToken": "upgrade-token-from-payment"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "tier": "deep"
-}
-```
-
----
-
 ### Utility Endpoints
 
-#### GET /api/drops/generate-name
+#### GET /api/v1/drops/generate-name
 
 Generate a random drop name (UX enhancement).
 
@@ -314,7 +295,7 @@ Generate a random drop name (UX enhancement).
 
 ---
 
-#### GET /api/drops/check/:id
+#### GET /api/v1/drops/check/:id
 
 Check if a drop ID is available (UX enhancement).
 
@@ -332,13 +313,13 @@ Check if a drop ID is available (UX enhancement).
 
 ### Documentation
 
-#### GET /api/docs
+#### GET /api/v1/docs
 
 Swagger UI documentation interface.
 
 ---
 
-#### GET /api/docs/openapi.json
+#### GET /api/v1/docs/openapi.json
 
 OpenAPI 3.0 specification.
 
@@ -424,11 +405,11 @@ v1.0 only supports plain text content. Core edition enforces text-only. Deep Dro
 5. For public drops:
    - Payload is the raw content string directly (no encoding)
    - Compute admin hash: `SHA-256(adminPassword + salt)`
-6. POST to `/api/drops` with all fields
+6. POST to `/api/v1/drops` with all fields
 
 ### Reading a Drop
 
-1. GET the drop by ID from `/api/drops/:id`
+1. GET the drop by ID from `/api/v1/drops/:id`
 2. For private drops:
    - Derive encryption key using PBKDF2 (password + salt from DB)
    - Decrypt payload using AES-256-GCM (key + IV from DB)
@@ -439,12 +420,12 @@ v1.0 only supports plain text content. Core edition enforces text-only. Deep Dro
 
 1. Follow the creation process for the new content
 2. Include authentication (contentHash for private, adminPassword for public)
-3. PUT to `/api/drops/:id` with new payload and auth
+3. PUT to `/api/v1/drops/:id` with new payload and auth
 
 ### Deleting a Drop
 
 1. Provide authentication (contentHash for private, adminPassword for public)
-2. DELETE `/api/drops/:id`
+2. DELETE `/api/v1/drops/:id`
 
 ---
 
@@ -461,8 +442,8 @@ v1.0 only supports plain text content. Core edition enforces text-only. Deep Dro
 ## OpenAPI Specification
 
 The complete OpenAPI 3.0 specification is available at:
-- **JSON:** `https://api.dead-drop.xyz/api/docs/openapi.json`
-- **UI:** `https://api.dead-drop.xyz/api/docs`
+- **JSON:** `https://api.dead-drop.xyz/api/v1/docs/openapi.json`
+- **UI:** `https://api.dead-drop.xyz/api/v1/docs`
 
 ---
 
@@ -482,6 +463,6 @@ The complete OpenAPI 3.0 specification is available at:
 
 ## Support
 
-- **Documentation:** See Swagger UI at `/api/docs`
+- **Documentation:** See Swagger UI at `/api/v1/docs`
 - **Issues:** Report via GitHub Issues
 - **Contact:** admin@dead-drop.xyz
