@@ -8,13 +8,11 @@ else
   echo "No package.json yet - project not initialized"
 fi
 
-# Install pi agent globally
-if ! command -v pi &> /dev/null; then
-  echo "Installing pi agent..."
-  npm install -g @mariozechner/pi-coding-agent
-else
-  echo "pi agent already installed"
-fi
+# Install/upgrade pi agent globally (package was renamed from
+# @mariozechner/pi-coding-agent to @earendil-works/pi-coding-agent;
+# the old 0.73.x build doesn't provide the @earendil-works/* runtime
+# imports this repo's extensions use)
+npm install -g @earendil-works/pi-coding-agent@latest
 
 # Configure pi agent for GLM-5.1 via Z.AI Coding Plan
 PI_HOME="${HOME:-/root}/.pi/agent"
@@ -28,7 +26,7 @@ cat > "$PI_HOME/models.json" << 'PI_MODELS'
     "zai": {
       "baseUrl": "https://api.z.ai/api/coding/paas/v4",
       "api": "openai-completions",
-      "apiKey": "ZAI_API_KEY",
+      "apiKey": "$ZAI_API_KEY",
       "models": [
         {
           "id": "glm-5.1",
@@ -47,16 +45,11 @@ else
   echo "models.json already exists — keeping persisted config"
 fi
 
-# Create auth.json placeholder
+# Create empty auth.json placeholder (real credentials resolve via
+# models.json apiKey: "$ZAI_API_KEY" env interpolation — do NOT store a
+# literal string here, it would be sent as the bearer token and 401)
 if [ ! -f "$PI_HOME/auth.json" ]; then
-  cat > "$PI_HOME/auth.json" << 'PI_AUTH'
-{
-  "zai": {
-    "type": "api_key",
-    "key": "ZAI_API_KEY"
-  }
-}
-PI_AUTH
+  echo '{}' > "$PI_HOME/auth.json"
 fi
 
 echo "Pi agent configured for GLM-5.1 (Z.AI Coding Plan)"
