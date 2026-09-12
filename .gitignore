@@ -63,3 +63,4 @@ apps/admin/testuser*
 backup/
 
 .claude/settings.local.json
+.pi/extensions/subagent/node_modules/
