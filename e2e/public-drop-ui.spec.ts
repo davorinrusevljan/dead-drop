@@ -35,7 +35,7 @@ test.describe('Public Drop UI - Full Flow', () => {
 
     // Fill in content
     const content = 'This is a test public drop created via Playwright';
-    const contentTextarea = page.locator('textarea[placeholder*="secret message"]');
+    const contentTextarea = page.locator('textarea[placeholder*="drop"]');
     await contentTextarea.fill(content);
 
     // Check the terms checkbox

@@ -28,7 +28,7 @@ test.describe('Public Drop Edit/Delete UI', () => {
     await confirmPasswordInput.fill(password);
 
     // Fill in content
-    const contentTextarea = page.locator('textarea[placeholder*="secret message"]');
+    const contentTextarea = page.locator('textarea[placeholder*="drop"]');
     await contentTextarea.fill(originalContent);
 
     // Check terms
