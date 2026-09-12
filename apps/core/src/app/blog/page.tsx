@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import { getAllPosts } from '../../lib/blog';
 import './blog.css';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Blog — dead-drop.xyz',
+  description: 'Updates, technical deep-dives, and announcements from dead-drop.',
+  alternates: { canonical: '/blog' },
+};
 
 export default function BlogIndex() {
   const posts = getAllPosts();
