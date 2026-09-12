@@ -65,7 +65,11 @@ API health: `curl http://localhost:9090/api/v1/health`.
   `agentScope: "project"`. Delegate server management and test runs instead of
   doing them inline when convenient.
 - **Strategy/marketing docs live in the separate private repo**
-  `dead-drop-strategy` — not here.
+  `dead-drop-strategy` — not here. Convention when present:
+  `/workspaces/dead-drop-strategy`.
+  **Do NOT clone or access it by default** — it is private and generally
+  unavailable; touch it only if the user explicitly asks. Never copy
+  strategy content into this repo.
 
 ## Terminology traps
 
