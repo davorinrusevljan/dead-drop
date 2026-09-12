@@ -8,6 +8,7 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync, cpSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,30 +18,51 @@ const { v1Router } = await import('../apps/core/src/api/v1/index.js');
 const { v1OpenApiConfig } = await import('../apps/core/src/api/v1/openapi.js');
 
 /**
- * Generate Redoc HTML page
+ * SEO meta tags injected into the pre-rendered Redoc HTML
  */
-function generateRedocHtml(version, spec) {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>dead-drop API - ${version}</title>
-  <meta name="description" content="dead-drop API documentation - Privacy-focused ephemeral data sharing. ${version}">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://davorinrusevljan.github.io/dead-drop/${version}/">
-  <meta property="og:title" content="dead-drop API Documentation">
-  <meta property="og:description" content="Privacy-focused, ephemeral data-sharing API">
-  <meta property="og:url" content="https://davorinrusevljan.github.io/dead-drop/${version}/">
-  <meta property="og:type" content="website">
-  <link rel="icon" href="https://dead-drop.xyz/favicon.ico">
-  <style>body { margin: 0; padding: 0; }</style>
-</head>
-<body>
-  <redoc spec-url='./openapi.json'></redoc>
-  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
-</body>
-</html>`;
+function seoMetaTags(version) {
+  return [
+    '<meta name="description" content="dead-drop API documentation - Privacy-focused ephemeral data sharing. ' +
+      version +
+      '">',
+    '<meta name="robots" content="index, follow">',
+    `<link rel="canonical" href="https://davorinrusevljan.github.io/dead-drop/${version}/">`,
+    '<meta property="og:title" content="dead-drop API Documentation">',
+    '<meta property="og:description" content="Privacy-focused, ephemeral data-sharing API">',
+    `<meta property="og:url" content="https://davorinrusevljan.github.io/dead-drop/${version}/">`,
+    '<meta property="og:type" content="website">',
+    '<link rel="icon" href="https://dead-drop.xyz/favicon.ico">',
+  ].join('\n  ');
+}
+
+/**
+ * Pre-render Redoc HTML with redoc-cli (SSR: full content in HTML, crawlable)
+ */
+function generateRedocHtml(version, specDir) {
+  const specPath = join(specDir, 'openapi.json');
+  const outPath = join(specDir, 'index.html');
+
+  execFileSync(
+    join('node_modules', '.bin', 'redocly'),
+    [
+      'build-docs',
+      specPath,
+      '--output',
+      outPath,
+      '--title',
+      `dead-drop API - ${version}`,
+      '--disableGoogleFont',
+    ],
+    { stdio: 'inherit', cwd: process.cwd() }
+  );
+
+  // Inject SEO meta tags after <head>
+  let html = readFileSync(outPath, 'utf-8');
+  html = html.replace(/<head>/, `<head>\n  ${seoMetaTags(version)}`);
+  if (!html.includes('rel="canonical"')) {
+    throw new Error(`SEO meta injection failed for ${version}`);
+  }
+  writeFileSync(outPath, html);
 }
 
 /**
@@ -127,10 +149,10 @@ async function buildApiDocs() {
   writeFileSync(join(latestDir, 'openapi.json'), JSON.stringify(spec, null, 2));
   writeFileSync(join(versionDir, 'openapi.json'), JSON.stringify(spec, null, 2));
 
-  // 7. Generate Redoc HTML pages
-  console.log('  - Generating Redoc HTML pages...');
-  writeFileSync(join(latestDir, 'index.html'), generateRedocHtml('latest', spec));
-  writeFileSync(join(versionDir, 'index.html'), generateRedocHtml(`v${version}`, spec));
+  // 7. Generate pre-rendered Redoc HTML pages
+  console.log('  - Pre-rendering Redoc HTML pages (redoc-cli bundle)...');
+  generateRedocHtml('latest', latestDir);
+  generateRedocHtml(`v${version}`, versionDir);
 
   // 8. Generate versions.json
   console.log('  - Generating versions.json...');
