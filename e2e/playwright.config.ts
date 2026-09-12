@@ -27,11 +27,22 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  // Web server configuration - uncomment when running locally
-  // webServer: {
-  //   command: 'cd /workspaces/dead-drop && pnpm dev',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: true,
-  //   timeout: 120000,
-  // },
+  // Playwright owns the dev-stack lifecycle: starts API (:9090) + UI (:3010)
+  // itself, reuses healthy servers, replaces nothing silently.
+  // Run from repo root: `pnpm dev:up` first if you want your own servers.
+  // Paths are relative to this config's dir (e2e/).
+  webServer: [
+    {
+      command: 'cd ../apps/core && pnpm dev:api',
+      url: 'http://localhost:9090/api/v1/health',
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+    {
+      command: 'cd ../apps/core && pnpm dev',
+      url: 'http://localhost:3010',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
 });

@@ -7,6 +7,10 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:up": "sh scripts/dev.sh up",
+    "dev:up:admin": "sh scripts/dev.sh up admin",
+    "dev:down": "sh scripts/dev.sh down",
+    "dev:status": "sh scripts/dev.sh status",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
@@ -18,7 +22,8 @@
     "build:api-docs": "npx tsx scripts/build-api-docs.mjs",
     "test:e2e:ui": "playwright test --ui",
     "clean": "turbo clean && rm -rf node_modules",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "npm install --prefix .pi/extensions/subagent --silent"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

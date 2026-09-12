@@ -6,3 +6,4 @@ dist/
 coverage/
 *.md
 pnpm-lock.yaml
+.pi/extensions/

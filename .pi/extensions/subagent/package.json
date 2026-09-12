@@ -1,0 +1,10 @@
+{
+  "name": "@dead-drop/pi-extension-subagent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Subagent tool extension for pi (vendored from pi examples/extensions/subagent)",
+  "type": "module",
+  "dependencies": {
+    "typebox": "^1.0.0"
+  }
+}
