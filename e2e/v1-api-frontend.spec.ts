@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 
 const API_URL = 'http://localhost:9090/api/v1';
 
@@ -21,42 +21,53 @@ function btoaNode(str: string): string {
   return btoa(str);
 }
 
-test.describe('Frontend E2E - v1 API Verification', () => {
-  test.beforeEach(async ({ page, context }) => {
-    // Monitor all API requests to verify they use v1
-    const apiRequests: string[] = [];
-    context.route('**/*', (route) => {
-      const url = route.request().url();
-      if (url.includes('/api/')) {
-        apiRequests.push(url);
-      }
-      route.continue();
-    });
-
-    // Store for verification
-    (page as unknown as Record<string, string[]>).apiRequests = apiRequests;
-
-    await page.goto('http://localhost:3010');
-    // Wait for client-side hydration
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+// Track browser-originated /api/** calls for v1 verification.
+// Scoped to /api/** — intercepting every asset (**/*) only adds latency.
+async function trackApiRequests(context: BrowserContext): Promise<string[]> {
+  const apiRequests: string[] = [];
+  await context.route('**/api/**', (route) => {
+    apiRequests.push(route.request().url());
+    return route.continue();
   });
+  return apiRequests;
+}
 
-  test('should generate a name using v1 API', async ({ page }) => {
-    // Click the generate icon button (it's an SVG inside a button with title="Generate random name")
-    const generateBtn = page.locator('button[title="Generate random name"]').first();
-    await generateBtn.click();
-    await page.waitForTimeout(2000);
+// Load the landing page and wait until it is truly interactive.
+//
+// The create input auto-fills only after React hydration + health check +
+// generate-name have all completed (API path or local fallback), so a
+// non-empty value is a deterministic readiness signal — unlike
+// networkidle + fixed sleeps, which race hydration in `next dev`.
+async function openLanding(page: Page) {
+  await page.goto('/');
+  const createInput = page.locator('input[placeholder="enter-your-drop-name"]');
+  await expect(createInput).not.toHaveValue('', { timeout: 20_000 });
+  const generateBtn = page.locator('button[title="Generate random name"]').first();
+  return { createInput, generateBtn };
+}
 
-    // Get the generated name from the create input
-    const createInput = page.locator('input[placeholder="enter-your-drop-name"]');
+test.describe('Frontend E2E - v1 API Verification', () => {
+  test('should generate a name using v1 API', async ({ page, context }) => {
+    const apiRequests = await trackApiRequests(context);
+    const { createInput, generateBtn } = await openLanding(page);
+
+    // Retry the click until the input value actually changes: a click that
+    // lands pre-hydration is a silent no-op, and the fetch inside the click
+    // handler can be slow in dev mode. No fixed sleeps.
+    await expect(async () => {
+      const before = await createInput.inputValue();
+      await generateBtn.click();
+      await expect
+        .poll(async () => (await createInput.inputValue()) !== before, { timeout: 5_000 })
+        .toBe(true);
+    }).toPass({ timeout: 20_000 });
+
     const name = await createInput.inputValue();
 
     expect(name.length).toBeGreaterThan(10);
     expect(name).toMatch(/^[a-z0-9-]+$/);
 
     // Check API requests
-    const apiRequests = (page as unknown as Record<string, string[]>).apiRequests as string[];
     const generateRequest = apiRequests.find((url) => url.includes('/api/v1/drops/generate-name'));
     expect(generateRequest).toBeDefined();
 
@@ -67,16 +78,20 @@ test.describe('Frontend E2E - v1 API Verification', () => {
     expect(nonV1Requests.length).toBe(0);
   });
 
-  test('should check drop availability using v1 API', async ({ page }) => {
-    // Enter a test name
-    const createInput = page.locator('input[placeholder="enter-your-drop-name"]');
-    await createInput.fill('test-drop-availability-check');
-    await page.waitForTimeout(2000);
+  test('should check drop availability using v1 API', async ({ page, context }) => {
+    const apiRequests = await trackApiRequests(context);
+    const { createInput } = await openLanding(page);
 
-    // Check API requests
-    const apiRequests = (page as unknown as Record<string, string[]>).apiRequests as string[];
-    const checkRequest = apiRequests.find((url) => url.includes('/api/v1/drops/check'));
-    expect(checkRequest).toBeDefined();
+    // Availability check fires from a 300ms debounce after the input
+    // changes, and the route handler's push lands asynchronously after the
+    // request event — poll the intercepted-request log instead of sleeping
+    // or racing waitForRequest against the handler.
+    await createInput.fill('test-drop-availability-check');
+    await expect
+      .poll(() => apiRequests.find((url) => url.includes('/api/v1/drops/check')), {
+        timeout: 10_000,
+      })
+      .toBeDefined();
   });
 
   test('should create a public drop using v1 API', async ({ request }) => {
