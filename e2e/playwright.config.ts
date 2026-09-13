@@ -31,6 +31,7 @@ export default defineConfig({
   // itself, reuses healthy servers, replaces nothing silently.
   // Run from repo root: `pnpm dev:up` first if you want your own servers.
   // Paths are relative to this config's dir (e2e/).
+  // Admin API health is UNVERSIONED /api/health (admin API has no /v1 prefix).
   webServer: [
     {
       command: 'cd ../apps/core && pnpm dev:api',
@@ -41,6 +42,19 @@ export default defineConfig({
     {
       command: 'cd ../apps/core && pnpm dev',
       url: 'http://localhost:3010',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: 'cd ../apps/admin && pnpm dev:api',
+      url: 'http://localhost:9091/api/health',
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+    {
+      command: 'cd ../apps/admin && pnpm dev',
+      // / redirects 307→/login→308→/login/; readiness needs a direct 200
+      url: 'http://localhost:3011/login/',
       reuseExistingServer: true,
       timeout: 120_000,
     },

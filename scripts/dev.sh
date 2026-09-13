@@ -18,8 +18,9 @@ pid_on() {
   lsof -ti ":$1" 2>/dev/null | head -1
 }
 
-api_healthy() { curl -sf -m 3 "http://localhost:$1/api/v1/health" >/dev/null 2>&1; }
-ui_healthy() { [ "$(curl -s -m 3 -o /dev/null -w '%{http_code}' "http://localhost:$1" 2>/dev/null)" = "200" ]; }
+core_api_healthy()  { curl -sf -m 3 "http://localhost:$1/api/v1/health" >/dev/null 2>&1; }
+admin_api_healthy() { curl -sf -m 3 "http://localhost:$1/api/health" >/dev/null 2>&1; }
+ui_healthy() { curl -sfL -m 3 -o /dev/null "http://localhost:$1" 2>/dev/null; }
 
 wait_for() { # $1=desc $2=check_fn $3=port $4=timeout_s
   _i=0
@@ -61,9 +62,9 @@ status_one() { # $1=desc $2=port $3=health_fn
   fi
 }
 
-core_api_start()  { ensure_service "core API"  "$CORE_API_PORT"  api_healthy "cd apps/core && pnpm dev:api" "$LOGDIR/dd-core-api.log" 30; }
+core_api_start()  { ensure_service "core API"  "$CORE_API_PORT"  core_api_healthy  "cd apps/core && pnpm dev:api" "$LOGDIR/dd-core-api.log" 30; }
 core_ui_start()   { ensure_service "core UI"   "$CORE_UI_PORT"   ui_healthy  "cd apps/core && pnpm dev"     "$LOGDIR/dd-core-ui.log"  90; }
-admin_api_start() { ensure_service "admin API" "$ADMIN_API_PORT" api_healthy "cd apps/admin && pnpm dev:api" "$LOGDIR/dd-admin-api.log" 30; }
+admin_api_start() { ensure_service "admin API" "$ADMIN_API_PORT" admin_api_healthy "cd apps/admin && pnpm dev:api" "$LOGDIR/dd-admin-api.log" 30; }
 admin_ui_start()  { ensure_service "admin UI"  "$ADMIN_UI_PORT"  ui_healthy  "cd apps/admin && pnpm dev"    "$LOGDIR/dd-admin-ui.log" 90; }
 
 # NOTE: root `pnpm dev` = turbo dev = ALL apps at once. Never use it here;
@@ -96,9 +97,9 @@ case "${1:-}" in
     echo "down."
     ;;
   status)
-    status_one "core API"  "$CORE_API_PORT"  api_healthy
+    status_one "core API"  "$CORE_API_PORT"  core_api_healthy
     status_one "core UI"   "$CORE_UI_PORT"   ui_healthy
-    status_one "admin API" "$ADMIN_API_PORT" api_healthy
+    status_one "admin API" "$ADMIN_API_PORT" admin_api_healthy
     status_one "admin UI"  "$ADMIN_UI_PORT"  ui_healthy
     ;;
   *)
