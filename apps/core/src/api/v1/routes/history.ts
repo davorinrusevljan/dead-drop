@@ -118,7 +118,7 @@ export function registerHistoryRoutes(app: OpenAPIHono<AppEnv>): void {
 
     const db = c.env.DB;
     const drop = await getDropById(db, id);
-    if (!drop) {
+    if (!drop || new Date() > drop.expiresAt) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Drop not found' } }, 404);
     }
 
@@ -159,7 +159,7 @@ export function registerHistoryRoutes(app: OpenAPIHono<AppEnv>): void {
     const db = c.env.DB;
     const versionNum = parseInt(version, 10);
     const drop = await getDropById(db, id);
-    if (!drop) {
+    if (!drop || new Date() > drop.expiresAt) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Drop not found' } }, 404);
     }
 
