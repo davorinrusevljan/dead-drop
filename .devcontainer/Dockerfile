@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     procps \
     lsof \
-    # Playwright/Chromium dependencies for screenshots
+    # Playwright/Chromium deps — cache-warm base only (see note below)
     libglib2.0-0 \
     libnss3 \
     libnspr4 \
@@ -42,11 +42,15 @@ RUN pnpm config set global-bin-dir /usr/local/bin && \
     @biomejs/biome \
     vite \
     vitest \
-    @anthropic-ai/claude-code \
-    playwright
+    @anthropic-ai/claude-code
 
-# Install Playwright browsers
-RUN npx playwright install chromium firefox
+# NOTE: no global `playwright` and no image-build browser install — browsers
+# are provisioned in post-create.sh with the WORKSPACE playwright version.
+# A global playwright writes browser revisions that drift from the repo's
+# own playwright and break e2e out of the box (#7).
+
+# The apt dep list above stays as a cache-warm base only; post-create.sh
+# `playwright install --with-deps` is the source of truth.
 
 # Set working directory
 WORKDIR /workspace

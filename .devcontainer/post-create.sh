@@ -4,6 +4,12 @@ set -e
 # Install dependencies
 if test -f package.json; then
   pnpm install
+  # Install browsers for the WORKSPACE playwright version — playwright is a
+  # root-workspace devDependency (e2e/ has no package.json, so no --filter).
+  # Using the workspace version avoids the browser-revision drift an
+  # image-build global playwright caused (#7), and --with-deps resolves the
+  # full system-dep set per browser incl. webkit.
+  pnpm exec playwright install --with-deps chromium firefox webkit
 else
   echo "No package.json yet - project not initialized"
 fi
